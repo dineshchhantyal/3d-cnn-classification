@@ -1,0 +1,17 @@
+{
+  "nucleus_id": 14,
+  "event_frame": 27,
+  "event_type": "mitotic",
+  "dataset_name": "single_test_naming",
+  "number_of_nuclei_in_event_frame": 16,
+  "summary": {
+    "frames_with_nucleus": 1,
+    "nucleus_persistence": 0.3333333333333333,
+    "roi_shape": [
+      23,
+      21,
+      25
+    ],
+    "extraction_successful": true
+  }
+}

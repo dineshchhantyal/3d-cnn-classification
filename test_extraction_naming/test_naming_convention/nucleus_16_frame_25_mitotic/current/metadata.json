@@ -1,0 +1,10 @@
+{
+  "nucleus_id": 16,
+  "frame_number": 25,
+  "nucleus_present": true,
+  "files": {
+    "image": "nuclei_reg8_25.tif",
+    "label": "label_reg8_25.tif"
+  },
+  "stats": {
+    "original_volume": 

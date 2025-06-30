@@ -1,0 +1,11 @@
+{
+  "frame_number": 25,
+  "nucleus_id": 16,
+  "number_of_nuclei_in_frame": 15,
+  "stats": {
+    "original_volume": 2328,
+    "cleaned_volume": 2362,
+    "volume_change": 34,
+    "volume_change_percent": 1.4604810996563573
+  }
+}
