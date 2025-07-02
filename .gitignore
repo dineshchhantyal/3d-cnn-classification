@@ -1,0 +1,143 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyTorch Models
+*.pth
+*.pt
+*.pkl
+checkpoints/
+saved_models/
+model_weights/
+
+# Data directories (large files)
+data/
+datasets/
+raw_data/
+processed_data/
+nuclei_state_dataset/
+mitotic/
+stable/
+death/
+new_daughter/
+
+# Image files
+*.tif
+*.tiff
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.gif
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+tensorboard_logs/
+wandb/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Configuration files with sensitive data
+config.json
+secrets.json
+.env
+.env.local
+
+# Scientific computing
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.mat
+
+# Documentation build
+docs/_build/
+site/
+
+# Testing
+.coverage
+.pytest_cache/
+.tox/
+htmlcov/
+.nox/
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Large output files
+outputs/
+results/
+experiments/
+plots/
+figures/
+
+# Package managers
+.pip/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# Pytype
+.pytype/

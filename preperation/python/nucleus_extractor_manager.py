@@ -9,8 +9,8 @@ This script provides functions to:
 - Save both cleaned and original versions
 - Batch process multiple nuclei
 - Manage different datasets
+- Use new data directory structure: data/nuclei_state_dataset/stable/
 
-Author: Generated for 3D CNN Classification Project
 """
 
 import os
@@ -32,18 +32,35 @@ from read_death_and_mitotic_class import read_death_and_mitotic_class
 
 
 class NucleusExtractorConfig:
-    """Configuration class for nucleus extraction parameters"""
+    """
+    Configuration class for nucleus extraction parameters
+
+    Attributes:
+        crop_padding (float): Factor to expand the bounding box (e.g., 2.0 = 200% padding)
+        time_window (int): Number of frames before and after for default 3-frame extraction
+        frame_offsets (list, optional): Custom frame offsets relative to event frame
+            - If None, uses default 3-frame window: [event_frame - time_window, event_frame, event_frame + time_window]
+            - If provided, extracts frames at [event_frame + offset for offset in frame_offsets]
+            - Examples:
+              * [-1, 0, 1] for 3-frame window (equivalent to default)
+              * [-2, -1, 0, 1, 2] for 5-frame window
+              * [0] for single frame (event frame only)
+              * [-5, -3, -1, 0, 1, 3, 5] for sparse sampling
+        min_object_size (int): Minimum size for object cleaning (pixels)
+        enable_hole_filling (bool): Whether to fill holes in masks
+    """
 
     def __init__(self):
-        self.crop_padding = 1.2  # Factor to expand the bounding box (20% padding)
+        self.crop_padding = 2  # Factor to expand the bounding box (200% padding)
         self.time_window = (
             1  # Number of frames before and after (previous, current, next)
         )
-        self.min_object_size = 50  # Minimum size for object cleaning
+        self.frame_offsets = None  # Custom frame offsets relative to event frame (e.g., [-2, -1, 0, 1, 2])
+        self.min_object_size = 20  # Minimum size for object cleaning
         self.enable_hole_filling = True  # Fill holes in masks
 
     def __repr__(self):
-        return f"NucleusExtractorConfig(crop_padding={self.crop_padding}, time_window={self.time_window}, min_object_size={self.min_object_size})"
+        return f"NucleusExtractorConfig(crop_padding={self.crop_padding}, time_window={self.time_window}, frame_offsets={self.frame_offsets}, min_object_size={self.min_object_size})"
 
 
 class NucleusExtractorManager:
@@ -188,7 +205,7 @@ class NucleusExtractorManager:
 
     def extract_nucleus_time_series(self, nucleus_id, event_frame):
         """
-        Extract 3-frame time series (previous, current, next) for a nucleus
+        Extract time series for a nucleus with flexible frame selection
         Returns both cleaned and original versions
 
         Args:
@@ -198,13 +215,27 @@ class NucleusExtractorManager:
         Returns:
             dict: Complete extraction results
         """
-        # Define frame range (previous, current, next)
-        frames = [
-            event_frame - self.config.time_window,
-            event_frame,
-            event_frame + self.config.time_window,
-        ]
-        frame_labels = ["previous", "current", "next"]
+        # Define frame range - use custom offsets if provided, otherwise use default 3-frame window
+        if self.config.frame_offsets is not None:
+            # Custom frame offsets (e.g., [-2, -1, 0, 1, 2] for 5-frame series)
+            frames = [event_frame + offset for offset in self.config.frame_offsets]
+            # Generate labels based on offsets
+            frame_labels = []
+            for offset in self.config.frame_offsets:
+                if offset < 0:
+                    frame_labels.append(f"t{offset}")  # e.g., "t-2", "t-1"
+                elif offset == 0:
+                    frame_labels.append("current")
+                else:
+                    frame_labels.append(f"t+{offset}")  # e.g., "t+1", "t+2"
+        else:
+            # Default 3-frame window (backward compatibility)
+            frames = [
+                event_frame - self.config.time_window,
+                event_frame,
+                event_frame + self.config.time_window,
+            ]
+            frame_labels = ["previous", "current", "next"]
 
         print(f"🔍 Extracting nucleus {nucleus_id} from frames {frames}")
 
@@ -309,20 +340,31 @@ class NucleusExtractorManager:
         )
         return results
 
-    def batch_extract_nuclei(self, max_samples=None, event_types=None):
+    def batch_extract_nuclei(
+        self,
+        max_samples=None,
+        event_types=None,
+        dataset_name=None,
+        output_base_path=None,
+    ):
         """
-        Batch extract nuclei from classification data
+        Batch extract nuclei from classification data and save each result immediately.
 
         Args:
             max_samples: Maximum number of samples to extract (None for all)
             event_types: List of event types to extract ['mitotic', 'death', 'both', 'normal']
+            dataset_name: Name of the dataset (required for saving)
+            output_base_path: Optional base path override (defaults to data/nuclei_state_dataset)
 
         Returns:
-            list: List of extraction results
+            int: Number of successful extractions
         """
         if not self.metadata or "classes" not in self.metadata:
             print("❌ No classification data found")
-            return []
+            return 0
+
+        if dataset_name is None:
+            raise ValueError("dataset_name must be provided for saving results.")
 
         df = self.metadata["classes"]
 
@@ -351,7 +393,6 @@ class NucleusExtractorManager:
 
         print(f"🚀 Starting batch extraction of {len(df_filtered)} nuclei...")
 
-        results = []
         successful_extractions = 0
 
         for idx, row in df_filtered.iterrows():
@@ -382,7 +423,10 @@ class NucleusExtractorManager:
                     result["event_type"] = event_type
                     result["is_mitotic"] = is_mitotic
                     result["is_death"] = is_death
-                    results.append(result)
+                    # Save immediately
+                    self.save_extraction_results(
+                        [result], dataset_name, output_base_path
+                    )
                     successful_extractions += 1
                     print(f"  ✅ Success ({successful_extractions}/{len(df_filtered)})")
                 else:
@@ -398,27 +442,82 @@ class NucleusExtractorManager:
         )
         print(f"  • Failed: {len(df_filtered) - successful_extractions}")
 
-        return results
+        return successful_extractions
 
-    def save_extraction_results(self, results, output_path, dataset_name):
+    def save_extraction_results(self, results, dataset_name, output_base_path=None):
         """
-        Save extraction results to files
+        Save extraction results to files using new data structure
 
         Args:
             results: List of extraction results
-            output_path: Base output directory
-            dataset_name: Name of the dataset
+            dataset_name: Name of the dataset (e.g., "230212_stack6")
+            output_base_path: Optional base path override (defaults to data/nuclei_state_dataset)
         """
-        output_dir = Path(output_path) / dataset_name
-        output_dir.mkdir(parents=True, exist_ok=True)
+        import re
 
-        print(f"💾 Saving {len(results)} extraction results to {output_dir}")
+        # Helper function to convert numpy types
+        def convert_numpy_types(obj):
+            """Convert numpy types to JSON serializable types"""
+            if isinstance(obj, dict):
+                return {k: convert_numpy_types(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [convert_numpy_types(item) for item in obj]
+            elif isinstance(obj, tuple):
+                return [convert_numpy_types(item) for item in obj]
+            elif isinstance(obj, (np.integer, np.signedinteger, np.unsignedinteger)):
+                return int(obj)
+            elif isinstance(obj, (np.floating, np.complexfloating)):
+                return float(obj)
+            elif isinstance(obj, np.ndarray):
+                return obj.tolist()
+            elif isinstance(obj, np.bool_):
+                return bool(obj)
+            elif hasattr(obj, "item"):  # For any remaining numpy scalars
+                return obj.item()
+            else:
+                return obj
+
+        # Set up the new data structure
+        if output_base_path is None:
+            project_root = Path(__file__).parent.parent.parent
+            data_dir = project_root / "data"
+
+            # Create symlink to ceph storage if it doesn't exist
+            ceph_target = Path("/mnt/home/dchhantyal/ceph/nuclei_state_dataset")
+            symlink_path = data_dir / "nuclei_state_dataset"
+
+            if not symlink_path.exists():
+                data_dir.mkdir(exist_ok=True)
+                ceph_target.mkdir(parents=True, exist_ok=True)
+                symlink_path.symlink_to(ceph_target)
+
+            output_base_path = symlink_path
+
+        # Extract stack number from dataset name (e.g., "230212_stack6" -> "stack6")
+        stack_match = re.search(r"stack(\d+)", dataset_name)
+        if stack_match:
+            stack_number = f"stack{stack_match.group(1)}"
+        else:
+            # Fallback if no stack number found
+            stack_number = dataset_name.replace("_", "")
+
+        print(
+            f"💾 Saving {len(results)} extraction results with stack identifier: {stack_number}"
+        )
 
         # Save each nucleus extraction
         for i, result in enumerate(results):
             nucleus_id = result["nucleus_id"]
             event_frame = result["event_frame"]
-            event_type = result["event_type"]
+            original_event_type = result["event_type"]
+
+            # Determine event type directory
+            if original_event_type == "normal":
+                event_type = "stable"  # Replace 'normal' with 'stable'
+            elif original_event_type == "mitotic_death":
+                event_type = "mitotic"  # Put combined events in mitotic folder
+            else:
+                event_type = original_event_type
 
             # Get the number of unique nuclei in the event frame for folder naming
             # Load the label image for the event frame to count unique nuclei
@@ -438,10 +537,14 @@ class NucleusExtractorManager:
                     f"    ⚠️  Warning: Could not load label file for frame {event_frame}"
                 )
 
-            # Create directory for this nucleus with nuclei count
+            # Create event type directory
+            event_dir = output_base_path / event_type
+            event_dir.mkdir(parents=True, exist_ok=True)
+
+            # Create directory with labeled naming convention: {stack_number}_nucleus{nucleus_id}_frame{frame_id}_count{number_of_nuclei}
             nucleus_dir = (
-                output_dir
-                / f"nucleus_{nucleus_id}_frame_{event_frame}_{event_type}_{number_of_nuclei}"
+                event_dir
+                / f"{stack_number}_nucleus{nucleus_id}_frame{event_frame}_count{number_of_nuclei}"
             )
             nucleus_dir.mkdir(exist_ok=True)
 
@@ -462,25 +565,11 @@ class NucleusExtractorManager:
                 tifffile.imwrite(frame_dir / "mask_original.tif", data["mask_original"])
                 tifffile.imwrite(frame_dir / "mask_cleaned.tif", data["mask_cleaned"])
 
-                # Save metadata (convert numpy types for JSON serialization)
-                def convert_numpy_types(obj):
-                    """Convert numpy types to JSON serializable types"""
-                    if isinstance(obj, dict):
-                        return {k: convert_numpy_types(v) for k, v in obj.items()}
-                    elif isinstance(obj, list):
-                        return [convert_numpy_types(item) for item in obj]
-                    elif isinstance(obj, np.integer):
-                        return int(obj)
-                    elif isinstance(obj, np.floating):
-                        return float(obj)
-                    elif isinstance(obj, np.ndarray):
-                        return obj.tolist()
-                    else:
-                        return obj
-
+                # Save metadata
                 metadata = {
                     "nucleus_id": int(nucleus_id),
                     "frame_number": int(frame_data["frame_number"]),
+                    "stack_number": stack_number,
                     "nucleus_present": bool(frame_data["nucleus_present"]),
                     "files": frame_data["files"],
                     "stats": convert_numpy_types(data["stats"]),
@@ -492,13 +581,17 @@ class NucleusExtractorManager:
 
             # Save overall nucleus metadata (convert numpy types)
             nucleus_metadata = {
-                "nucleus_id": int(nucleus_id),
-                "event_frame": int(event_frame),
+                "nucleus_id": nucleus_id,
+                "event_frame": event_frame,
+                "stack_number": stack_number,
                 "event_type": event_type,
-                "number_of_nuclei_in_event_frame": int(number_of_nuclei),
-                "is_mitotic": bool(result["is_mitotic"]),
-                "is_death": bool(result["is_death"]),
-                "frames": result["frames"],
+                "original_event_type": original_event_type,  # Keep track of original
+                "number_of_nuclei_in_event_frame": number_of_nuclei,
+                "dataset_name": dataset_name,
+                "storage_path": str(nucleus_dir.relative_to(output_base_path)),
+                "is_mitotic": result["is_mitotic"],
+                "is_death": result["is_death"],
+                "frames": convert_numpy_types(result["frames"]),
                 "bounding_box": convert_numpy_types(result["bounding_box"]),
                 "summary": convert_numpy_types(result["summary"]),
                 "config": {
@@ -508,49 +601,348 @@ class NucleusExtractorManager:
                     "enable_hole_filling": result["config"].enable_hole_filling,
                 },
             }
+            # Apply convert_numpy_types to the entire metadata structure
+            nucleus_metadata = convert_numpy_types(nucleus_metadata)
 
             with open(nucleus_dir / "nucleus_metadata.json", "w") as f:
                 json.dump(nucleus_metadata, f, indent=2)
 
-        print(f"✅ Results saved to {output_dir}")
-        return output_dir
+            print(f"  ✅ Saved nucleus {nucleus_id} → {event_type}/{nucleus_dir.name}")
 
+        print(f"✅ Results saved organized by event type in: {output_base_path}")
+        print(f"📍 Full path: {output_base_path}")
+        return output_base_path
 
-def main():
-    """Example usage of the NucleusExtractorManager"""
+    def plot_result_comprehensive(
+        self, result, output_dir=None, middle_slice_only=False
+    ):
+        """
+        Plot comprehensive extraction results for a single nucleus
+        Shows both cleaned and original versions, plus all mask data
+        """
+        if output_dir:
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
 
-    # Available datasets
-    datasets = {
-        "230212_stack6": "/mnt/ceph/users/lbrown/MouseData/Rebecca/230212_stack6/",
-        "220321_stack11": "/mnt/ceph/users/lbrown/MouseData/Rebecca/220321_stack11/",
-        "221016_FUCCI_Nanog_stack_3": "/mnt/ceph/users/lbrown/Labels3DMouse/Abhishek/RebeccaData/221016_FUCCI_Nanog_stack_3/",
-    }
+        nucleus_id = result["nucleus_id"]
+        event_frame = result["event_frame"]
+        event_type = result.get("event_type", "unknown")
 
-    # Configuration
-    config = NucleusExtractorConfig()
-    config.crop_padding = 1.3  # 30% padding
-    config.time_window = 1  # Previous, current, next
+        print(
+            f"📊 Plotting comprehensive results for nucleus {nucleus_id} (frame {event_frame}) - {event_type}"
+        )
 
-    # Initialize manager
-    data_path = datasets["230212_stack6"]
-    manager = NucleusExtractorManager(data_path, config)
+        # Create larger subplot grid: 3 frames (rows) × 6 data types (columns)
+        fig, axes = plt.subplots(3, 6, figsize=(30, 15))
 
-    print("🎯 Nucleus Extractor Manager initialized")
-    print(f"📂 Dataset: {data_path}")
-    print(f"⚙️ Config: {config}")
+        # Main title with all important info
+        projection_method = (
+            "Middle Slice" if middle_slice_only else "Max Intensity Projection"
+        )
+        fig.suptitle(
+            f"Nucleus {nucleus_id} | Event: {event_type.upper()} | Event Frame: {event_frame} | Method: {projection_method}\n"
+            f"Bounding Box Shape: {result['summary']['roi_shape']} | Frames with Nucleus: {result['summary']['frames_with_nucleus']}/3",
+            fontsize=18,
+            fontweight="bold",
+            y=0.98,
+        )
 
-    # Example: Extract a small batch
-    if manager.metadata:
-        results = manager.batch_extract_nuclei(max_samples=5, event_types=["mitotic"])
+        # Column headers with detailed descriptions
+        column_titles = [
+            "Raw Original\n(Unprocessed microscopy)",
+            "Raw Cleaned\n(Background removed)",
+            "Label Original\n(All nucleus IDs)",
+            "Label Cleaned\n(Target nucleus only)",
+            "Mask Original\n(Binary target mask)",
+            "Mask Cleaned\n(Processed mask)",
+        ]
 
-        if results:
-            output_dir = manager.save_extraction_results(
-                results,
-                "/mnt/home/dchhantyal/3d-cnn-classification/extracted_nuclei",
-                "230212_stack6_test",
+        for col, title in enumerate(column_titles):
+            axes[0, col].set_title(title, fontsize=14, fontweight="bold", pad=20)
+
+        # Process each frame (previous, current, next)
+        frame_order = ["previous", "current", "next"]
+        frame_colors = ["blue", "red", "green"]  # Different colors for frame labels
+
+        for i, frame_label in enumerate(frame_order):
+            if frame_label not in result["time_series"]:
+                continue
+
+            frame_data = result["time_series"][frame_label]
+            data = frame_data["data"]
+            frame_number = frame_data["frame_number"]
+            nucleus_present = frame_data["nucleus_present"]
+
+            # Get all data arrays
+            data_arrays = [
+                data["raw_original"],
+                data["raw_cleaned"],
+                data["label_original"],
+                data["label_cleaned"],
+                data["mask_original"],
+                data["mask_cleaned"],
+            ]
+
+            # Row label with frame information
+            status_icon = "✅ PRESENT" if nucleus_present else "❌ ABSENT"
+            row_label = (
+                f"{frame_label.upper()}\n" f"Frame {frame_number}\n" f"{status_icon}"
             )
-            print(f"📁 Results saved to: {output_dir}")
 
+            axes[i, 0].set_ylabel(
+                row_label,
+                fontsize=12,
+                fontweight="bold",
+                color=frame_colors[i],
+                rotation=0,
+                labelpad=80,
+            )
 
-if __name__ == "__main__":
-    main()
+            for col, arr in enumerate(data_arrays):
+                ax = axes[i, col]
+
+                # Get 2D representation
+                if middle_slice_only:
+                    middle_z = arr.shape[0] // 2
+                    img_2d = arr[middle_z]
+                    slice_info = f"Slice {middle_z}/{arr.shape[0]-1}"
+                else:
+                    img_2d = np.max(arr, axis=0)
+                    slice_info = f"MIP (max of {arr.shape[0]} slices)"
+
+                # Display with appropriate colormap and settings
+                if col in [0, 1]:  # Raw images
+                    vmax = (
+                        np.percentile(img_2d[img_2d > 0], 99)
+                        if np.any(img_2d > 0)
+                        else 1
+                    )
+                    im = ax.imshow(img_2d, cmap="gray", vmin=0, vmax=vmax)
+                    data_info = f"Intensity: 0-{vmax:.0f}"
+                elif col in [2, 3]:  # Label images
+                    unique_labels = np.unique(img_2d)
+                    unique_labels = unique_labels[unique_labels > 0]
+                    im = ax.imshow(
+                        img_2d,
+                        cmap="tab20",
+                        vmin=0,
+                        vmax=max(unique_labels) if len(unique_labels) > 0 else 1,
+                    )
+                    data_info = (
+                        f"Labels: {list(unique_labels)}"
+                        if len(unique_labels) > 0
+                        else "No labels"
+                    )
+                else:  # Mask images
+                    im = ax.imshow(img_2d, cmap="Reds", vmin=0, vmax=1)
+                    mask_pixels = np.sum(img_2d > 0)
+                    data_info = f"Mask pixels: {mask_pixels}"
+
+                ax.axis("off")
+
+                # Comprehensive info box
+                info_text = (
+                    f"3D Shape: {arr.shape}\n"
+                    f"{slice_info}\n"
+                    f"{data_info}\n"
+                    f"Max val: {np.max(arr):.1f}"
+                )
+
+                ax.text(
+                    0.02,
+                    0.98,
+                    info_text,
+                    transform=ax.transAxes,
+                    fontsize=10,
+                    verticalalignment="top",
+                    horizontalalignment="left",
+                    bbox=dict(
+                        boxstyle="round,pad=0.5",
+                        facecolor="white",
+                        alpha=0.9,
+                        edgecolor="black",
+                    ),
+                )
+
+                # Add colorbar for non-empty images
+                if np.max(img_2d) > 0:
+                    cbar = plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04, shrink=0.8)
+                    cbar.ax.tick_params(labelsize=8)
+
+        # Add a legend explaining the frame sequence
+        legend_text = (
+            f"FRAME SEQUENCE EXPLANATION:\n"
+            f"• PREVIOUS (Frame {result['frames'][0]}): State before event\n"
+            f"• CURRENT (Frame {result['frames'][1]}): Event occurrence ⭐\n"
+            f"• NEXT (Frame {result['frames'][2]}): State after event\n\n"
+            f"DATA TYPE EXPLANATION:\n"
+            f"• Raw Original: Direct microscopy data with all objects\n"
+            f"• Raw Cleaned: Background removed, only target nucleus\n"
+            f"• Label Original: All segmented objects in ROI\n"
+            f"• Label Cleaned: Only target nucleus ID ({nucleus_id})\n"
+            f"• Mask Original: Binary mask of target nucleus\n"
+            f"• Mask Cleaned: Processed binary mask"
+        )
+
+        fig.text(
+            0.02,
+            0.02,
+            legend_text,
+            fontsize=12,
+            bbox=dict(boxstyle="round,pad=1", facecolor="lightyellow", alpha=0.9),
+            verticalalignment="bottom",
+        )
+
+        plt.tight_layout(rect=[0, 0.25, 1, 0.94])
+
+        if output_dir:
+            filename = f"nucleus_{nucleus_id}_frame_{event_frame}_{event_type}_comprehensive.png"
+            plt.savefig(
+                Path(output_dir) / filename,
+                dpi=200,
+                bbox_inches="tight",
+                facecolor="white",
+                edgecolor="none",
+            )
+            print(f"✅ Comprehensive plot saved: {filename}")
+
+        return fig
+
+    def plot_result_slice_comparison(self, result, output_dir=None):
+        """
+        Plot slice-by-slice comparison for the current (event) frame
+        Shows multiple Z-slices side by side
+        """
+        if output_dir:
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+        nucleus_id = result["nucleus_id"]
+        event_frame = result["event_frame"]
+
+        # Get current frame data
+        current_data = result["time_series"]["current"]["data"]
+        raw_cleaned = current_data["raw_cleaned"]
+        label_cleaned = current_data["label_cleaned"]
+
+        # Select 5 representative slices
+        z_max = raw_cleaned.shape[0]
+        slice_indices = [0, z_max // 4, z_max // 2, 3 * z_max // 4, z_max - 1]
+
+        fig, axes = plt.subplots(2, 5, figsize=(20, 8))
+        fig.suptitle(
+            f"Nucleus {nucleus_id} - Frame {event_frame} - Slice Comparison",
+            fontsize=16,
+        )
+
+        for i, z_idx in enumerate(slice_indices):
+            # Raw image
+            axes[0, i].imshow(raw_cleaned[z_idx], cmap="gray")
+            axes[0, i].set_title(f"Raw - Slice {z_idx}")
+            axes[0, i].axis("off")
+
+            # Label overlay
+            axes[1, i].imshow(raw_cleaned[z_idx], cmap="gray", alpha=0.7)
+            axes[1, i].imshow(label_cleaned[z_idx], cmap="Reds", alpha=0.5)
+            axes[1, i].set_title(f"Label Overlay - Slice {z_idx}")
+            axes[1, i].axis("off")
+
+        plt.tight_layout(rect=[0, 0.03, 1, 0.97])
+
+        if output_dir:
+            filename = f"nucleus_{nucleus_id}_frame_{event_frame}_slices.png"
+            plt.savefig(Path(output_dir) / filename, dpi=150, bbox_inches="tight")
+            print(f"✅ Slice comparison saved: {filename}")
+
+        return fig
+
+    def plot_result(self, result, output_dir=None, plot_type="comprehensive"):
+        """
+        Main plotting function with multiple visualization options
+
+        Args:
+            result: Extraction result dictionary
+            output_dir: Directory to save plots (optional)
+            plot_type: "comprehensive", "slices", "mip", or "middle_slice"
+        """
+        if plot_type == "comprehensive":
+            return self.plot_result_comprehensive(
+                result, output_dir, middle_slice_only=False
+            )
+        elif plot_type == "middle_slice":
+            return self.plot_result_comprehensive(
+                result, output_dir, middle_slice_only=True
+            )
+        elif plot_type == "slices":
+            return self.plot_result_slice_comparison(result, output_dir)
+        elif plot_type == "mip":
+            return self.plot_result_comprehensive(
+                result, output_dir, middle_slice_only=False
+            )
+        else:
+            print(f"❌ Unknown plot_type: {plot_type}")
+            return None
+
+    def plot_nucleus_3d_shape(self, result, frame_type="current", output_dir=None):
+        """
+        Plot 3D visualization of the nucleus shape
+        """
+        try:
+            import matplotlib.pyplot as plt
+            from mpl_toolkits.mplot3d import Axes3D
+        except ImportError:
+            print("❌ 3D plotting requires matplotlib with 3D support")
+            return None
+
+        if frame_type not in result["time_series"]:
+            print(f"❌ Frame type '{frame_type}' not found")
+            return None
+
+        data = result["time_series"][frame_type]["data"]
+        mask = data["mask_cleaned"]
+        nucleus_id = result["nucleus_id"]
+        frame_number = result["time_series"][frame_type]["frame_number"]
+
+        # Get 3D coordinates of nucleus voxels
+        z, y, x = np.where(mask > 0)
+
+        if len(z) == 0:
+            print(f"❌ No nucleus found in {frame_type} frame")
+            return None
+
+        # Create 3D plot
+        fig = plt.figure(figsize=(12, 8))
+        ax = fig.add_subplot(111, projection="3d")
+
+        # Plot nucleus voxels
+        ax.scatter(x, y, z, c=z, cmap="viridis", alpha=0.6, s=20)
+
+        ax.set_xlabel("X (pixels)")
+        ax.set_ylabel("Y (pixels)")
+        ax.set_zlabel("Z (slices)")
+        ax.set_title(
+            f"3D Shape of Nucleus {nucleus_id} - {frame_type.capitalize()} Frame {frame_number}\n"
+            f"Total voxels: {len(z)} | Bounding box: {mask.shape}"
+        )
+
+        # Add bounding box wireframe
+        bbox = result["bounding_box"]
+        z_min, z_max, y_min, y_max, x_min, x_max = bbox
+
+        # Draw bounding box edges
+        from itertools import product, combinations
+
+        corners = list(product([x_min, x_max], [y_min, y_max], [z_min, z_max]))
+        for s, e in combinations(corners, 2):
+            if (
+                sum(abs(a - b) for a, b in zip(s, e)) == (x_max - x_min)
+                or sum(abs(a - b) for a, b in zip(s, e)) == (y_max - y_min)
+                or sum(abs(a - b) for a, b in zip(s, e)) == (z_max - z_min)
+            ):
+                ax.plot3D(*zip(s, e), color="red", alpha=0.6, linewidth=2)
+
+        if output_dir:
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
+            filename = f"nucleus_{nucleus_id}_frame_{frame_number}_3D_shape.png"
+            plt.savefig(Path(output_dir) / filename, dpi=150, bbox_inches="tight")
+            print(f"✅ 3D shape plot saved: {filename}")
+
+        return fig

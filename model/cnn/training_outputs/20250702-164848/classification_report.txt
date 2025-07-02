@@ -1,0 +1,24 @@
+--- Hyperparameters ---
+input_depth: 64
+input_height: 64
+input_width: 64
+num_classes: 3
+learning_rate: 1e-05
+batch_size: 4
+num_epochs: 200
+
+--- Environment ---
+Device: cuda
+Python Version: 3.10.13
+PyTorch Version: 2.7.1+cu126
+
+--- Classification Report ---
+              precision    recall  f1-score   support
+
+     mitotic       0.62      0.48      0.54        42
+new_daughter       0.55      0.90      0.69        40
+      stable       0.83      0.51      0.63        39
+
+    accuracy                           0.63       121
+   macro avg       0.67      0.63      0.62       121
+weighted avg       0.67      0.63      0.62       121
