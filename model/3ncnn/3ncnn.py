@@ -28,8 +28,8 @@ HPARAMS = {
     "num_classes": 3,
     "learning_rate": 1e-5,
     "batch_size": 16,
-    "num_epochs": 200,
-    "num_input_channels": 3,  # Updated for previous, current, next volumes
+    "num_epochs": 300,
+    "num_input_channels": 3, # Updated for previous, current, next volumes
 }
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 DATA_ROOT_DIR = "/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset"
@@ -43,12 +43,7 @@ class Simple3DCNN(nn.Module):
     A 3D CNN model that accepts a 3-channel input, where each channel represents
     a different time point (previous, current, next).
     """
-
-    def __init__(
-        self,
-        in_channels=HPARAMS["num_input_channels"],
-        num_classes=HPARAMS["num_classes"],
-    ):
+    def __init__(self, in_channels=HPARAMS["num_input_channels"], num_classes=HPARAMS["num_classes"]):
         super(Simple3DCNN, self).__init__()
         self.cnn_encoder = nn.Sequential(
             # The first convolutional layer now accepts 3 input channels.
@@ -56,14 +51,17 @@ class Simple3DCNN(nn.Module):
             nn.ReLU(),
             nn.MaxPool3d(kernel_size=2, stride=2),
             nn.BatchNorm3d(16),
+
             nn.Conv3d(16, 32, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.MaxPool3d(kernel_size=2, stride=2),
             nn.BatchNorm3d(32),
+
             nn.Conv3d(32, 64, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.MaxPool3d(kernel_size=2, stride=2),
             nn.BatchNorm3d(64),
+
             nn.AdaptiveAvgPool3d(1),
         )
         self.classifier = nn.Linear(64, num_classes)
@@ -81,60 +79,33 @@ class RandomAugmentation3D:
     Applies the same random spatial augmentations consistently across a stack
     of 3D volumes (e.g., previous, current, next).
     """
-
     def __call__(self, volume_stack):
         # volume_stack is a numpy array of shape (C, D, H, W), e.g., (3, 64, 64, 64)
-
+        
         # Apply the same horizontal flip to all volumes in the stack
         if random.random() > 0.5:
             volume_stack = np.flip(volume_stack, axis=2).copy()  # Flip Height
-
+            
         # Apply the same vertical flip to all volumes in the stack
         if random.random() > 0.5:
             volume_stack = np.flip(volume_stack, axis=3).copy()  # Flip Width
-
+            
         # Apply the same rotation to all volumes in the stack
         angle = random.uniform(-15, 15)
         # Rotate each volume (channel) in the stack identically
         for i in range(volume_stack.shape[0]):
-            volume_stack[i] = rotate(
-                volume_stack[i],
-                angle,
-                axes=(1, 2),
-                reshape=False,
-                order=1,
-                mode="constant",
-                cval=0,
-            )
-
+             volume_stack[i] = rotate(volume_stack[i], angle, axes=(1, 2), reshape=False, order=1, mode='constant', cval=0)
+             
         return volume_stack
 
 
 # --- Data Loading ---
-def resize_volume(volume, d, h, w):
-    """Uniformly resizes a 3D volume and pads it to fit target dimensions."""
-    original_shape = volume.shape
-    target_shape = np.array([d, h, w])
-    ratios = target_shape / np.array(original_shape)
-    factor = np.min(ratios)
-    resized_volume = zoom(volume, factor, order=1, mode="constant", cval=0.0)
-    padded_volume = np.zeros((d, h, w), dtype=volume.dtype)
-    rz_shape = resized_volume.shape
-    start_indices = (np.array(target_shape) - np.array(rz_shape)) // 2
-    padded_volume[
-        start_indices[0] : start_indices[0] + rz_shape[0],
-        start_indices[1] : start_indices[1] + rz_shape[1],
-        start_indices[2] : start_indices[2] + rz_shape[2],
-    ] = resized_volume
-    return padded_volume
-
-
 class NucleusDataset(Dataset):
     """
     Dataset class that loads previous, current, and next volumes for each sample.
-    Handles missing volumes by using zero-filled placeholders.
+    The key logic is that resizing and padding for all three volumes are determined
+    by the dimensions of the 'current' volume to ensure spatial consistency.
     """
-
     def __init__(self, root_dir, transform=None):
         self.root_dir = root_dir
         self.transform = transform
@@ -147,13 +118,10 @@ class NucleusDataset(Dataset):
         samples = []
         for class_name in self.classes:
             class_dir = os.path.join(self.root_dir, class_name)
-            if not os.path.isdir(class_dir):
-                continue
+            if not os.path.isdir(class_dir): continue
             for sample_name in os.listdir(class_dir):
                 sample_path = os.path.join(class_dir, sample_name)
-                if os.path.isdir(sample_path) and os.path.exists(
-                    os.path.join(sample_path, "current", "raw_original.tif")
-                ):
+                if os.path.isdir(sample_path) and os.path.exists(os.path.join(sample_path, "current", "raw_original.tif")):
                     samples.append((sample_path, self.class_to_idx[class_name]))
         return samples
 
@@ -162,52 +130,69 @@ class NucleusDataset(Dataset):
 
     def __getitem__(self, idx):
         sample_path, label = self.samples[idx]
+        
+        target_shape = (HPARAMS["input_depth"], HPARAMS["input_height"], HPARAMS["input_width"])
 
+        # --- Step 1: Load current volume to determine transformation params ---
+        current_path = os.path.join(sample_path, "current", "raw_original.tif")
+        current_volume = tifffile.imread(current_path).astype(np.float32)
+        
+        # Calculate resize factor and padding based *only* on the current volume
+        original_shape = current_volume.shape
+        ratios = np.array(target_shape) / np.array(original_shape)
+        resize_factor = np.min(ratios)
+        
+        resized_shape = (np.array(original_shape) * resize_factor).astype(int)
+        start_indices = (np.array(target_shape) - resized_shape) // 2
+
+        # --- Step 2: Define a reusable transformation function ---
+        def transform_and_pad(volume):
+            # Resize using the factor from the current volume
+            resized = zoom(volume, resize_factor, order=1, mode='constant', cval=0.0)
+            padded = np.zeros(target_shape, dtype=np.float32)
+            
+            # Create slices to embed the resized volume centrally
+            rz_shape = resized.shape
+            slices = tuple(slice(start, start + size) for start, size in zip(start_indices, rz_shape))
+            rz_slices = tuple(slice(0, s.stop - s.start) for s in slices)
+            
+            padded[slices] = resized[rz_slices]
+            
+            # Normalize the final padded volume
+            min_val, max_val = padded.min(), padded.max()
+            if max_val > min_val:
+                padded = (padded - min_val) / (max_val - min_val)
+            return padded
+
+        # --- Step 3: Apply the same transformation to all volumes ---
+        all_volumes = []
         time_points = ["previous", "current", "next"]
-        volumes = []
-
-        for time_point in time_points:
-            file_path = os.path.join(sample_path, time_point, "raw_original.tif")
-
+        
+        for tp in time_points:
+            file_path = os.path.join(sample_path, tp, "raw_original.tif")
             if os.path.exists(file_path):
-                volume = tifffile.imread(file_path).astype(np.float32)
-                volume_resized = resize_volume(
-                    volume,
-                    HPARAMS["input_depth"],
-                    HPARAMS["input_height"],
-                    HPARAMS["input_width"],
-                )
-                min_val, max_val = volume_resized.min(), volume_resized.max()
-                if max_val > min_val:
-                    volume_resized = (volume_resized - min_val) / (max_val - min_val)
-                volumes.append(volume_resized)
+                vol_to_process = current_volume if tp == "current" else tifffile.imread(file_path).astype(np.float32)
+                processed_vol = transform_and_pad(vol_to_process)
+                all_volumes.append(processed_vol)
             else:
-                # If a volume doesn't exist, use a blank volume as a placeholder.
-                blank_volume = np.zeros(
-                    (
-                        HPARAMS["input_depth"],
-                        HPARAMS["input_height"],
-                        HPARAMS["input_width"],
-                    ),
-                    dtype=np.float32,
-                )
-                volumes.append(blank_volume)
+                # Append a blank, correctly shaped volume if the file is missing
+                all_volumes.append(np.zeros(target_shape, dtype=np.float32))
 
-        # Stack the three volumes along a new channel dimension -> (3, D, H, W)
-        volume_processed = np.stack(volumes, axis=0)
+        # --- Step 4: Stack and apply augmentation ---
+        volume_processed = np.stack(all_volumes, axis=0) # Stacks in [previous, current, next] order
 
         if self.transform:
             volume_processed = self.transform(volume_processed)
-
-        return torch.from_numpy(volume_processed.copy()), torch.tensor(
-            label, dtype=torch.long
-        )
+            
+        return torch.from_numpy(volume_processed.copy()), torch.tensor(label, dtype=torch.long)
 
 
 # --- Training & Validation Functions ---
 def train_one_epoch(model, dataloader, criterion, optimizer, device):
+    """Trains the model for one epoch and returns loss and accuracy."""
     model.train()
     total_loss = 0.0
+    all_preds, all_labels = [], []
     for inputs, labels in dataloader:
         inputs, labels = inputs.to(device), labels.to(device)
         optimizer.zero_grad()
@@ -216,10 +201,17 @@ def train_one_epoch(model, dataloader, criterion, optimizer, device):
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
-    return total_loss / len(dataloader)
+        
+        _, predicted = torch.max(outputs.data, 1)
+        all_preds.extend(predicted.cpu().numpy())
+        all_labels.extend(labels.cpu().numpy())
+
+    train_acc = accuracy_score(all_labels, all_preds)
+    return total_loss / len(dataloader), train_acc
 
 
 def validate(model, dataloader, criterion, device):
+    """Validates the model and returns loss, labels, and predictions."""
     model.eval()
     total_loss = 0.0
     all_preds, all_labels = [], []
@@ -237,8 +229,8 @@ def validate(model, dataloader, criterion, device):
 # --- Plotting & Artifact Generation ---
 def save_final_plots(history, val_labels, val_preds, class_names, output_dir):
     """Generates and saves final plots to the output directory."""
-    # Plotting Training History
     fig_metrics, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 6))
+    
     ax1.plot(history["train_loss"], label="Train Loss", color="blue")
     ax1.plot(history["val_loss"], label="Validation Loss", color="orange")
     ax1.set_title("Loss Over Epochs", fontsize=16)
@@ -246,6 +238,8 @@ def save_final_plots(history, val_labels, val_preds, class_names, output_dir):
     ax1.set_ylabel("Loss", fontsize=12)
     ax1.legend()
     ax1.grid(True)
+    
+    ax2.plot(history['train_accuracy'], label='Train Accuracy', color='purple', linestyle='--')
     ax2.plot(history["val_accuracy"], label="Validation Accuracy", color="green")
     ax2.plot(history["val_f1"], label="Validation F1-Score (Macro)", color="red")
     ax2.set_title("Performance Over Epochs", fontsize=16)
@@ -253,24 +247,16 @@ def save_final_plots(history, val_labels, val_preds, class_names, output_dir):
     ax2.set_ylabel("Score", fontsize=12)
     ax2.legend()
     ax2.grid(True)
+    
     plt.tight_layout()
     metrics_path = os.path.join(output_dir, "training_metrics.png")
     plt.savefig(metrics_path)
     plt.close(fig_metrics)
     print(f"📈 Saved training metrics plot to {metrics_path}")
 
-    # Plotting Confusion Matrix
     fig_cm, ax = plt.subplots(figsize=(8, 6))
     cm = confusion_matrix(val_labels, val_preds, labels=range(len(class_names)))
-    sns.heatmap(
-        cm,
-        annot=True,
-        fmt="d",
-        cmap="Blues",
-        xticklabels=class_names,
-        yticklabels=class_names,
-        ax=ax,
-    )
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=class_names, yticklabels=class_names, ax=ax)
     ax.set_xlabel("Predicted Label")
     ax.set_ylabel("True Label")
     ax.set_title("Final Confusion Matrix", fontsize=16)
@@ -288,7 +274,6 @@ def main():
         print("!!! PLEASE UPDATE the 'DATA_ROOT_DIR' variable in the script. !!!")
         return
 
-    # Create a unique directory for this run's outputs
     run_timestamp = time.strftime("%Y%m%d-%H%M%S")
     run_output_dir = os.path.join(OUTPUT_DIR, run_timestamp)
     os.makedirs(run_output_dir, exist_ok=True)
@@ -302,91 +287,64 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=HPARAMS["learning_rate"])
 
     print("\nLoading datasets...")
-    train_full_dataset = NucleusDataset(
-        root_dir=DATA_ROOT_DIR, transform=RandomAugmentation3D()
-    )
+    train_full_dataset = NucleusDataset(root_dir=DATA_ROOT_DIR, transform=RandomAugmentation3D())
     val_full_dataset = NucleusDataset(root_dir=DATA_ROOT_DIR, transform=None)
 
     labels = [sample[1] for sample in train_full_dataset.samples]
     indices = list(range(len(train_full_dataset)))
-    train_indices, val_indices = train_test_split(
-        indices, test_size=0.2, random_state=42, stratify=labels
-    )
+    train_indices, val_indices = train_test_split(indices, test_size=0.2, random_state=42, stratify=labels)
 
     train_dataset = Subset(train_full_dataset, train_indices)
     val_dataset = Subset(val_full_dataset, val_indices)
 
-    # Use num_workers > 0 for faster data loading, but set to 0 if you encounter issues on Windows/macOS.
-    num_workers = 4 if platform.system() == "Linux" else 0
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=HPARAMS["batch_size"],
-        shuffle=True,
-        num_workers=num_workers,
-    )
-    val_loader = DataLoader(
-        val_dataset,
-        batch_size=HPARAMS["batch_size"],
-        shuffle=False,
-        num_workers=num_workers,
-    )
+    num_workers = 2 if platform.system() == "Linux" else 0
+    train_loader = DataLoader(train_dataset, batch_size=HPARAMS["batch_size"], shuffle=True, num_workers=num_workers)
+    val_loader = DataLoader(val_dataset, batch_size=HPARAMS["batch_size"], shuffle=False, num_workers=num_workers)
 
-    print(
-        f"\nTraining on {len(train_dataset)} samples, validating on {len(val_dataset)} samples."
-    )
-    print(
-        f"Model has {sum(p.numel() for p in model.parameters() if p.requires_grad):,} trainable parameters."
-    )
+    print(f"\nTraining on {len(train_dataset)} samples, validating on {len(val_dataset)} samples.")
+    print(f"Model has {sum(p.numel() for p in model.parameters() if p.requires_grad):,} trainable parameters.")
 
-    history = {"train_loss": [], "val_loss": [], "val_accuracy": [], "val_f1": []}
+    history = {"train_loss": [], "train_accuracy": [], "val_loss": [], "val_accuracy": [], "val_f1": []}
     best_val_f1 = -1
 
     print("\n--- Starting Training ---")
     for epoch in range(HPARAMS["num_epochs"]):
         start_time = time.time()
 
-        train_loss = train_one_epoch(model, train_loader, criterion, optimizer, DEVICE)
+        train_loss, train_acc = train_one_epoch(model, train_loader, criterion, optimizer, DEVICE)
         val_loss, val_labels, val_preds = validate(model, val_loader, criterion, DEVICE)
 
         val_accuracy = accuracy_score(val_labels, val_preds)
         val_f1 = f1_score(val_labels, val_preds, average="macro", zero_division=0)
 
         history["train_loss"].append(train_loss)
+        history["train_accuracy"].append(train_acc)
         history["val_loss"].append(val_loss)
         history["val_accuracy"].append(val_accuracy)
         history["val_f1"].append(val_f1)
 
         epoch_duration = time.time() - start_time
 
-        print(
-            f"Epoch [{epoch+1:03d}/{HPARAMS['num_epochs']}] | Duration: {epoch_duration:.2f}s | "
-            f"Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f} | Val Acc: {val_accuracy:.4f} | Val F1: {val_f1:.4f}"
-        )
+        print(f"Epoch [{epoch+1:03d}/{HPARAMS['num_epochs']}] | Duration: {epoch_duration:.2f}s | "
+              f"Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f} | "
+              f"Val Loss: {val_loss:.4f} | Val Acc: {val_accuracy:.4f} | Val F1: {val_f1:.4f}")
 
-        # Save the model checkpoint if it's the best one so far based on F1-score
         if val_f1 > best_val_f1:
             best_val_f1 = val_f1
             model_path = os.path.join(run_output_dir, "best_model.pth")
             torch.save(model.state_dict(), model_path)
-            print(
-                f"🎉 New best model found! F1-Score: {best_val_f1:.4f}. Saved to {model_path}"
-            )
+            print(f"🎉 New best model found! F1-Score: {best_val_f1:.4f}. Saved to {model_path}")
 
     print("\n✅ Training finished.")
 
-    # --- Final Artifact Generation ---
     print("\n💾 Saving final artifacts...")
     class_names = val_full_dataset.classes
-    # Load the best performing model for final evaluation
     model.load_state_dict(torch.load(os.path.join(run_output_dir, "best_model.pth")))
     _, final_labels, final_preds = validate(model, val_loader, criterion, DEVICE)
-
+    
     save_final_plots(history, final_labels, final_preds, class_names, run_output_dir)
 
-    # Save final classification report
-    report = classification_report(
-        final_labels, final_preds, target_names=class_names, zero_division=0
-    )
+    report = classification_report(final_labels, final_preds, target_names=class_names, zero_division=0)
     report_path = os.path.join(run_output_dir, "final_classification_report.txt")
     with open(report_path, "w") as f:
         f.write("--- Hyperparameters ---\n")
