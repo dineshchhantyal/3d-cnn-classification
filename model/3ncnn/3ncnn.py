@@ -27,7 +27,7 @@ HPARAMS = {
     "input_width": 64,
     "num_classes": 3,
     "learning_rate": 1e-5,
-    "batch_size": 16,
+    "batch_size": 4,
     "num_epochs": 300,
     "num_input_channels": 3, # Updated for previous, current, next volumes
 }

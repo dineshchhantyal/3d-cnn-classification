@@ -2,7 +2,6 @@
 OO structure for cell lineage tracking.
 """
 
-from array_gizmos import color_list
 import os
 import numpy as np
 
@@ -602,3 +601,15 @@ def make_forest_from_haydens_json_graph(
             parent = node_map[parent_id]
             parent.set_child(child)
     return result
+
+
+def read_json_file(path):
+    """
+    Read a JSON file and return the parsed object.
+    """
+    import json
+
+    with open(path, "r") as f:
+        json_ob = json.load(f)
+
+    return make_forest_from_haydens_json_graph(json_ob)
