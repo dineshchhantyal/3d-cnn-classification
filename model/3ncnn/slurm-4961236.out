@@ -1,0 +1,141 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) modules/2.3-20240529   2) openblas/single-0.3.26
+🚀 Starting Run. All outputs will be saved to: training_outputs/20250708-134629
+⚙️ Using device: cuda
+Hyperparameters: {'input_depth': 64, 'input_height': 64, 'input_width': 64, 'num_classes': 4, 'learning_rate': 1e-05, 'batch_size': 32, 'num_epochs': 300, 'num_input_channels': 3, 'patience': 50, 'max_samples_per_class': 2000, 'preserve_minority_classes': [0, 3], 'random_seed': 42, 'use_gpu_augmentation': True}
+
+📊 Original class distribution:
+  mitotic: 213 samples
+  new_daughter: 433 samples
+  stable: 20,915 samples
+  death: 24 samples
+  ✅ mitotic: Preserving all 213 samples (minority class)
+  ✅ new_daughter: Keeping all 433 samples (under limit)
+  📉 stable: Limited from 20,915 to 2,000 samples
+  ✅ death: Preserving all 24 samples (minority class)
+
+📊 Final balanced class distribution:
+  mitotic: 213 samples (8.0%)
+  new_daughter: 433 samples (16.2%)
+  stable: 2,000 samples (74.9%)
+  death: 24 samples (0.9%)
+
+🎯 Total samples reduced from 21,585 to 2,670 (12.4% of original)
+
+✅ Dataset ready with 2670 balanced samples.
+Class distribution: [ 213  433 2000   24]
+Class weights: [ 3.13380282  1.54157044  0.33375    27.8125    ]
+
+Loading datasets...
+🚀 Using GPU-accelerated augmentation
+
+📊 Original class distribution:
+  mitotic: 213 samples
+  new_daughter: 433 samples
+  stable: 20,915 samples
+  death: 24 samples
+  ✅ mitotic: Preserving all 213 samples (minority class)
+  ✅ new_daughter: Keeping all 433 samples (under limit)
+  📉 stable: Limited from 20,915 to 2,000 samples
+  ✅ death: Preserving all 24 samples (minority class)
+
+📊 Final balanced class distribution:
+  mitotic: 213 samples (8.0%)
+  new_daughter: 433 samples (16.2%)
+  stable: 2,000 samples (74.9%)
+  death: 24 samples (0.9%)
+
+🎯 Total samples reduced from 21,585 to 2,670 (12.4% of original)
+
+✅ Dataset ready with 2670 balanced samples.
+
+📊 Original class distribution:
+  mitotic: 213 samples
+  new_daughter: 433 samples
+  stable: 20,915 samples
+  death: 24 samples
+  ✅ mitotic: Preserving all 213 samples (minority class)
+  ✅ new_daughter: Keeping all 433 samples (under limit)
+  📉 stable: Limited from 20,915 to 2,000 samples
+  ✅ death: Preserving all 24 samples (minority class)
+
+📊 Final balanced class distribution:
+  mitotic: 213 samples (8.0%)
+  new_daughter: 433 samples (16.2%)
+  stable: 2,000 samples (74.9%)
+  death: 24 samples (0.9%)
+
+🎯 Total samples reduced from 21,585 to 2,670 (12.4% of original)
+
+✅ Dataset ready with 2670 balanced samples.
+
+Training on 2136 samples, validating on 534 samples.
+Model has 71,012 trainable parameters.
+
+--- Starting Training ---
+Traceback (most recent call last):
+  File "/mnt/home/dchhantyal/3d-cnn-classification/model/3ncnn/3ncnn.py", line 587, in <module>
+    main()
+  File "/mnt/home/dchhantyal/3d-cnn-classification/model/3ncnn/3ncnn.py", line 524, in main
+    train_loss, train_acc = train_one_epoch(model, train_loader, criterion, optimizer, DEVICE)
+  File "/mnt/home/dchhantyal/3d-cnn-classification/model/3ncnn/3ncnn.py", line 368, in train_one_epoch
+    for inputs, labels in dataloader:
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 733, in __next__
+    data = self._next_data()
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1515, in _next_data
+    return self._process_data(data, worker_id)
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1550, in _process_data
+    data.reraise()
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/_utils.py", line 750, in reraise
+    raise exception
+RuntimeError: Caught RuntimeError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 349, in _worker_loop
+    data = fetcher.fetch(index)  # type: ignore[possibly-undefined]
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 50, in fetch
+    data = self.dataset.__getitems__(possibly_batched_index)
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/utils/data/dataset.py", line 416, in __getitems__
+    return [self.dataset[self.indices[idx]] for idx in indices]
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/utils/data/dataset.py", line 416, in <listcomp>
+    return [self.dataset[self.indices[idx]] for idx in indices]
+  File "/mnt/home/dchhantyal/3d-cnn-classification/model/3ncnn/3ncnn.py", line 328, in __getitem__
+    volume_tensor = self.transform(volume_tensor, label)
+  File "/mnt/home/dchhantyal/3d-cnn-classification/model/3ncnn/3ncnn.py", line 145, in __call__
+    volume_tensor = volume_tensor.to(self.device)
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/cuda/__init__.py", line 358, in _lazy_init
+    raise RuntimeError(
+RuntimeError: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+
+E0708 13:54:03.076000 4158451 torch/distributed/elastic/multiprocessing/api.py:874] failed (exitcode: 1) local_rank: 0 (pid: 4158637) of binary: /mnt/home/dchhantyal/venvs/jupyter-gpu/bin/python
+Traceback (most recent call last):
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/bin/torchrun", line 8, in <module>
+    sys.exit(main())
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/distributed/run.py", line 892, in main
+    run(args)
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/distributed/run.py", line 883, in run
+    elastic_launch(
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 139, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 270, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+3ncnn.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2025-07-08_13:54:03
+  host      : workergpu094.cm.cluster
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 4158637)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+srun: error: workergpu094: task 0: Exited with exit code 1

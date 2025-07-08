@@ -1,0 +1,54 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) modules/2.3-20240529   2) openblas/single-0.3.26
+🚀 Starting Run. All outputs will be saved to: training_outputs/20250707-224008
+⚙️ Using device: cuda
+Hyperparameters: {'input_depth': 64, 'input_height': 64, 'input_width': 64, 'num_classes': 4, 'learning_rate': 1e-05, 'batch_size': 4, 'num_epochs': 200, 'num_input_channels': 3}
+
+Loading datasets...
+Found 0 samples.
+Found 0 samples.
+Traceback (most recent call last):
+  File "/mnt/home/dchhantyal/3d-cnn-classification/model/3ncnn/3ncnn.py", line 364, in <module>
+    main()
+  File "/mnt/home/dchhantyal/3d-cnn-classification/model/3ncnn/3ncnn.py", line 295, in main
+    train_indices, val_indices = train_test_split(indices, test_size=0.2, random_state=42, stratify=labels)
+  File "/mnt/sw/nix/store/71ksmx7k6xy3v9ksfkv5mp5kxxp64pd6-python-3.10.13-view/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 213, in wrapper
+    return func(*args, **kwargs)
+  File "/mnt/sw/nix/store/71ksmx7k6xy3v9ksfkv5mp5kxxp64pd6-python-3.10.13-view/lib/python3.10/site-packages/sklearn/model_selection/_split.py", line 2660, in train_test_split
+    n_train, n_test = _validate_shuffle_split(
+  File "/mnt/sw/nix/store/71ksmx7k6xy3v9ksfkv5mp5kxxp64pd6-python-3.10.13-view/lib/python3.10/site-packages/sklearn/model_selection/_split.py", line 2308, in _validate_shuffle_split
+    raise ValueError(
+ValueError: With n_samples=0, test_size=0.2 and train_size=None, the resulting train set will be empty. Adjust any of the aforementioned parameters.
+E0707 22:42:25.647000 3826057 torch/distributed/elastic/multiprocessing/api.py:874] failed (exitcode: 1) local_rank: 0 (pid: 3826076) of binary: /mnt/home/dchhantyal/venvs/jupyter-gpu/bin/python
+Traceback (most recent call last):
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/bin/torchrun", line 8, in <module>
+    sys.exit(main())
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/distributed/run.py", line 892, in main
+    run(args)
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/distributed/run.py", line 883, in run
+    elastic_launch(
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 139, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 270, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+3ncnn.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2025-07-07_22:42:25
+  host      : workergpu094.cm.cluster
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 3826076)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+srun: error: workergpu094: task 0: Exited with exit code 1

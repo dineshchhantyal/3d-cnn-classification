@@ -6,8 +6,8 @@
 # This is the physical number of GPUs per node
 #SBATCH --gpus-per-node=1
 # You can vary that one if you see you need more or less CPU cores per gpu
-#SBATCH --cpus-per-gpu=2
-#SBATCH --mem=8G
+#SBATCH --cpus-per-gpu=1
+#SBATCH --mem=32G
 
 module purge
 module load python

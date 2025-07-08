@@ -1,0 +1,93 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) modules/2.3-20240529   2) openblas/single-0.3.26
+🚀 Starting Run. All outputs will be saved to: training_outputs/20250708-135908
+⚙️ Using device: cuda
+Hyperparameters: {'input_depth': 64, 'input_height': 64, 'input_width': 64, 'num_classes': 4, 'learning_rate': 1e-05, 'batch_size': 32, 'num_epochs': 300, 'num_input_channels': 3, 'patience': 50, 'max_samples_per_class': 2000, 'preserve_minority_classes': [0, 3], 'random_seed': 42, 'use_gpu_augmentation': True}
+
+📊 Original class distribution:
+  mitotic: 213 samples
+  new_daughter: 433 samples
+  stable: 20,915 samples
+  death: 24 samples
+  ✅ mitotic: Preserving all 213 samples (minority class)
+  ✅ new_daughter: Keeping all 433 samples (under limit)
+  📉 stable: Limited from 20,915 to 2,000 samples
+  ✅ death: Preserving all 24 samples (minority class)
+
+📊 Final balanced class distribution:
+  mitotic: 213 samples (8.0%)
+  new_daughter: 433 samples (16.2%)
+  stable: 2,000 samples (74.9%)
+  death: 24 samples (0.9%)
+
+🎯 Total samples reduced from 21,585 to 2,670 (12.4% of original)
+
+✅ Dataset ready with 2670 balanced samples.
+Class distribution: [ 213  433 2000   24]
+Class weights: [ 3.13380282  1.54157044  0.33375    27.8125    ]
+
+Loading datasets...
+🚀 Using GPU-accelerated augmentation (applied in training loop)
+
+📊 Original class distribution:
+  mitotic: 213 samples
+  new_daughter: 433 samples
+  stable: 20,915 samples
+  death: 24 samples
+  ✅ mitotic: Preserving all 213 samples (minority class)
+  ✅ new_daughter: Keeping all 433 samples (under limit)
+  📉 stable: Limited from 20,915 to 2,000 samples
+  ✅ death: Preserving all 24 samples (minority class)
+
+📊 Final balanced class distribution:
+  mitotic: 213 samples (8.0%)
+  new_daughter: 433 samples (16.2%)
+  stable: 2,000 samples (74.9%)
+  death: 24 samples (0.9%)
+
+🎯 Total samples reduced from 21,585 to 2,670 (12.4% of original)
+
+✅ Dataset ready with 2670 balanced samples.
+
+📊 Original class distribution:
+  mitotic: 213 samples
+  new_daughter: 433 samples
+  stable: 20,915 samples
+  death: 24 samples
+  ✅ mitotic: Preserving all 213 samples (minority class)
+  ✅ new_daughter: Keeping all 433 samples (under limit)
+  📉 stable: Limited from 20,915 to 2,000 samples
+  ✅ death: Preserving all 24 samples (minority class)
+
+📊 Final balanced class distribution:
+  mitotic: 213 samples (8.0%)
+  new_daughter: 433 samples (16.2%)
+  stable: 2,000 samples (74.9%)
+  death: 24 samples (0.9%)
+
+🎯 Total samples reduced from 21,585 to 2,670 (12.4% of original)
+
+✅ Dataset ready with 2670 balanced samples.
+
+Training on 2136 samples, validating on 534 samples.
+Model has 71,012 trainable parameters.
+
+--- Starting Training ---
+Epoch [001/300] | Duration: 182.24s | Train Loss: 1.3344 | Train Acc: 0.4902 | Val Loss: 1.3772 | Val Acc: 0.0787 | Val F1: 0.0365
+🎉 New best model found! F1-Score: 0.0365. Saved to training_outputs/20250708-135908/best_model.pth
+Epoch [002/300] | Duration: 152.79s | Train Loss: 1.2307 | Train Acc: 0.6905 | Val Loss: 1.3394 | Val Acc: 0.7434 | Val F1: 0.3488
+🎉 New best model found! F1-Score: 0.3488. Saved to training_outputs/20250708-135908/best_model.pth
+Epoch [003/300] | Duration: 133.84s | Train Loss: 1.1985 | Train Acc: 0.7060 | Val Loss: 1.3288 | Val Acc: 0.7079 | Val F1: 0.3378
+Epoch [004/300] | Duration: 133.03s | Train Loss: 1.1969 | Train Acc: 0.7074 | Val Loss: 1.3175 | Val Acc: 0.7154 | Val F1: 0.3426
+Epoch [005/300] | Duration: 133.36s | Train Loss: 1.1608 | Train Acc: 0.7004 | Val Loss: 1.3070 | Val Acc: 0.7116 | Val F1: 0.3433
+Epoch [006/300] | Duration: 143.83s | Train Loss: 1.1610 | Train Acc: 0.6948 | Val Loss: 1.2951 | Val Acc: 0.7154 | Val F1: 0.3457
+Epoch [007/300] | Duration: 140.78s | Train Loss: 1.1431 | Train Acc: 0.7013 | Val Loss: 1.2885 | Val Acc: 0.7022 | Val F1: 0.3397
+Epoch [008/300] | Duration: 141.91s | Train Loss: 1.1502 | Train Acc: 0.6849 | Val Loss: 1.2780 | Val Acc: 0.7022 | Val F1: 0.3397
+Epoch [009/300] | Duration: 139.97s | Train Loss: 1.1396 | Train Acc: 0.6882 | Val Loss: 1.2705 | Val Acc: 0.7041 | Val F1: 0.3410
+Epoch [010/300] | Duration: 134.01s | Train Loss: 1.1309 | Train Acc: 0.6788 | Val Loss: 1.2636 | Val Acc: 0.6985 | Val F1: 0.3383
+Epoch [011/300] | Duration: 130.93s | Train Loss: 1.1352 | Train Acc: 0.6756 | Val Loss: 1.2545 | Val Acc: 0.7097 | Val F1: 0.3434
+Epoch [012/300] | Duration: 135.59s | Train Loss: 1.1160 | Train Acc: 0.6784 | Val Loss: 1.2446 | Val Acc: 0.7228 | Val F1: 0.3494
+🎉 New best model found! F1-Score: 0.3494. Saved to training_outputs/20250708-135908/best_model.pth
+Epoch [013/300] | Duration: 137.06s | Train Loss: 1.0705 | Train Acc: 0.6840 | Val Loss: 1.2382 | Val Acc: 0.7191 | Val F1: 0.3464
