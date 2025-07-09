@@ -23,4 +23,4 @@ srun python `which torchrun` \
         --rdzv_id $SLURM_JOB_ID \
         --rdzv_backend c10d \
         --rdzv_endpoint $master_node:29500 \
-        3ncnn.py
+        cnn_model.py
