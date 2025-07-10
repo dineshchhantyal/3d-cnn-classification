@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """
+Deprecated: Nucleus Extractor Manager use nucleus_lineage_to_classification.py instead
+
 Nucleus Extractor Manager
 A comprehensive management script for extracting and processing nucleus data from 3D time series.
 
