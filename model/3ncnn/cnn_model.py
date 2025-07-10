@@ -25,17 +25,18 @@ HPARAMS = {
     "input_depth": 64,
     "input_height": 64,
     "input_width": 64,
-    "num_classes": 4,
+    "num_classes": 3,
+    "classes_names": ["mitotic", "new_daughter", "stable"],
     "learning_rate": 1e-5,
     "batch_size": 16,
     "num_epochs": 300,
-    "num_input_channels": 3,  # Updated for t-1, t, t+1 volumes
-    "max_samples_per_class": 216,  # Set to None for unlimited, or integer for per-class limit
+    "num_input_channels": 4,  # Updated from 3 to 4 channels: [t-1, t, t+1, segmentation_mask]
+    "max_samples_per_class": 216,
 }
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 DATA_ROOT_DIR = "/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v2"
 # Define a directory to save all outputs
-OUTPUT_DIR = "training_outputs"
+OUTPUT_DIR = "four-channels"
 
 
 # --- Model Definition: 3D CNN for 3-Channel Input ---
@@ -79,35 +80,69 @@ class Simple3DCNN(nn.Module):
 # --- Data Augmentation for Temporal Data ---
 class RandomAugmentation3D:
     """
-    Applies the same random spatial augmentations consistently across a stack
-    of 3D volumes (e.g., t-1, t, t+1).
+    Conservative augmentation that maintains spatial consistency between 
+    temporal channels and binary segmentation mask.
     """
 
     def __call__(self, volume_stack):
-        # volume_stack is a numpy array of shape (C, D, H, W), e.g., (3, 64, 64, 64)
-
-        # Apply the same horizontal flip to all volumes in the stack
+        # volume_stack shape: (4, D, H, W) = [t-1, t, t+1, binary_mask]
+        
+        # 1. Safe transformations - apply to all channels identically
+        
+        # Horizontal flip (safe)
         if random.random() > 0.5:
             volume_stack = np.flip(volume_stack, axis=2).copy()  # Flip Height
-
-        # Apply the same vertical flip to all volumes in the stack
+        
+        # Vertical flip (safe)  
         if random.random() > 0.5:
             volume_stack = np.flip(volume_stack, axis=3).copy()  # Flip Width
-
-        # Apply the same rotation to all volumes in the stack
-        angle = random.uniform(-15, 15)
-        # Rotate each volume (channel) in the stack identically
-        for i in range(volume_stack.shape[0]):
-            volume_stack[i] = rotate(
-                volume_stack[i],
-                angle,
-                axes=(1, 2),
-                reshape=False,
-                order=1,
-                mode="constant",
-                cval=0,
-            )
-
+        
+        # Depth flip (safe for 3D)
+        if random.random() > 0.5:
+            volume_stack = np.flip(volume_stack, axis=1).copy()  # Flip Depth
+        
+        # 2. Conservative rotation - smaller angles to minimize interpolation issues
+        if random.random() > 0.5:  # Only rotate 50% of the time
+            angle = random.uniform(-5, 5)  # Reduced from -15,15 to -5,5 degrees
+            
+            # Apply same rotation to all channels
+            for i in range(volume_stack.shape[0]):
+                if i == 3:  # Binary mask - use nearest neighbor
+                    volume_stack[i] = rotate(
+                        volume_stack[i],
+                        angle,
+                        axes=(1, 2),  # H, W plane
+                        reshape=False,
+                        order=0,  # Nearest neighbor
+                        mode="constant",
+                        cval=0,
+                    )
+                else:  # Raw volumes - use linear interpolation
+                    volume_stack[i] = rotate(
+                        volume_stack[i],
+                        angle,
+                        axes=(1, 2),
+                        reshape=False,
+                        order=1,  # Linear interpolation
+                        mode="constant",
+                        cval=0,
+                    )
+        
+        # 3. Intensity augmentation - ONLY for raw channels (0,1,2), NOT binary mask
+        if random.random() > 0.3:  # Apply to 70% of samples
+            # Brightness adjustment
+            brightness_factor = random.uniform(0.8, 1.2)
+            volume_stack[:3] = np.clip(volume_stack[:3] * brightness_factor, 0, 1)
+        
+        if random.random() > 0.3:  # Apply to 70% of samples  
+            # Contrast adjustment
+            contrast_factor = random.uniform(0.8, 1.2)
+            for i in range(3):  # Only raw channels
+                mean_val = volume_stack[i].mean()
+                volume_stack[i] = np.clip(
+                    (volume_stack[i] - mean_val) * contrast_factor + mean_val, 0, 1
+                )
+        
         return volume_stack
 
 
@@ -123,7 +158,7 @@ class NucleusDataset(Dataset):
         self.root_dir = root_dir
         self.transform = transform
         self.max_samples_per_class = max_samples_per_class or HPARAMS.get("max_samples_per_class")
-        self.classes = ["mitotic", "new_daughter", "stable", "death"]
+        self.classes = HPARAMS.get("classes_names", [])
         self.class_to_idx = {name: i for i, name in enumerate(self.classes)}
         self.samples = self._make_dataset()
         
@@ -196,10 +231,26 @@ class NucleusDataset(Dataset):
         resized_shape = (np.array(original_shape) * resize_factor).astype(int)
         start_indices = (np.array(target_shape) - resized_shape) // 2
 
-        # --- Step 2: Define a reusable transformation function ---
-        def transform_and_pad(volume):
+        # --- Step 2: Extract nucleus ID from folder name ---
+        folder_name = os.path.basename(sample_path)
+        # Extract nucleus ID from folder name pattern like "230212_stack6_frame_194_nucleus_077_count_11"
+        nucleus_id = None
+        parts = folder_name.split('_')
+        for i, part in enumerate(parts):
+            if part == 'nucleus' and i + 1 < len(parts):
+                try:
+                    nucleus_id = int(parts[i + 1])
+                    break
+                except ValueError:
+                    continue
+    
+        if nucleus_id is None:
+            print(f"Warning: Could not extract nucleus ID from folder name: {folder_name}")
+
+        # --- Step 3: Define a reusable transformation function ---
+        def transform_and_pad(volume, is_label=False, target_nucleus_id=None):
             # Resize using the factor from the t volume
-            resized = zoom(volume, resize_factor, order=1, mode="constant", cval=0.0)
+            resized = zoom(volume, resize_factor, order=0 if is_label else 1, mode="constant", cval=0.0)
             padded = np.zeros(target_shape, dtype=np.float32)
 
             # Create slices to embed the resized volume centrally
@@ -212,13 +263,23 @@ class NucleusDataset(Dataset):
 
             padded[slices] = resized[rz_slices]
 
-            # Normalize the final padded volume
-            min_val, max_val = padded.min(), padded.max()
-            if max_val > min_val:
-                padded = (padded - min_val) / (max_val - min_val)
+            # Handle different volume types
+            if not is_label:
+                # Normalize raw volumes
+                min_val, max_val = padded.min(), padded.max()
+                if max_val > min_val:
+                    padded = (padded - min_val) / (max_val - min_val)
+            else:
+                # For labels, create binary mask for specific nucleus
+                if target_nucleus_id is not None:
+                    padded = (padded == target_nucleus_id).astype(np.float32)
+                else:
+                    # Fallback: any non-zero value becomes 1
+                    padded = (padded > 0).astype(np.float32)
+        
             return padded
 
-        # --- Step 3: Apply the same transformation to all volumes ---
+        # --- Step 4: Apply the same transformation to all volumes ---
         all_volumes = []
         time_points = ["t-1", "t", "t+1"]
 
@@ -230,16 +291,31 @@ class NucleusDataset(Dataset):
                     if tp == "t"
                     else tifffile.imread(file_path).astype(np.float32)
                 )
-                processed_vol = transform_and_pad(vol_to_process)
+                processed_vol = transform_and_pad(vol_to_process, is_label=False)
                 all_volumes.append(processed_vol)
             else:
                 # Append a blank, correctly shaped volume if the file is missing
                 all_volumes.append(np.zeros(target_shape, dtype=np.float32))
                 print(f"The timestamp {tp} for {sample_path} is missing")
-        # --- Step 4: Stack and apply augmentation ---
+
+        # --- Step 5: Load and process binary segmentation mask for current timestamp (t) ---
+        label_path = os.path.join(sample_path, "t", "label_cropped.tif")
+        if os.path.exists(label_path):
+            label_volume = tifffile.imread(label_path).astype(np.float32)
+            # Create binary mask for the specific nucleus
+            processed_label = transform_and_pad(label_volume, is_label=True, target_nucleus_id=nucleus_id)
+        else:
+            # Create empty mask if label file is missing
+            processed_label = np.zeros(target_shape, dtype=np.float32)
+            print(f"Label file missing for {sample_path}")
+
+        # Add the binary segmentation mask as the 4th channel
+        all_volumes.append(processed_label)
+
+        # --- Step 6: Stack and apply augmentation ---
         volume_processed = np.stack(
             all_volumes, axis=0
-        )  # Stacks in [t-1, t, t+1] order
+        )  # Stacks in [t-1, t, t+1, binary_nucleus_mask] order
 
         if self.transform:
             volume_processed = self.transform(volume_processed)
