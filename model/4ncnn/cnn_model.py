@@ -36,7 +36,7 @@ HPARAMS = {
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 DATA_ROOT_DIR = "/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v2"
 # Define a directory to save all outputs
-OUTPUT_DIR = "four-channels"
+OUTPUT_DIR = "training_outputs"
 
 
 # --- Model Definition: 3D CNN for 3-Channel Input ---
