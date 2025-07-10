@@ -23,6 +23,38 @@ import threading
 from functools import partial
 
 
+# Extract common utilities
+def get_file_paths(base_dir, frame_num):
+    """Get paths for registered and label files"""
+    label_dir = Path(base_dir) / "registered_label_images"
+    registered_dir = Path(base_dir) / "registered_images"
+    return {
+        "label": list(label_dir.glob(f"label_reg8_{frame_num}.tif")),
+        "registered": list(registered_dir.glob(f"nuclei_reg8_{frame_num}.tif"))
+    }
+
+def generate_frame_label(frame_num, event_frame):
+    """Generate frame label (t, t-1, t+1, etc.)"""
+    offset = frame_num - event_frame
+    if offset == 0:
+        return "t"
+    elif offset < 0:
+        return f"t{offset}"
+    else:
+        return f"t+{offset}"
+
+def safe_bounds(volume_shape, bbox):
+    """Safely calculate bounds within volume limits"""
+    z_min, z_max, y_min, y_max, x_min, x_max = bbox
+    vol_z, vol_y, vol_x = volume_shape
+    
+    return {
+        'z': (max(0, min(z_min, vol_z - 1)), max(z_min + 1, min(z_max + 1, vol_z))),
+        'y': (max(0, min(y_min, vol_y - 1)), max(y_min + 1, min(y_max + 1, vol_y))),
+        'x': (max(0, min(x_min, vol_x - 1)), max(x_min + 1, min(x_max + 1, vol_x)))
+    }
+
+
 def process_single_nucleus_threadsafe(
     candidate, timestamp, timeframe, volume_list, output_dir, dataset_name="230212_stack6"
 ):
@@ -110,56 +142,6 @@ def process_single_nucleus_threadsafe(
             "classification": classification
         }
 
-
-def analyze_specific_timestamp(forest, target_timestamp):
-    """
-    Print all nodes in a specific timestamp with their classifications.
-
-    Args:
-        forest: Forest object containing the lineage tree
-        target_timestamp: The timestamp to analyze
-
-    Returns:
-        tuple: (nodes_in_timestamp, classifications_dict)
-    """
-    nodes_in_timestamp = []
-
-    final_frame = max(forest.ordinal_to_timestamp.keys())  # Get the last frame
-
-    for node in forest.id_to_node.values():
-        if node.timestamp_ordinal == target_timestamp:
-            nodes_in_timestamp.append(node)
-
-    print(f"\n🎯 DETAILED ANALYSIS - TIMESTAMP {target_timestamp}")
-    print(f"📊 Total nodes: {len(nodes_in_timestamp)}")
-    print("=" * 60)
-
-    classifications = defaultdict(int)
-
-    for i, node in enumerate(nodes_in_timestamp):
-        parent_info = f"{node.parent.node_id}" if node.parent else "None"
-        children_info = list(node.id_to_child.keys()) if node.id_to_child else []
-
-        # Use the centralized classification function
-        classification = classify_node(node, final_frame)
-        classifications[classification] += 1
-
-        print(f"Node {i+1}/{len(nodes_in_timestamp)}: {node.node_id}")
-        print(f"   Label: {node.label}")
-        print(f"   Parent: {parent_info}")
-        print(f"   Children: {children_info}")
-        print(f"   Classification: {classification}")
-        print()
-
-    # Print summary
-    print(f"📊 CLASSIFICATION SUMMARY:")
-    for classification, count in classifications.items():
-        percentage = (count / len(nodes_in_timestamp)) * 100
-        print(f"   • {classification.upper()}: {count} nodes ({percentage:.1f}%)")
-
-    return nodes_in_timestamp, dict(classifications)
-
-
 def check_if_frame_exists(base_dir, event_frame):
     """
     Check if a specific frame exists in the dataset.
@@ -171,18 +153,11 @@ def check_if_frame_exists(base_dir, event_frame):
     Returns:
         bool: True if the frame exists, False otherwise
     """
-    label_dir = Path(base_dir) / "registered_label_images"
-    registered_dir = Path(base_dir) / "registered_images"
-
-    # Use correct file naming patterns
-    label_volume_file = list(label_dir.glob(f"label_reg8_{event_frame}.tif"))
-    registered_volume_file = list(registered_dir.glob(f"nuclei_reg8_{event_frame}.tif"))
-
-    return bool(label_volume_file and registered_volume_file)
-
+    file_paths = get_file_paths(base_dir, event_frame)
+    return bool(file_paths["label"] and file_paths["registered"])
 
 def get_volume_by_timestamp(base_dir, event_frame):
-    """ƒ
+    """
     Get the volume of nodes at a specific timestamp.
 
     Args:
@@ -192,18 +167,13 @@ def get_volume_by_timestamp(base_dir, event_frame):
     Returns:
         dict: 'registered_image' and 'label_image' 3d numpy arrays
     """
-    label_dir = Path(base_dir) / "registered_label_images"
-    registered_dir = Path(base_dir) / "registered_images"
+    file_paths = get_file_paths(base_dir, event_frame)
 
-    # Use correct file naming patterns
-    label_volume_file = list(label_dir.glob(f"label_reg8_{event_frame}.tif"))
-    registered_volume_file = list(registered_dir.glob(f"nuclei_reg8_{event_frame}.tif"))
-
-    if not label_volume_file or not registered_volume_file:
+    if not file_paths["label"] or not file_paths["registered"]:
         return {"registered_image": None, "label_image": None}
 
-    label_volume = tifffile.imread(label_volume_file[0])
-    registered_volume = tifffile.imread(registered_volume_file[0])
+    label_volume = tifffile.imread(file_paths["label"][0])
+    registered_volume = tifffile.imread(file_paths["registered"][0])
 
     return {"registered_image": registered_volume, "label_image": label_volume}
 
@@ -648,8 +618,12 @@ def save_single_nucleus_immediate(
         event_frame_data.get("unique_labels_in_region", [nucleus_id])
     )
 
-    # Create nucleus directory following V2 convention
-    nucleus_dir_name = f"{dataset_name}_frame_{event_frame:03d}_nucleus_{nucleus_id:03d}_count_{total_nuclei_in_frame}"
+    # NEW: Get total nuclei count in entire frame
+    # We need to access the full label volume for the event frame
+    total_nuclei_in_entire_frame = event_frame_data.get("total_nuclei_in_frame", total_nuclei_in_frame)
+    
+    # Create nucleus directory with ENTIRE FRAME count
+    nucleus_dir_name = f"{dataset_name}_frame_{event_frame:03d}_nucleus_{nucleus_id:03d}_count_{total_nuclei_in_entire_frame}"
     nucleus_dir_path = os.path.join(class_dir, nucleus_dir_name)
     os.makedirs(nucleus_dir_path, exist_ok=True)
 
@@ -783,15 +757,9 @@ def extract_nucleus_time_series(
 
     # Extract each frame using the SAME bounding box from event frame
     for frame_num, reg_volume, lbl_volume in volume_list:
-        # Generate dynamic label (t-2, t-1, t, t+1, t+2, etc.)
-        offset = frame_num - event_frame
-        if offset == 0:
-            frame_label = "t"
-        elif offset < 0:
-            frame_label = f"t{offset}"  # e.g., t-1, t-2
-        else:
-            frame_label = f"t+{offset}"  # e.g., t+1, t+2
-
+        # Generate dynamic label using utility function
+        frame_label = generate_frame_label(frame_num, event_frame)
+        
         print(f"         📸 Processing {frame_label} (frame {frame_num})")
 
         if reg_volume is None or lbl_volume is None:
@@ -801,14 +769,11 @@ def extract_nucleus_time_series(
 
         # Extract SAME region of interest using the bounding box from event frame
         try:
-            # Ensure bounds are within volume limits
-            vol_z, vol_y, vol_x = reg_volume.shape
-            z_start = max(0, min(z_min, vol_z - 1))
-            z_end = max(z_start + 1, min(z_max + 1, vol_z))
-            y_start = max(0, min(y_min, vol_y - 1))
-            y_end = max(y_start + 1, min(y_max + 1, vol_y))
-            x_start = max(0, min(x_min, vol_x - 1))
-            x_end = max(x_start + 1, min(x_max + 1, vol_x))
+            # Use safe_bounds utility function
+            bounds = safe_bounds(reg_volume.shape, bbox)
+            z_start, z_end = bounds['z']
+            y_start, y_end = bounds['y']
+            x_start, x_end = bounds['x']
 
             img_roi = reg_volume[z_start:z_end, y_start:y_end, x_start:x_end]
             lbl_roi = lbl_volume[z_start:z_end, y_start:y_end, x_start:x_end]
@@ -1011,191 +976,6 @@ def classify_node(node, final_frame):
         return "unknown"
 
 
-def get_timestamp_statistics(forest):
-    """
-    Get basic statistics about timestamps in the forest.
-
-    Args:
-        forest: Forest object containing the lineage tree
-
-    Returns:
-        dict: Statistics dictionary
-    """
-    timestamps = sorted(forest.ordinal_to_timestamp.keys())
-    nodes_per_timestamp = defaultdict(int)
-
-    for node in forest.id_to_node.values():
-        nodes_per_timestamp[node.timestamp_ordinal] += 1
-
-    stats = {
-        "total_timestamps": len(timestamps),
-        "first_timestamp": min(timestamps),
-        "last_timestamp": max(timestamps),
-        "total_nodes": len(forest.id_to_node),
-        "average_nodes_per_timestamp": len(forest.id_to_node) / len(timestamps),
-        "nodes_per_timestamp": dict(nodes_per_timestamp),
-    }
-
-    return stats
-
-
-def save_extraction_results(
-    results, base_output_dir="data/nuclei_state_dataset", dataset_name="230212_stack6"
-):
-    """
-    Save extraction results following the V2 pipeline file convention from README.md
-
-    Args:
-        results: Dictionary of extraction results organized by classification
-        base_output_dir: Base directory for saving extracted nuclei
-        dataset_name: Name of the dataset being processed
-
-    Returns:
-        dict: Summary of saved files and directories
-    """
-    print(f"\n💾 SAVING EXTRACTION RESULTS")
-    print(f"   Base output directory: {base_output_dir}")
-    print(f"   Dataset: {dataset_name}")
-    print("=" * 60)
-
-    # Create base directory if it doesn't exist
-    os.makedirs(base_output_dir, exist_ok=True)
-
-    save_summary = {"total_saved": 0, "classifications": {}, "failed_saves": []}
-
-    # Process each classification type
-    for classification, class_results in results.items():
-        print(f"\n📁 Processing {classification.upper()} nuclei...")
-
-        # Create classification directory
-        class_dir = os.path.join(base_output_dir, classification)
-        os.makedirs(class_dir, exist_ok=True)
-
-        classification_summary = {"saved_count": 0, "directories_created": []}
-
-        for result_idx, result in enumerate(class_results):
-            try:
-                # Extract metadata for directory naming
-                nucleus_id = result["nucleus_id"]
-                event_frame = result["event_frame"]
-                time_series = result["time_series"]
-
-                # Count total nuclei in event frame
-                event_frame_data = time_series.get("t", {}).get("data", {})
-                total_nuclei_in_frame = len(
-                    event_frame_data.get("unique_labels_in_region", [nucleus_id])
-                )
-
-                # Create nucleus directory following V2 convention
-                # Format: {dataset}_frame_{frame}_nucleus_{id}_count_{total_nuclei_in_frame}/
-                nucleus_dir_name = f"{dataset_name}_frame_{event_frame:03d}_nucleus_{nucleus_id:03d}_count_{total_nuclei_in_frame}"
-                nucleus_dir_path = os.path.join(class_dir, nucleus_dir_name)
-                os.makedirs(nucleus_dir_path, exist_ok=True)
-
-                print(
-                    f"   [{result_idx + 1}/{len(class_results)}] Saving nucleus {nucleus_id} -> {nucleus_dir_name}"
-                )
-
-                # Save main nucleus metadata
-                main_metadata = create_main_metadata(
-                    result, dataset_name, classification
-                )
-                main_metadata_path = os.path.join(nucleus_dir_path, "metadata.json")
-                with open(main_metadata_path, "w") as f:
-                    json.dump(main_metadata, f, indent=2)
-
-                # Process each time frame
-                frames_saved = 0
-                for frame_label, frame_info in time_series.items():
-                    frame_data = frame_info["data"]
-                    frame_number = frame_info["frame_number"]
-                    is_event_frame = frame_info["is_event_frame"]
-
-                    # Create timestamp subdirectory
-                    timestamp_dir = os.path.join(nucleus_dir_path, frame_label)
-                    os.makedirs(timestamp_dir, exist_ok=True)
-
-                    # Save raw cropped image
-                    if (
-                        "raw_original" in frame_data
-                        and frame_data["raw_original"] is not None
-                    ):
-                        raw_path = os.path.join(timestamp_dir, "raw_cropped.tif")
-                        tifffile.imwrite(raw_path, frame_data["raw_original"])
-
-                    # Save label cropped image
-                    if (
-                        "label_original" in frame_data
-                        and frame_data["label_original"] is not None
-                    ):
-                        label_path = os.path.join(timestamp_dir, "label_cropped.tif")
-                        tifffile.imwrite(label_path, frame_data["label_original"])
-
-                    # For event frame, save additional processed data
-                    if is_event_frame:
-                        # Save binary mask if available
-                        if (
-                            "target_mask" in frame_data
-                            and frame_data["target_mask"] is not None
-                        ):
-                            binary_path = os.path.join(
-                                timestamp_dir, "binary_label_cropped.tif"
-                            )
-                            tifffile.imwrite(binary_path, frame_data["target_mask"])
-
-                        # Save raw image cropped using label (only target nucleus visible)
-                        if (
-                            "raw_cropped" in frame_data
-                            and frame_data["raw_cropped"] is not None
-                        ):
-                            raw_nucleus_path = os.path.join(
-                                timestamp_dir, "raw_image_cropped.tif"
-                            )
-                            tifffile.imwrite(
-                                raw_nucleus_path, frame_data["raw_cropped"]
-                            )
-
-                    # Save frame-specific metadata
-                    frame_metadata = create_frame_metadata(
-                        result, frame_info, dataset_name, classification
-                    )
-                    frame_metadata_path = os.path.join(timestamp_dir, "metadata.json")
-                    with open(frame_metadata_path, "w") as f:
-                        json.dump(frame_metadata, f, indent=2)
-
-                    frames_saved += 1
-
-                classification_summary["saved_count"] += 1
-                classification_summary["directories_created"].append(nucleus_dir_name)
-                save_summary["total_saved"] += 1
-
-                print(f"     ✅ Saved {frames_saved} frames for nucleus {nucleus_id}")
-
-            except Exception as e:
-                error_info = f"Nucleus {result.get('nucleus_id', 'unknown')}: {str(e)}"
-                save_summary["failed_saves"].append(error_info)
-                print(
-                    f"     ❌ Failed to save nucleus {result.get('nucleus_id', 'unknown')}: {e}"
-                )
-
-        save_summary["classifications"][classification] = classification_summary
-        print(
-            f"   📊 {classification.upper()}: {classification_summary['saved_count']} nuclei saved"
-        )
-
-    # Print summary
-    print(f"\n🎯 SAVE COMPLETE:")
-    print(f"   Total nuclei saved: {save_summary['total_saved']}")
-    print(f"   Failed saves: {len(save_summary['failed_saves'])}")
-
-    if save_summary["failed_saves"]:
-        print(f"   Failed saves details:")
-        for failure in save_summary["failed_saves"]:
-            print(f"     • {failure}")
-
-    return save_summary
-
-
 def create_main_metadata(result, dataset_name, classification):
     """Create main nucleus metadata following V2 pipeline specification"""
     node_info = result.get("node_info", {})
@@ -1207,15 +987,10 @@ def create_main_metadata(result, dataset_name, classification):
     event_frame = result["event_frame"]
     frames = result.get("frames", [])
 
+    # Generate expected frame labels using utility function
     expected_frames = []
     for frame_num in frames:
-        offset = frame_num - event_frame
-        if offset == 0:
-            expected_frames.append("t")
-        elif offset < 0:
-            expected_frames.append(f"t{offset}")  # e.g., t-1, t-2
-        else:
-            expected_frames.append(f"t+{offset}")  # e.g., t+1, t+2
+        expected_frames.append(generate_frame_label(frame_num, event_frame))
 
     available_frames = list(time_series.keys())
     missing_frames = [f for f in expected_frames if f not in available_frames]
