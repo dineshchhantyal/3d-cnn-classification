@@ -99,7 +99,7 @@ def main():
         sys.exit(1)
     
     # Create output directory if it doesn't exist
-    output_path = Path(args.output_dir)
+    output_path = Path(args.output_dir) if args.output_dir else Path("/mnt/home/dchhantyal/ceph/MouseNuceli/") / datetime.now().strftime("%Y%m%d_%H%M%S") 
     output_path.mkdir(parents=True, exist_ok=True)
     
     try:

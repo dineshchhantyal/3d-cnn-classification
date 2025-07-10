@@ -14,12 +14,10 @@ from sklearn.metrics import (
     confusion_matrix,
     accuracy_score,
     f1_score,
-    balanced_accuracy_score,
 )
 import seaborn as sns
 import matplotlib.pyplot as plt
 import platform
-from collections import Counter, defaultdict
 
 # --- Configuration ---
 # Group all hyperparameters into a dictionary for easy access.
@@ -32,12 +30,10 @@ HPARAMS = {
     "batch_size": 16,
     "num_epochs": 300,
     "num_input_channels": 3,  # Updated for t-1, t, t+1 volumes
-    "max_samples_per_class": 230,  # Add this parameter
+    "max_samples_per_class": 216,  # Set to None for unlimited, or integer for per-class limit
 }
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-DATA_ROOT_DIR = (
-    "/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v2"
-)
+DATA_ROOT_DIR = "/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v2"
 # Define a directory to save all outputs
 OUTPUT_DIR = "training_outputs"
 
@@ -126,34 +122,55 @@ class NucleusDataset(Dataset):
     def __init__(self, root_dir, transform=None, max_samples_per_class=None):
         self.root_dir = root_dir
         self.transform = transform
+        self.max_samples_per_class = max_samples_per_class or HPARAMS.get("max_samples_per_class")
         self.classes = ["mitotic", "new_daughter", "stable", "death"]
         self.class_to_idx = {name: i for i, name in enumerate(self.classes)}
         self.samples = self._make_dataset()
-
-        print(f"Found {len(self.samples)} samples before limiting.")
-
-        # Apply class limits if specified
-        if max_samples_per_class is not None:
-            self.samples = apply_class_limits(
-                self.samples, max_samples_per_class, self.classes
-            )
-            print(f"After limiting: {len(self.samples)} samples.")
-        else:
-            print(f"No class limits applied. Using all {len(self.samples)} samples.")
+        
+        # Print class distribution after limiting
+        self._print_class_distribution()
 
     def _make_dataset(self):
         samples = []
+        class_counts = {}
+        
         for class_name in self.classes:
             class_dir = os.path.join(self.root_dir, class_name)
             if not os.path.isdir(class_dir):
+                class_counts[class_name] = 0
                 continue
+                
+            # Collect all valid samples for this class
+            class_samples = []
             for sample_name in os.listdir(class_dir):
                 sample_path = os.path.join(class_dir, sample_name)
                 if os.path.isdir(sample_path) and os.path.exists(
                     os.path.join(sample_path, "t", "raw_cropped.tif")
                 ):
-                    samples.append((sample_path, self.class_to_idx[class_name]))
+                    class_samples.append((sample_path, self.class_to_idx[class_name]))
+            
+            # Apply per-class sample limiting with random selection
+            if self.max_samples_per_class is not None and len(class_samples) > self.max_samples_per_class:
+                # Randomly select up to max_samples_per_class samples
+                import random
+                random.seed(42)  # For reproducibility
+                class_samples = random.sample(class_samples, self.max_samples_per_class)
+            
+            samples.extend(class_samples)
+            class_counts[class_name] = len(class_samples)
+        
+        self.class_counts = class_counts
         return samples
+
+    def _print_class_distribution(self):
+        """Print the number of samples per class after limiting."""
+        print(f"Dataset loaded with {len(self.samples)} total samples:")
+        for class_name in self.classes:
+            count = self.class_counts.get(class_name, 0)
+            print(f"  - {class_name}: {count} samples")
+        
+        if self.max_samples_per_class is not None:
+            print(f"  Applied per-class limit: {self.max_samples_per_class} samples/class")
 
     def __len__(self):
         return len(self.samples)
@@ -218,10 +235,7 @@ class NucleusDataset(Dataset):
             else:
                 # Append a blank, correctly shaped volume if the file is missing
                 all_volumes.append(np.zeros(target_shape, dtype=np.float32))
-                print(
-                    f"Warning: Missing {tp} volume for sample '{sample_path}'. Using blank volume."
-                )
-
+                print(f"The timestamp {tp} for {sample_path} is missing")
         # --- Step 4: Stack and apply augmentation ---
         volume_processed = np.stack(
             all_volumes, axis=0
@@ -233,38 +247,6 @@ class NucleusDataset(Dataset):
         return torch.from_numpy(volume_processed.copy()), torch.tensor(
             label, dtype=torch.long
         )
-
-
-# --- Focal Loss Definition ---
-class FocalLoss(nn.Module):
-    """Focal Loss for addressing class imbalance"""
-
-    def __init__(self, alpha=None, gamma=2, weight=None, reduction="mean"):
-        super(FocalLoss, self).__init__()
-        self.alpha = alpha
-        self.gamma = gamma
-        self.weight = weight
-        self.reduction = reduction
-
-    def forward(self, inputs, targets):
-        ce_loss = nn.functional.cross_entropy(
-            inputs, targets, weight=self.weight, reduction="none"
-        )
-        pt = torch.exp(-ce_loss)
-        focal_loss = (1 - pt) ** self.gamma * ce_loss
-
-        if self.alpha is not None:
-            if self.alpha.type() != inputs.data.type():
-                self.alpha = self.alpha.type_as(inputs.data)
-            at = self.alpha.gather(0, targets.data.view(-1))
-            focal_loss = at * focal_loss
-
-        if self.reduction == "mean":
-            return focal_loss.mean()
-        elif self.reduction == "sum":
-            return focal_loss.sum()
-        else:
-            return focal_loss
 
 
 # --- Training & Validation Functions ---
@@ -306,47 +288,6 @@ def validate(model, dataloader, criterion, device):
     return total_loss / len(dataloader), all_labels, all_preds
 
 
-def validate_with_detailed_metrics(model, dataloader, criterion, device, class_names):
-    """Enhanced validation with per-class metrics"""
-    model.eval()
-    total_loss = 0.0
-    all_preds, all_labels = [], []
-
-    with torch.no_grad():
-        for inputs, labels in dataloader:
-            inputs, labels = inputs.to(device), labels.to(device)
-            outputs = model(inputs)
-            total_loss += criterion(outputs, labels).item()
-            _, predicted = torch.max(outputs.data, 1)
-            all_preds.extend(predicted.cpu().numpy())
-            all_labels.extend(labels.cpu().numpy())
-
-    # Calculate detailed metrics
-    val_accuracy = accuracy_score(all_labels, all_preds)  # Add this line
-    balanced_acc = balanced_accuracy_score(all_labels, all_preds)
-    per_class_f1 = f1_score(all_labels, all_preds, average=None, zero_division=0)
-    macro_f1 = f1_score(all_labels, all_preds, average="macro", zero_division=0)
-    weighted_f1 = f1_score(all_labels, all_preds, average="weighted", zero_division=0)
-
-    print(f"Validation Accuracy: {val_accuracy:.4f}")  # Add this line
-    print(f"Balanced Accuracy: {balanced_acc:.4f}")
-    print(f"Macro F1: {macro_f1:.4f}")
-    print(f"Weighted F1: {weighted_f1:.4f}")
-
-    for i, class_name in enumerate(class_names):
-        if i < len(per_class_f1):
-            print(f"{class_name} F1: {per_class_f1[i]:.4f}")
-
-    return (
-        total_loss / len(dataloader),
-        all_labels,
-        all_preds,
-        balanced_acc,
-        macro_f1,
-        val_accuracy,
-    )  # Add val_accuracy to return
-
-
 # --- Plotting & Artifact Generation ---
 def save_final_plots(history, val_labels, val_preds, class_names, output_dir):
     """Generates and saves final plots to the output directory."""
@@ -367,9 +308,7 @@ def save_final_plots(history, val_labels, val_preds, class_names, output_dir):
         linestyle="--",
     )
     ax2.plot(history["val_accuracy"], label="Validation Accuracy", color="green")
-    ax2.plot(
-        history["val_macro_f1"], label="Validation F1-Score (Macro)", color="red"
-    )  # Fixed: use val_macro_f1 instead of val_f1
+    ax2.plot(history["val_f1"], label="Validation F1-Score (Macro)", color="red")
     ax2.set_title("Performance Over Epochs", fontsize=16)
     ax2.set_xlabel("Epochs", fontsize=12)
     ax2.set_ylabel("Score", fontsize=12)
@@ -402,69 +341,6 @@ def save_final_plots(history, val_labels, val_preds, class_names, output_dir):
     print(f"📊 Saved final confusion matrix to {cm_path}")
 
 
-# --- Class Weight Calculation ---
-def calculate_class_weights(samples):
-    """Calculate inverse frequency weights for imbalanced classes"""
-
-    # Count samples per class
-    class_counts = Counter([sample[1] for sample in samples])
-    total_samples = len(samples)
-    num_classes = len(class_counts)
-
-    # Calculate weights (inverse frequency)
-    weights = {}
-    for class_idx, count in class_counts.items():
-        weights[class_idx] = total_samples / (num_classes * count)
-
-    # Convert to tensor in correct order
-    weight_tensor = torch.zeros(num_classes)
-    for class_idx, weight in weights.items():
-        weight_tensor[class_idx] = weight
-
-    print(
-        f"Class counts: {dict(zip(['mitotic', 'new_daughter', 'stable', 'death'], [class_counts[i] for i in range(num_classes)]))}"
-    )
-    print(
-        f"Class weights: {dict(zip(['mitotic', 'new_daughter', 'stable', 'death'], weight_tensor.tolist()))}"
-    )
-    return weight_tensor
-
-
-def apply_class_limits(samples, max_samples_per_class, class_names):
-    """Apply max samples per class limit"""
-    from collections import defaultdict
-    import random
-
-    # Set random seed for reproducibility
-    random.seed(42)  # Add this line for reproducible sampling
-
-    # Group samples by class
-    class_samples = defaultdict(list)
-    for sample in samples:
-        class_samples[sample[1]].append(sample)
-
-    print(f"\nApplying class limits (max {max_samples_per_class} per class):")
-
-    limited_samples = []
-    for class_idx, samples_list in class_samples.items():
-        original_count = len(samples_list)
-
-        if original_count > max_samples_per_class:
-            # Randomly sample without replacement
-            selected_samples = random.sample(samples_list, max_samples_per_class)
-            limited_samples.extend(selected_samples)
-            print(
-                f"  {class_names[class_idx]}: {original_count} -> {max_samples_per_class} (limited)"
-            )
-        else:
-            limited_samples.extend(samples_list)
-            print(f"  {class_names[class_idx]}: {original_count} (no change)")
-
-    # Shuffle the final sample list
-    random.shuffle(limited_samples)
-    return limited_samples
-
-
 # --- Main Execution ---
 def main():
     """Main function to orchestrate the training and validation process."""
@@ -482,29 +358,14 @@ def main():
     print(f"Hyperparameters: {HPARAMS}")
 
     model = Simple3DCNN().to(DEVICE)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=HPARAMS["learning_rate"])
 
     print("\nLoading datasets...")
-    # Pass max_samples_per_class to the dataset
     train_full_dataset = NucleusDataset(
-        root_dir=DATA_ROOT_DIR,
-        transform=RandomAugmentation3D(),
-        max_samples_per_class=HPARAMS["max_samples_per_class"],
+        root_dir=DATA_ROOT_DIR, transform=RandomAugmentation3D()
     )
-    val_full_dataset = NucleusDataset(
-        root_dir=DATA_ROOT_DIR,
-        transform=None,
-        max_samples_per_class=HPARAMS["max_samples_per_class"],
-    )
-
-    # Calculate class weights AFTER applying limits
-    class_weights = calculate_class_weights(train_full_dataset.samples)
-    alpha = class_weights / class_weights.sum()  # Normalize
-
-    # Use Focal Loss instead of CrossEntropyLoss
-    criterion = FocalLoss(
-        alpha=alpha.to(DEVICE), gamma=2, weight=class_weights.to(DEVICE)
-    )
-    optimizer = optim.Adam(model.parameters(), lr=HPARAMS["learning_rate"])
+    val_full_dataset = NucleusDataset(root_dir=DATA_ROOT_DIR, transform=None)
 
     labels = [sample[1] for sample in train_full_dataset.samples]
     indices = list(range(len(train_full_dataset)))
@@ -541,11 +402,9 @@ def main():
         "train_accuracy": [],
         "val_loss": [],
         "val_accuracy": [],
-        "val_balanced_accuracy": [],
-        "val_macro_f1": [],
-        "val_weighted_f1": [],
+        "val_f1": [],
     }
-    best_val_metric = -1  # Use balanced accuracy or macro F1
+    best_val_f1 = -1
 
     print("\n--- Starting Training ---")
     for epoch in range(HPARAMS["num_epochs"]):
@@ -554,59 +413,39 @@ def main():
         train_loss, train_acc = train_one_epoch(
             model, train_loader, criterion, optimizer, DEVICE
         )
-        (
-            val_loss,
-            val_labels,
-            val_preds,
-            val_balanced_acc,
-            val_macro_f1,
-            val_accuracy,
-        ) = validate_with_detailed_metrics(  # Updated to unpack val_accuracy
-            model,
-            val_loader,
-            criterion,
-            DEVICE,
-            train_full_dataset.classes,  # Fixed: use train_full_dataset.classes
-        )
+        val_loss, val_labels, val_preds = validate(model, val_loader, criterion, DEVICE)
+
+        val_accuracy = accuracy_score(val_labels, val_preds)
+        val_f1 = f1_score(val_labels, val_preds, average="macro", zero_division=0)
 
         history["train_loss"].append(train_loss)
         history["train_accuracy"].append(train_acc)
         history["val_loss"].append(val_loss)
         history["val_accuracy"].append(val_accuracy)
-        history["val_balanced_accuracy"].append(val_balanced_acc)
-        history["val_macro_f1"].append(val_macro_f1)
+        history["val_f1"].append(val_f1)
 
         epoch_duration = time.time() - start_time
 
         print(
             f"Epoch [{epoch+1:03d}/{HPARAMS['num_epochs']}] | Duration: {epoch_duration:.2f}s | "
             f"Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f} | "
-            f"Val Loss: {val_loss:.4f} | Val Acc: {val_accuracy:.4f} | Val Balanced Acc: {val_balanced_acc:.4f} | Val Macro F1: {val_macro_f1:.4f}"
+            f"Val Loss: {val_loss:.4f} | Val Acc: {val_accuracy:.4f} | Val F1: {val_f1:.4f}"
         )
 
-        # Use balanced accuracy as primary metric for model selection
-        current_metric = val_balanced_acc  # or val_macro_f1
-
-        if current_metric > best_val_metric:
-            best_val_metric = current_metric
+        if val_f1 > best_val_f1:
+            best_val_f1 = val_f1
             model_path = os.path.join(run_output_dir, "best_model.pth")
             torch.save(model.state_dict(), model_path)
             print(
-                f"🎉 New best model found! Metric: {best_val_metric:.4f}. Saved to {model_path}"
+                f"🎉 New best model found! F1-Score: {best_val_f1:.4f}. Saved to {model_path}"
             )
 
     print("\n✅ Training finished.")
 
     print("\n💾 Saving final artifacts...")
-    class_names = (
-        train_full_dataset.classes
-    )  # Fixed: use train_full_dataset instead of val_full_dataset
+    class_names = val_full_dataset.classes
     model.load_state_dict(torch.load(os.path.join(run_output_dir, "best_model.pth")))
-    _, final_labels, final_preds, _, _, _ = (
-        validate_with_detailed_metrics(  # Updated to handle new return value
-            model, val_loader, criterion, DEVICE, class_names
-        )
-    )
+    _, final_labels, final_preds = validate(model, val_loader, criterion, DEVICE)
 
     save_final_plots(history, final_labels, final_preds, class_names, run_output_dir)
 
