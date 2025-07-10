@@ -19,62 +19,13 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import platform
 
-# --- Configuration ---
-# Group all hyperparameters into a dictionary for easy access.
-HPARAMS = {
-    "input_depth": 64,
-    "input_height": 64,
-    "input_width": 64,
-    "num_classes": 3,
-    "classes_names": ["mitotic", "new_daughter", "stable"],
-    "learning_rate": 1e-5,
-    "batch_size": 16,
-    "num_epochs": 300,
-    "num_input_channels": 4,  # Updated from 3 to 4 channels: [t-1, t, t+1, segmentation_mask]
-    "max_samples_per_class": 216,
-}
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+# Import shared modules
+from config import HPARAMS, CLASS_NAMES, DEVICE
+from data_utils import preprocess_sample
+from model_utils import Simple3DCNN
 DATA_ROOT_DIR = "/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v2"
 # Define a directory to save all outputs
 OUTPUT_DIR = "training_outputs"
-
-
-# --- Model Definition: 3D CNN for 3-Channel Input ---
-class Simple3DCNN(nn.Module):
-    """
-    A 3D CNN model that accepts a 3-channel input, where each channel represents
-    a different time point (t-1, t, t+1).
-    """
-
-    def __init__(
-        self,
-        in_channels=HPARAMS["num_input_channels"],
-        num_classes=HPARAMS["num_classes"],
-    ):
-        super(Simple3DCNN, self).__init__()
-        self.cnn_encoder = nn.Sequential(
-            # The first convolutional layer now accepts 3 input channels.
-            nn.Conv3d(in_channels, 16, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.MaxPool3d(kernel_size=2, stride=2),
-            nn.BatchNorm3d(16),
-            nn.Conv3d(16, 32, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.MaxPool3d(kernel_size=2, stride=2),
-            nn.BatchNorm3d(32),
-            nn.Conv3d(32, 64, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.MaxPool3d(kernel_size=2, stride=2),
-            nn.BatchNorm3d(64),
-            nn.AdaptiveAvgPool3d(1),
-        )
-        self.classifier = nn.Linear(64, num_classes)
-
-    def forward(self, x):
-        features = self.cnn_encoder(x)
-        # Flatten the features for the classifier
-        features = features.view(features.size(0), -1)
-        return self.classifier(features)
 
 
 # --- Data Augmentation for Temporal Data ---
@@ -212,117 +163,19 @@ class NucleusDataset(Dataset):
 
     def __getitem__(self, idx):
         sample_path, label = self.samples[idx]
-
-        target_shape = (
-            HPARAMS["input_depth"],
-            HPARAMS["input_height"],
-            HPARAMS["input_width"],
-        )
-
-        # --- Step 1: Load t volume to determine transformation params ---
-        t_path = os.path.join(sample_path, "t", "raw_cropped.tif")
-        t_volume = tifffile.imread(t_path).astype(np.float32)
-
-        # Calculate resize factor and padding based *only* on the t volume
-        original_shape = t_volume.shape
-        ratios = np.array(target_shape) / np.array(original_shape)
-        resize_factor = np.min(ratios)
-
-        resized_shape = (np.array(original_shape) * resize_factor).astype(int)
-        start_indices = (np.array(target_shape) - resized_shape) // 2
-
-        # --- Step 2: Extract nucleus ID from folder name ---
-        folder_name = os.path.basename(sample_path)
-        # Extract nucleus ID from folder name pattern like "230212_stack6_frame_194_nucleus_077_count_11"
-        nucleus_id = None
-        parts = folder_name.split('_')
-        for i, part in enumerate(parts):
-            if part == 'nucleus' and i + 1 < len(parts):
-                try:
-                    nucleus_id = int(parts[i + 1])
-                    break
-                except ValueError:
-                    continue
-    
-        if nucleus_id is None:
-            print(f"Warning: Could not extract nucleus ID from folder name: {folder_name}")
-
-        # --- Step 3: Define a reusable transformation function ---
-        def transform_and_pad(volume, is_label=False, target_nucleus_id=None):
-            # Resize using the factor from the t volume
-            resized = zoom(volume, resize_factor, order=0 if is_label else 1, mode="constant", cval=0.0)
-            padded = np.zeros(target_shape, dtype=np.float32)
-
-            # Create slices to embed the resized volume centrally
-            rz_shape = resized.shape
-            slices = tuple(
-                slice(start, start + size)
-                for start, size in zip(start_indices, rz_shape)
-            )
-            rz_slices = tuple(slice(0, s.stop - s.start) for s in slices)
-
-            padded[slices] = resized[rz_slices]
-
-            # Handle different volume types
-            if not is_label:
-                # Normalize raw volumes
-                min_val, max_val = padded.min(), padded.max()
-                if max_val > min_val:
-                    padded = (padded - min_val) / (max_val - min_val)
-            else:
-                # For labels, create binary mask for specific nucleus
-                if target_nucleus_id is not None:
-                    padded = (padded == target_nucleus_id).astype(np.float32)
-                else:
-                    # Fallback: any non-zero value becomes 1
-                    padded = (padded > 0).astype(np.float32)
         
-            return padded
-
-        # --- Step 4: Apply the same transformation to all volumes ---
-        all_volumes = []
-        time_points = ["t-1", "t", "t+1"]
-
-        for tp in time_points:
-            file_path = os.path.join(sample_path, tp, "raw_cropped.tif")
-            if os.path.exists(file_path):
-                vol_to_process = (
-                    t_volume
-                    if tp == "t"
-                    else tifffile.imread(file_path).astype(np.float32)
-                )
-                processed_vol = transform_and_pad(vol_to_process, is_label=False)
-                all_volumes.append(processed_vol)
-            else:
-                # Append a blank, correctly shaped volume if the file is missing
-                all_volumes.append(np.zeros(target_shape, dtype=np.float32))
-                print(f"The timestamp {tp} for {sample_path} is missing")
-
-        # --- Step 5: Load and process binary segmentation mask for current timestamp (t) ---
-        label_path = os.path.join(sample_path, "t", "label_cropped.tif")
-        if os.path.exists(label_path):
-            label_volume = tifffile.imread(label_path).astype(np.float32)
-            # Create binary mask for the specific nucleus
-            processed_label = transform_and_pad(label_volume, is_label=True, target_nucleus_id=nucleus_id)
-        else:
-            # Create empty mask if label file is missing
-            processed_label = np.zeros(target_shape, dtype=np.float32)
-            print(f"Label file missing for {sample_path}")
-
-        # Add the binary segmentation mask as the 4th channel
-        all_volumes.append(processed_label)
-
-        # --- Step 6: Stack and apply augmentation ---
-        volume_processed = np.stack(
-            all_volumes, axis=0
-        )  # Stacks in [t-1, t, t+1, binary_nucleus_mask] order
-
+        # Use shared preprocessing function
+        volume_processed = preprocess_sample(folder_path=sample_path, for_training=True)
+        
+        # Remove batch dimension for training
+        volume_processed = volume_processed.squeeze(0)
+        
+        # Apply augmentation if specified
         if self.transform:
-            volume_processed = self.transform(volume_processed)
+            volume_processed = self.transform(volume_processed.numpy())
+            volume_processed = torch.from_numpy(volume_processed.copy())
 
-        return torch.from_numpy(volume_processed.copy()), torch.tensor(
-            label, dtype=torch.long
-        )
+        return volume_processed, torch.tensor(label, dtype=torch.long)
 
 
 # --- Training & Validation Functions ---
