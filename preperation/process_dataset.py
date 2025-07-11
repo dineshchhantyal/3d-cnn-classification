@@ -31,7 +31,7 @@ DATASETS = {
     "220321_stack11": "/mnt/ceph/users/lbrown/MouseData/Eszter1",
     "221016_FUCCI_Nanog_stack_3": "/mnt/ceph/users/lbrown/Labels3DMouse/Abhishek/RebeccaData/221016_FUCCI_Nanog_stack_3/",
     "David4EPI": "/mnt/ceph/users/lbrown/MouseData/David4EPI",
-    "230101_Gata6Nanog_stack_19": "/mnt/ceph/users/lbrown/Labels3DMouse/Abhishek/RebeccaData/230101_Gata6Nanog_stack_19/",
+    "230101_Gata6Nanog_stack_19": "/mnt/ceph/users/lbrown/Labels3DMouse/Abhishek/RebeccaData/230101_Gata6Nanog_stack_19/stack_19_channel_1_obj_left/",
 }
 
 

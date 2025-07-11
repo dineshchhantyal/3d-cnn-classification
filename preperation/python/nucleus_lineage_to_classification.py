@@ -56,7 +56,7 @@ def safe_bounds(volume_shape, bbox):
 
 
 def process_single_nucleus_threadsafe(
-    candidate, timestamp, timeframe, volume_list, output_dir, dataset_name="230212_stack6"
+    candidate, timestamp, timeframe, volume_list, output_dir, dataset_name="230212_stack6", total_nuclei_in_entire_frame=None
 ):
     """
     Thread-safe function to process a single nucleus extraction and save.
@@ -100,7 +100,7 @@ def process_single_nucleus_threadsafe(
         "parent": node.parent.node_id if node.parent else None,
         "children": (list(node.id_to_child.keys()) if node.id_to_child else []),
     }
-
+    
     try:
         result = extract_nucleus_time_series(
             nucleus_id,
@@ -111,6 +111,7 @@ def process_single_nucleus_threadsafe(
             node_info=node_info,
             output_dir=output_dir,
             dataset_name=dataset_name,
+            total_nuclei_in_entire_frame=total_nuclei_in_entire_frame,
         )
 
         if result and result.get("extraction_success"):
@@ -533,7 +534,8 @@ def nucleus_extractor(
                 timeframe=timeframe,
                 volume_list=volume_list,
                 output_dir=output_dir,
-                dataset_name=Path(base_dir).name
+                dataset_name=Path(base_dir).name,
+                total_nuclei_in_entire_frame=len(all_nucleus_ids)
             )
             
             # Submit all tasks
@@ -587,7 +589,7 @@ def nucleus_extractor(
 
 
 def save_single_nucleus_immediate(
-    result, base_output_dir, dataset_name, classification
+    result, base_output_dir, dataset_name, classification, total_nuclei_in_entire_frame=None
 ):
     """
     Save a single extracted nucleus immediately to proper folder structure.
@@ -612,18 +614,17 @@ def save_single_nucleus_immediate(
     class_dir = os.path.join(base_output_dir, classification)
     os.makedirs(class_dir, exist_ok=True)
 
-    # Count total nuclei in event frame
+    # Count total nuclei in cropped region (for metadata)
     event_frame_data = time_series.get("t", {}).get("data", {})
-    total_nuclei_in_frame = len(
+    total_nuclei_in_cropped_region = len(
         event_frame_data.get("unique_labels_in_region", [nucleus_id])
     )
 
-    # NEW: Get total nuclei count in entire frame
-    # We need to access the full label volume for the event frame
-    total_nuclei_in_entire_frame = event_frame_data.get("total_nuclei_in_frame", total_nuclei_in_frame)
+    # Use entire frame count for folder naming, fallback to cropped region count
+    folder_nucleus_count = total_nuclei_in_entire_frame if total_nuclei_in_entire_frame is not None else total_nuclei_in_cropped_region
     
     # Create nucleus directory with ENTIRE FRAME count
-    nucleus_dir_name = f"{dataset_name}_frame_{event_frame:03d}_nucleus_{nucleus_id:03d}_count_{total_nuclei_in_entire_frame}"
+    nucleus_dir_name = f"{dataset_name}_frame_{event_frame:03d}_nucleus_{nucleus_id:03d}_count_{folder_nucleus_count}"
     nucleus_dir_path = os.path.join(class_dir, nucleus_dir_name)
     os.makedirs(nucleus_dir_path, exist_ok=True)
 
@@ -684,6 +685,7 @@ def extract_nucleus_time_series(
     node_info=None,
     output_dir=None,
     dataset_name="230212_stack6",
+    total_nuclei_in_entire_frame=None,
 ):
     """
     Extract time series for a nucleus and save immediately to disk.
@@ -922,7 +924,7 @@ def extract_nucleus_time_series(
 
             # Save to proper folder structure
             nucleus_dir_path = save_single_nucleus_immediate(
-                results, output_dir, dataset_name, classification
+                results, output_dir, dataset_name, classification, total_nuclei_in_entire_frame
             )
 
             print(f"      💾 Saved to: {nucleus_dir_path}")
@@ -1013,7 +1015,7 @@ def create_main_metadata(result, dataset_name, classification):
                 time_series.get("t", {})
                 .get("data", {})
                 .get("unique_labels_in_region", [nucleus_id])
-            ),
+            ),  # This is count in cropped region only
             "classification": classification,
             "extraction_date": datetime.now().isoformat() + "Z",
             "available_frames": available_frames,
@@ -1077,7 +1079,7 @@ def create_frame_metadata(result, frame_info, dataset_name, classification):
             "timestamp": frame_info.get("frame_label", "t"),
             "total_nuclei_in_frame": len(
                 frame_data.get("unique_labels_in_region", [nucleus_id])
-            ),
+            ),  # This is count in cropped region only
             "extraction_date": datetime.now().isoformat() + "Z",
         },
         "nucleus_properties": {

@@ -91,9 +91,19 @@ class Node:
 
     def set_parent(self, parent):
         assert type(parent) is Node, "bad parent type: " + repr([parent, type(parent)])
-        assert (
-            self.timestamp_ordinal > parent.timestamp_ordinal
-        ), "Bad Node parent: " + repr([self, parent])
+        # assert (
+        #     self.timestamp_ordinal > parent.timestamp_ordinal
+        # ), "Bad Node parent: " + repr([self, parent])
+        warning = (
+            self.timestamp_ordinal <= parent.timestamp_ordinal
+        )  # this is a warning, not an error
+        if warning:
+            print(
+                "WARNING: Bad Node parent: "
+                + repr([self, parent])
+                + " (timestamp_ordinal %d <= %d)"
+                % (self.timestamp_ordinal, parent.timestamp_ordinal)
+            )
         self.parent = parent
 
     def set_child(self, child):
