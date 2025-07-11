@@ -23,6 +23,8 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+.github
+
 # PyTorch Models
 *.pth
 *.pt
