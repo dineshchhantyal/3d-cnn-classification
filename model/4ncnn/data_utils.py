@@ -111,6 +111,7 @@ def preprocess_sample(folder_path: str = None, volume_paths: list = None,
         temporal_paths = volume_paths[:3]  # [t-1, t, t+1]
         label_path = volume_paths[3] if len(volume_paths) >= 4 else None
         nucleus_id = None
+        print("Using provided volume paths for preprocessing.")
     else:
         raise ValueError("Must provide either folder_path or volume_paths (3-4 paths)")
     

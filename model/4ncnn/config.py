@@ -14,7 +14,16 @@ HPARAMS = {
     "batch_size": 16,
     "num_epochs": 300,
     "num_input_channels": 4,  # [t-1, t, t+1, segmentation_mask]
-    "max_samples_per_class": 216,
+    
+    # Class-specific sample limits to reflect biological distribution
+    "max_samples_per_class": {
+        "mitotic": 216,
+        "new_daughter": 216, 
+        "stable": 648  # 3x more stable samples (more common in nature)
+    },
+    
+    # Class weights to balance training loss (inverse of sample ratios)
+    "class_weights": [3.0, 3.0, 1.0],  # [mitotic, new_daughter, stable]
 }
 
 # --- Shared Constants ---

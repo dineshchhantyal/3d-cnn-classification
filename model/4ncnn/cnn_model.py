@@ -136,11 +136,19 @@ class NucleusDataset(Dataset):
                     class_samples.append((sample_path, self.class_to_idx[class_name]))
             
             # Apply per-class sample limiting with random selection
-            if self.max_samples_per_class is not None and len(class_samples) > self.max_samples_per_class:
-                # Randomly select up to max_samples_per_class samples
-                import random
-                random.seed(42)  # For reproducibility
-                class_samples = random.sample(class_samples, self.max_samples_per_class)
+            if self.max_samples_per_class is not None:
+                if isinstance(self.max_samples_per_class, dict):
+                    # Use class-specific limits
+                    max_samples = self.max_samples_per_class.get(class_name, len(class_samples))
+                else:
+                    # Use same limit for all classes (backward compatibility)
+                    max_samples = self.max_samples_per_class
+                
+                if len(class_samples) > max_samples:
+                    # Randomly select up to max_samples samples
+                    import random
+                    random.seed(42)  # For reproducibility
+                    class_samples = random.sample(class_samples, max_samples)
             
             samples.extend(class_samples)
             class_counts[class_name] = len(class_samples)
@@ -156,7 +164,12 @@ class NucleusDataset(Dataset):
             print(f"  - {class_name}: {count} samples")
         
         if self.max_samples_per_class is not None:
-            print(f"  Applied per-class limit: {self.max_samples_per_class} samples/class")
+            if isinstance(self.max_samples_per_class, dict):
+                print("  Applied per-class limits:")
+                for class_name, limit in self.max_samples_per_class.items():
+                    print(f"    - {class_name}: {limit} max samples")
+            else:
+                print(f"  Applied per-class limit: {self.max_samples_per_class} samples/class")
 
     def __len__(self):
         return len(self.samples)
@@ -287,7 +300,11 @@ def main():
     print(f"Hyperparameters: {HPARAMS}")
 
     model = Simple3DCNN().to(DEVICE)
-    criterion = nn.CrossEntropyLoss()
+    
+    # Use class weights to handle imbalanced dataset
+    class_weights = torch.tensor(HPARAMS["class_weights"], dtype=torch.float32).to(DEVICE)
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
+    
     optimizer = optim.Adam(model.parameters(), lr=HPARAMS["learning_rate"])
 
     print("\nLoading datasets...")
