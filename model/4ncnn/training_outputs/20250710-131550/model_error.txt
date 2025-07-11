@@ -1,0 +1,16 @@
+File: /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v2/new_daughter/Eszter1_frame_054_nucleus_017_count_2
+
+--- Prediction Result ---
+Predicted Class Index : 0
+Predicted Class Name  : MITOTIC
+Confidence            : 50.23%
+-------------------------
+
+
+File: /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v2/new_daughter/Eszter1_frame_116_nucleus_126_count_4
+
+--- Prediction Result ---
+Predicted Class Index: 0
+Predicted Class Name:  MITOTIC
+Confidence:            43.84%
+-------------------------

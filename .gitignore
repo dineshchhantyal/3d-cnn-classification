@@ -35,6 +35,7 @@ model_weights/
 data/
 datasets/
 raw_data/
+raw-data/
 processed_data/
 nuclei_state_dataset/
 mitotic/
