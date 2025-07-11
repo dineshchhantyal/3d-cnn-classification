@@ -1,13 +1,13 @@
 #!/bin/bash -l
 
-#SBATCH --job-name=gata6nanog_processing
+#SBATCH --job-name=dataset_processing
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=4  # Conservative CPU allocation
 #SBATCH --mem=16G  # Conservative memory allocation
 #SBATCH --time=24:00:00  # 24 hours should be sufficient
-#SBATCH --output=logs/gata6nanog_%j.out
-#SBATCH --error=logs/gata6nanog_%j.err
+#SBATCH --output=logs/%x_%j.out
+#SBATCH --error=logs/%x_%j.err
 
 # Load required modules
 module purge
