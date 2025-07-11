@@ -17,7 +17,7 @@ source ~/venvs/jupyter-gpu/bin/activate
 
 master_node=$SLURMD_NODENAME
 
-srun python `which torchrun` \
+srun python $(which torchrun) \
         --nnodes $SLURM_JOB_NUM_NODES \
         --nproc_per_node $SLURM_GPUS_PER_NODE \
         --rdzv_id $SLURM_JOB_ID \
