@@ -6,6 +6,7 @@ import os
 import tifffile
 from scipy.ndimage import zoom
 import torch
+from datetime import datetime
 from config import HPARAMS, TIME_POINTS, RAW_FILE_NAME, LABEL_FILE_NAME
 
 
@@ -89,7 +90,8 @@ def load_temporal_volumes(folder_path: str) -> tuple:
 
 
 def preprocess_sample(folder_path: str = None, volume_paths: list = None, 
-                     for_training: bool = False) -> torch.Tensor:
+                     for_training: bool = False, save_analysis: bool = False,
+                     analysis_output_dir: str = None) -> torch.Tensor:
     """
     Unified preprocessing function for both training and prediction.
     
@@ -97,6 +99,8 @@ def preprocess_sample(folder_path: str = None, volume_paths: list = None,
         folder_path: Path to sample folder (standard format)
         volume_paths: Direct paths to volume files [t-1, t, t+1, label]
         for_training: Whether this is for training (affects error handling)
+        save_analysis: Whether to save preprocessing analysis visualizations
+        analysis_output_dir: Directory to save analysis outputs
     
     Returns:
         torch.Tensor: Preprocessed 4-channel volume [t-1, t, t+1, binary_mask]
@@ -173,4 +177,81 @@ def preprocess_sample(folder_path: str = None, volume_paths: list = None,
     
     # --- Step 4: Stack and return ---
     volume_stack = np.stack(all_volumes, axis=0)  # [t-1, t, t+1, binary_mask]
+    
+    # --- Step 5: Save Analysis (if requested) ---
+    if save_analysis and analysis_output_dir:
+        try:
+            from visualization_utils import (
+                create_output_structure, save_volume_statistics, save_volume_slices,
+                save_segmentation_overlay, save_preprocessing_comparison
+            )
+            
+            # Determine sample name
+            sample_name = os.path.basename(folder_path) if folder_path else "sample"
+            if not sample_name or sample_name == ".":
+                sample_name = f"sample_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            
+            # Create output structure
+            dirs = create_output_structure(analysis_output_dir, sample_name)
+            print(f"💾 Saving preprocessing analysis to: {dirs['sample']}")
+            
+            # Save original volumes for comparison
+            original_volumes = {}
+            for i, (tp, path) in enumerate(zip(TIME_POINTS, temporal_paths)):
+                if os.path.exists(path):
+                    original_volumes[tp] = tifffile.imread(path).astype(np.float32)
+                else:
+                    original_volumes[tp] = None
+            
+            # Save volume statistics
+            volumes_dict = {
+                't-1_original': original_volumes.get('t-1'),
+                't_original': original_volumes.get('t'),
+                't+1_original': original_volumes.get('t+1'),
+                't-1_processed': all_volumes[0],
+                't_processed': all_volumes[1],
+                't+1_processed': all_volumes[2],
+                'segmentation_mask': all_volumes[3]
+            }
+            
+            save_volume_statistics(volumes_dict, 
+                                 os.path.join(dirs['preprocessing'], 'volume_statistics.json'))
+            
+            # Save volume slice visualizations
+            for i, tp in enumerate(TIME_POINTS):
+                if all_volumes[i] is not None:
+                    save_volume_slices(
+                        all_volumes[i], 
+                        f'Processed {tp} Volume',
+                        os.path.join(dirs['preprocessing'], f'{tp.replace("-", "minus")}_slices.png')
+                    )
+            
+            # Save segmentation mask slices
+            save_volume_slices(
+                all_volumes[3], 
+                'Segmentation Mask',
+                os.path.join(dirs['preprocessing'], 'segmentation_mask.png'),
+                cmap='RdYlBu_r',
+                is_binary=True
+            )
+            
+            # Save segmentation overlay
+            save_segmentation_overlay(
+                all_volumes[1],  # Use 't' volume
+                all_volumes[3],  # Segmentation mask
+                os.path.join(dirs['preprocessing'], 'segmentation_overlay.png')
+            )
+            
+            # Save preprocessing comparison
+            save_preprocessing_comparison(
+                original_volumes,
+                all_volumes[:3],  # Only temporal volumes
+                os.path.join(dirs['preprocessing'], 'preprocessing_comparison.png')
+            )
+            
+            print(f"✅ Preprocessing analysis saved successfully!")
+            
+        except Exception as e:
+            print(f"⚠️ Warning: Could not save preprocessing analysis: {e}")
+    
     return torch.from_numpy(volume_stack).float().unsqueeze(0)

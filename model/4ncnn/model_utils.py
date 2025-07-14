@@ -68,13 +68,17 @@ def load_model(model_path: str, verbose: bool = True):
     return model
 
 
-def run_inference(model, input_tensor: torch.Tensor):
+def run_inference(model, input_tensor: torch.Tensor, save_analysis: bool = False,
+                 analysis_output_dir: str = None, sample_name: str = None):
     """
     Run inference on input tensor using pre-loaded model.
     
     Args:
         model: Pre-loaded model in eval mode
         input_tensor: Input tensor of shape [1, 4, D, H, W]
+        save_analysis: Whether to save model analysis visualizations
+        analysis_output_dir: Directory to save analysis outputs
+        sample_name: Name of the sample for organizing outputs
     
     Returns:
         tuple: (predicted_index, predicted_class, confidence)
@@ -86,4 +90,37 @@ def run_inference(model, input_tensor: torch.Tensor):
         confidence, predicted_idx = torch.max(probabilities, 1)
 
     predicted_class = CLASS_NAMES[predicted_idx.item()]
+    
+    # Save model analysis if requested
+    if save_analysis and analysis_output_dir and sample_name:
+        try:
+            from visualization_utils import (
+                create_output_structure, save_model_activations, save_prediction_analysis
+            )
+            
+            # Create output structure
+            dirs = create_output_structure(analysis_output_dir, sample_name)
+            print(f"🧠 Saving model analysis to: {dirs['model_analysis']}")
+            
+            # Save activation maps
+            save_model_activations(
+                model, 
+                input_tensor, 
+                os.path.join(dirs['model_analysis'], 'activation_maps.png'),
+                device=DEVICE
+            )
+            
+            # Save prediction analysis
+            save_prediction_analysis(
+                output,
+                predicted_class,
+                confidence.item(),
+                os.path.join(dirs['model_analysis'], 'prediction_analysis.png')
+            )
+            
+            print(f"✅ Model analysis saved successfully!")
+            
+        except Exception as e:
+            print(f"⚠️ Warning: Could not save model analysis: {e}")
+    
     return predicted_idx.item(), predicted_class, confidence.item()
