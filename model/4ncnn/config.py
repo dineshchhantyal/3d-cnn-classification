@@ -19,11 +19,11 @@ HPARAMS = {
     "max_samples_per_class": {
         "mitotic": 216,
         "new_daughter": 216, 
-        "stable": 648  # 3x more stable samples (more common in nature)
+        "stable": 216  # 3x more stable samples (more common in nature)
     },
     
     # Class weights to balance training loss (inverse of sample ratios)
-    "class_weights": [3.0, 3.0, 1.0],  # [mitotic, new_daughter, stable]
+    "class_weights": [1.0, 1.0, 1.0],  # [mitotic, new_daughter, stable]
 }
 
 # --- Shared Constants ---
