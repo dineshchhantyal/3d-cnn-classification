@@ -23,16 +23,19 @@ import time
 def create_stack3_config():
     """Create optimized configuration for stack3 dataset processing."""
     config = VideoConfig()
+    raw_dataset_path = Path(
+        "/mnt/home/dchhantyal/3d-cnn-classification/raw-data/230212_stack6/"
+    )
 
     # Dataset specific paths
-    config.raw_data_path = "/mnt/home/dchhantyal/3d-cnn-classification/raw-data/221016_FUCCI_Nanog_stack_3/registered_images"
-    config.label_data_path = "/mnt/home/dchhantyal/3d-cnn-classification/raw-data/221016_FUCCI_Nanog_stack_3/registered_label_images"
-    config.model_path = "/mnt/home/dchhantyal/3d-cnn-classification/model/4ncnn/training_outputs/20250710-131550/best_model.pth"
+    config.raw_data_path = str(raw_dataset_path / "registered_images")
+    config.label_data_path = str(raw_dataset_path / "registered_label_images")
+    config.model_path = "/mnt/home/dchhantyal/3d-cnn-classification/model/4ncnn/training_outputs/20250711-143810/best_model.pth"
 
     # Output configuration
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    config.output_dir = f"/mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack3_4ncnn_{timestamp}"
-    config.video_name = "221016_FUCCI_Nanog_stack3_analysis"
+    config.output_dir = f"/mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack6_4ncnn_{timestamp}"
+    config.video_name = "stack6_video"
     config.cache_dir = f"{config.output_dir}/cache"
 
     # Model configuration - 4ncnn specific
@@ -116,10 +119,10 @@ def create_stack3_config():
 def verify_dataset():
     """Verify the dataset structure and count frames."""
     raw_path = Path(
-        "/mnt/home/dchhantyal/3d-cnn-classification/raw-data/221016_FUCCI_Nanog_stack_3/registered_images"
+        "/mnt/home/dchhantyal/3d-cnn-classification/raw-data/230212_stack6/registered_images"
     )
     label_path = Path(
-        "/mnt/home/dchhantyal/3d-cnn-classification/raw-data/221016_FUCCI_Nanog_stack_3/registered_label_images"
+        "/mnt/home/dchhantyal/3d-cnn-classification/raw-data/230212_stack6/registered_label_images"
     )
 
     print("🔍 Verifying dataset structure...")
@@ -238,6 +241,14 @@ def main():
     # Create configuration
     print("⚙️ Creating configuration...")
     config = create_stack3_config()
+
+    # DEBUG: Print the actual paths being used
+    print("🔍 DEBUG: Configuration paths:")
+    print(f"   Raw data path: {config.raw_data_path}")
+    print(f"   Label data path: {config.label_data_path}")
+    print(f"   Model path: {config.model_path}")
+    print(f"   Output dir: {config.output_dir}")
+    print("=" * 60)
 
     print(f"📋 Enhanced Configuration Summary:")
     print(f"   🤖 Model: 4ncnn")

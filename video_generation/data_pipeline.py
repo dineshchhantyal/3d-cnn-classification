@@ -46,6 +46,13 @@ class SlidingWindowProcessor:
         self.label_path = Path(config.label_data_path)
         self.cache_dir = Path(config.cache_dir)
         
+        # DEBUG: Print the paths received from config
+        print(f"🔍 DEBUG SlidingWindowProcessor init:")
+        print(f"   config.raw_data_path: {config.raw_data_path}")
+        print(f"   config.label_data_path: {config.label_data_path}")
+        print(f"   self.raw_path: {self.raw_path}")
+        print(f"   self.label_path: {self.label_path}")
+        
         # Create cache directory
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         
@@ -53,17 +60,26 @@ class SlidingWindowProcessor:
         self.frame_cache = {}
         
         # Discover dataset structure
-        self.frame_count = self._discover_frame_count()
-        self.frame_indices = list(range(1, self.frame_count - 1))  # Skip boundaries
+        self.frame_count, self.frame_range = self._discover_frame_count()
+        # Use actual frame range instead of assuming 0-based indexing
+        if self.frame_range:
+            start_frame, end_frame = self.frame_range
+            self.frame_indices = list(range(start_frame + 1, end_frame))  # Skip boundaries for sliding window
+        else:
+            self.frame_indices = list(range(1, self.frame_count - 1))  # Fallback
         
         print(f"📊 Dataset discovered:")
         print(f"   Raw data: {self.raw_path}")
         print(f"   Label data: {self.label_path}")
         print(f"   Total frames: {self.frame_count}")
+        if self.frame_range:
+            print(f"   Frame range: {self.frame_range[0]} to {self.frame_range[1]}")
         print(f"   Processable frames: {len(self.frame_indices)}")
+        if self.frame_indices:
+            print(f"   Processing range: {self.frame_indices[0]} to {self.frame_indices[-1]}")
     
-    def _discover_frame_count(self) -> int:
-        """Discover the number of frames in the dataset."""
+    def _discover_frame_count(self) -> tuple:
+        """Discover the number of frames and frame range in the dataset."""
         # Try to find frame files with different naming patterns
         raw_files = []
         
@@ -99,7 +115,11 @@ class SlidingWindowProcessor:
                     continue
             
             if frame_numbers:
-                return max(frame_numbers) + 1
+                frame_numbers.sort()
+                frame_range = (min(frame_numbers), max(frame_numbers))
+                frame_count = max(frame_numbers) + 1
+                print(f"🔍 Discovered frames: {len(frame_numbers)} files, range {frame_range[0]}-{frame_range[1]}")
+                return frame_count, frame_range
         
         # If no direct files, look for subdirectories with frame numbers
         subdirs = [d for d in self.raw_path.iterdir() if d.is_dir()]
@@ -115,11 +135,14 @@ class SlidingWindowProcessor:
                     continue
             
             if frame_numbers:
-                return max(frame_numbers) + 1
+                frame_numbers.sort()
+                frame_range = (min(frame_numbers), max(frame_numbers))
+                frame_count = max(frame_numbers) + 1
+                return frame_count, frame_range
         
         # Default fallback
         print("⚠️ Could not auto-detect frame count, using default of 100")
-        return 100
+        return 100, None
     
     def _load_frame(self, frame_idx: int) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -131,32 +154,65 @@ class SlidingWindowProcessor:
         Returns:
             Tuple of (raw_volume, label_volume)
         """
+        # DEBUG: Print the base paths being used
+        print(f"🔍 DEBUG _load_frame: Looking for frame {frame_idx}")
+        print(f"   Raw path base: {self.raw_path}")
+        print(f"   Label path base: {self.label_path}")
+        
         # Pattern 1: nuclei_reg8_XXX.tif and label_reg8_XXX.tif (your current data)
         raw_file = self.raw_path / f"nuclei_reg8_{frame_idx}.tif"
         label_file = self.label_path / f"label_reg8_{frame_idx}.tif"
         
+        print(f"   Trying pattern 1: {raw_file}")
+        
+        # Check if the primary pattern exists
+        if raw_file.exists() and label_file.exists():
+            try:
+                raw_volume = tifffile.imread(str(raw_file)).astype(np.float32)
+                label_volume = tifffile.imread(str(label_file)).astype(np.int32)
+                return raw_volume, label_volume
+            except Exception as e:
+                print(f"⚠️ Error loading primary pattern for frame {frame_idx}: {e}")
+        
         # Pattern 2: frame_XXX.tif format
-        if not raw_file.exists():
+        if not (raw_file.exists() and label_file.exists()):
             raw_file = self.raw_path / f"frame_{frame_idx:03d}.tif"
-        if not label_file.exists():
             label_file = self.label_path / f"frame_{frame_idx:03d}.tif"
+            print(f"   Trying pattern 2: {raw_file}")
+            
+            if raw_file.exists() and label_file.exists():
+                try:
+                    raw_volume = tifffile.imread(str(raw_file)).astype(np.float32)
+                    label_volume = tifffile.imread(str(label_file)).astype(np.int32)
+                    return raw_volume, label_volume
+                except Exception as e:
+                    print(f"⚠️ Error loading pattern 2 for frame {frame_idx}: {e}")
         
-        # Pattern 3: XXX.tif format
-        if not raw_file.exists():
+        # Pattern 3: XXX.tif format (last resort)
+        if not (raw_file.exists() and label_file.exists()):
             raw_file = self.raw_path / f"{frame_idx:03d}.tif"
-        if not label_file.exists():
             label_file = self.label_path / f"{frame_idx:03d}.tif"
+            print(f"   Trying pattern 3: {raw_file}")
+            
+            if raw_file.exists() and label_file.exists():
+                try:
+                    raw_volume = tifffile.imread(str(raw_file)).astype(np.float32)
+                    label_volume = tifffile.imread(str(label_file)).astype(np.int32)
+                    return raw_volume, label_volume
+                except Exception as e:
+                    print(f"⚠️ Error loading pattern 3 for frame {frame_idx}: {e}")
         
-        # Load volumes
-        try:
-            raw_volume = tifffile.imread(str(raw_file)).astype(np.float32)
-            label_volume = tifffile.imread(str(label_file)).astype(np.int32)
-            return raw_volume, label_volume
-        except Exception as e:
-            print(f"⚠️ Error loading frame {frame_idx}: {e}")
-            print(f"   Tried paths: {raw_file}, {label_file}")
-            # Return empty volumes as fallback
-            return np.zeros((64, 64, 64), dtype=np.float32), np.zeros((64, 64, 64), dtype=np.int32)
+        # If we get here, the frame doesn't exist with any pattern
+        print(f"❌ Frame {frame_idx} not found with any naming pattern")
+        if hasattr(self, 'frame_range') and self.frame_range:
+            min_frame, max_frame = self.frame_range
+            print(f"   Available frame range: {min_frame} to {max_frame}")
+            if frame_idx < min_frame or frame_idx > max_frame:
+                print(f"   Frame {frame_idx} is outside available range!")
+        
+        # Return empty volumes as fallback
+        print(f"   Returning empty volumes for frame {frame_idx}")
+        return np.zeros((64, 64, 64), dtype=np.float32), np.zeros((64, 64, 64), dtype=np.int32)
     
     def ensure_frames_loaded(self, timestamp: int):
         """

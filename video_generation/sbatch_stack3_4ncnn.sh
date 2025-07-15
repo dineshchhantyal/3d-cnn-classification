@@ -9,9 +9,9 @@
 #SBATCH --cpus-per-gpu=3
 #SBATCH --mem=16G
 
-# Script for generating ENHANCED video from 4ncnn model predictions on 221016_FUCCI_Nanog_stack_3 dataset
+# Script for generating ENHANCED video from 4ncnn model predictions on 230212_stack6 dataset
 # Created: July 11, 2025 - Enhanced with congested nuclei handling and improved visualization
-# Dataset: 221016_FUCCI_Nanog_stack_3 (210 frames)
+# Dataset: 230212_stack6 (210 frames)
 # Model: 4ncnn best_model.pth from training_outputs/20250710-131550
 # 
 # ENHANCEMENTS:
@@ -53,8 +53,8 @@ mkdir -p logs
 mkdir -p video_generation/output
 
 # Dataset and model paths
-RAW_DATA_PATH="/mnt/home/dchhantyal/3d-cnn-classification/raw-data/221016_FUCCI_Nanog_stack_3/registered_images"
-LABEL_DATA_PATH="/mnt/home/dchhantyal/3d-cnn-classification/raw-data/221016_FUCCI_Nanog_stack_3/registered_label_images"
+RAW_DATA_PATH="/mnt/home/dchhantyal/3d-cnn-classification/raw-data/230212_stack6/registered_images"
+LABEL_DATA_PATH="/mnt/home/dchhantyal/3d-cnn-classification/raw-data/230212_stack6/registered_label_images"
 MODEL_PATH="/mnt/home/dchhantyal/3d-cnn-classification/model/4ncnn/training_outputs/20250710-131550/best_model.pth"
 OUTPUT_DIR="/mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack3_4ncnn_$(date +%Y%m%d_%H%M%S)"
 

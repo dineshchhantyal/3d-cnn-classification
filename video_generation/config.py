@@ -21,6 +21,8 @@ class VideoConfig:
     model_path: Optional[str] = None  # Custom model path (auto-detect if None)
     batch_size: int = 32  # GPU batch size
     device: str = "auto"  # 'auto', 'cuda', 'cpu', 'cuda:0'
+    use_gpu: bool = True  # Enable GPU acceleration
+    compile_model: bool = False  # Enable model compilation (TorchScript optimization)
 
     # ===== DATASET SETTINGS =====
     raw_data_path: str = ""  # Path to raw volume data
@@ -104,6 +106,7 @@ class VideoConfig:
 
     # ===== VIDEO SETTINGS =====
     video_format: str = "mp4"  # 'mp4' or 'gif'
+    video_name: str = "output_video"  # Base name for output video files
     fps: int = 2  # Frames per second (15min real-life per frame)
     resolution: tuple = (1920, 1080)  # Output video resolution (width, height)
     quality: str = "high"  # 'low', 'medium', 'high'
@@ -180,8 +183,21 @@ class VideoConfig:
         return cls.from_dict(config_dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert config to dictionary."""
-        return asdict(self)
+        """Convert config to dictionary with Path objects converted to strings."""
+        config_dict = asdict(self)
+        
+        # Recursively convert Path objects to strings for JSON serialization
+        def convert_paths(obj):
+            if isinstance(obj, Path):
+                return str(obj)
+            elif isinstance(obj, dict):
+                return {k: convert_paths(v) for k, v in obj.items()}
+            elif isinstance(obj, (list, tuple)):
+                return type(obj)(convert_paths(item) for item in obj)
+            else:
+                return obj
+        
+        return convert_paths(config_dict)
 
     def to_json(self, json_path: Union[str, Path]):
         """Save configuration to JSON file."""

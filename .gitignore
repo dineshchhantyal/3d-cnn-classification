@@ -24,6 +24,7 @@ share/python-wheels/
 MANIFEST
 
 .github
+**/output/**
 
 # PyTorch Models
 *.pth
@@ -44,7 +45,7 @@ raw-data/
 processed_data/
 nuclei_state_dataset/
 mitotic/
-stable/
+stable
 death/
 new_daughter/
 
