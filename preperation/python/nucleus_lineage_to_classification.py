@@ -30,8 +30,9 @@ def get_file_paths(base_dir, frame_num):
     registered_dir = Path(base_dir) / "registered_images"
     return {
         "label": list(label_dir.glob(f"label_reg8_{frame_num}.tif")),
-        "registered": list(registered_dir.glob(f"nuclei_reg8_{frame_num}.tif"))
+        "registered": list(registered_dir.glob(f"nuclei_reg8_{frame_num}.tif")),
     }
+
 
 def generate_frame_label(frame_num, event_frame):
     """Generate frame label (t, t-1, t+1, etc.)"""
@@ -43,27 +44,34 @@ def generate_frame_label(frame_num, event_frame):
     else:
         return f"t+{offset}"
 
+
 def safe_bounds(volume_shape, bbox):
     """Safely calculate bounds within volume limits"""
     z_min, z_max, y_min, y_max, x_min, x_max = bbox
     vol_z, vol_y, vol_x = volume_shape
-    
+
     return {
-        'z': (max(0, min(z_min, vol_z - 1)), max(z_min + 1, min(z_max + 1, vol_z))),
-        'y': (max(0, min(y_min, vol_y - 1)), max(y_min + 1, min(y_max + 1, vol_y))),
-        'x': (max(0, min(x_min, vol_x - 1)), max(x_min + 1, min(x_max + 1, vol_x)))
+        "z": (max(0, min(z_min, vol_z - 1)), max(z_min + 1, min(z_max + 1, vol_z))),
+        "y": (max(0, min(y_min, vol_y - 1)), max(y_min + 1, min(y_max + 1, vol_y))),
+        "x": (max(0, min(x_min, vol_x - 1)), max(x_min + 1, min(x_max + 1, vol_x))),
     }
 
 
 def process_single_nucleus_threadsafe(
-    candidate, timestamp, timeframe, volume_list, output_dir, dataset_name="230212_stack6", total_nuclei_in_entire_frame=None
+    candidate,
+    timestamp,
+    timeframe,
+    volume_list,
+    output_dir,
+    dataset_name="230212_stack6",
+    total_nuclei_in_entire_frame=None,
 ):
     """
     Thread-safe function to process a single nucleus extraction and save.
-    
+
     This function is designed to be called concurrently for multiple nuclei
     within the same timestamp. It handles all extraction and saving for one nucleus.
-    
+
     Args:
         candidate: Dictionary containing 'node' and 'classification'
         timestamp: Current timestamp being processed
@@ -71,14 +79,14 @@ def process_single_nucleus_threadsafe(
         volume_list: List of (frame_num, reg_volume, lbl_volume) tuples
         output_dir: Base output directory for saving
         dataset_name: Dataset name for file naming
-        
+
     Returns:
         dict: Processing result with success status and metadata
     """
     thread_id = threading.get_ident()
     node = candidate["node"]
     classification = candidate["classification"]
-    
+
     # Convert nucleus_id to integer to match numpy array data types
     try:
         nucleus_id = int(node.label)
@@ -88,10 +96,12 @@ def process_single_nucleus_threadsafe(
             "error": f"Invalid nucleus ID format: {node.label}",
             "nucleus_id": node.label,
             "thread_id": thread_id,
-            "classification": classification
+            "classification": classification,
         }
 
-    print(f"      [Thread {thread_id}] Processing nucleus {nucleus_id} ({classification.upper()})")
+    print(
+        f"      [Thread {thread_id}] Processing nucleus {nucleus_id} ({classification.upper()})"
+    )
 
     # Extract time series for this nucleus
     node_info = {
@@ -100,7 +110,7 @@ def process_single_nucleus_threadsafe(
         "parent": node.parent.node_id if node.parent else None,
         "children": (list(node.id_to_child.keys()) if node.id_to_child else []),
     }
-    
+
     try:
         result = extract_nucleus_time_series(
             nucleus_id,
@@ -123,7 +133,7 @@ def process_single_nucleus_threadsafe(
                 "save_path": result.get("save_path"),
                 "volume_size": result.get("volume_size", 0),
                 "thread_id": thread_id,
-                "classification": classification
+                "classification": classification,
             }
         else:
             return {
@@ -131,17 +141,18 @@ def process_single_nucleus_threadsafe(
                 "error": "Extraction failed",
                 "nucleus_id": nucleus_id,
                 "thread_id": thread_id,
-                "classification": classification
+                "classification": classification,
             }
-            
+
     except Exception as e:
         return {
             "success": False,
             "error": f"Exception during processing: {str(e)}",
             "nucleus_id": nucleus_id,
             "thread_id": thread_id,
-            "classification": classification
+            "classification": classification,
         }
+
 
 def check_if_frame_exists(base_dir, event_frame):
     """
@@ -156,6 +167,7 @@ def check_if_frame_exists(base_dir, event_frame):
     """
     file_paths = get_file_paths(base_dir, event_frame)
     return bool(file_paths["label"] and file_paths["registered"])
+
 
 def get_volume_by_timestamp(base_dir, event_frame):
     """
@@ -511,7 +523,9 @@ def nucleus_extractor(
                 if nucleus_id in all_nucleus_ids:
                     valid_candidates.append(candidate)
                 else:
-                    print(f"      ❌ Nucleus {nucleus_id} not found in timestamp {timestamp}")
+                    print(
+                        f"      ❌ Nucleus {nucleus_id} not found in timestamp {timestamp}"
+                    )
             except (ValueError, TypeError):
                 print(f"      ❌ Invalid nucleus ID format: {candidate['node'].label}")
                 continue
@@ -520,12 +534,14 @@ def nucleus_extractor(
             print(f"   ❌ No valid candidates found for timestamp {timestamp}")
             continue
 
-        print(f"   🎯 Processing {len(valid_candidates)} valid nuclei with concurrent extraction...")
+        print(
+            f"   🎯 Processing {len(valid_candidates)} valid nuclei with concurrent extraction..."
+        )
 
         # Use ThreadPoolExecutor for concurrent processing of nuclei within this timestamp
         # We use a conservative number of threads to avoid overwhelming the system
         max_workers = min(8, len(valid_candidates), os.cpu_count() or 4)
-        
+
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             # Create a partial function with fixed arguments for all nuclei in this timestamp
             process_func = partial(
@@ -535,44 +551,54 @@ def nucleus_extractor(
                 volume_list=volume_list,
                 output_dir=output_dir,
                 dataset_name=Path(base_dir).name,
-                total_nuclei_in_entire_frame=len(all_nucleus_ids)
+                total_nuclei_in_entire_frame=len(all_nucleus_ids),
             )
-            
+
             # Submit all tasks
             future_to_candidate = {
                 executor.submit(process_func, candidate): candidate
                 for candidate in valid_candidates
             }
-            
+
             # Collect results as they complete
             timestamp_successes = 0
             for future in as_completed(future_to_candidate):
                 candidate = future_to_candidate[future]
                 try:
                     result = future.result()
-                    
+
                     if result["success"]:
                         timestamp_successes += 1
                         successful_extractions += 1
-                        
+
                         # Keep minimal tracking for summary
-                        results[result["classification"]].append({
-                            "nucleus_id": result["nucleus_id"],
-                            "event_frame": timestamp,
-                            "saved": result.get("saved", False),
-                            "save_path": result.get("save_path"),
-                            "volume_size": result.get("volume_size", 0),
-                        })
-                        
-                        print(f"      ✅ [Thread {result['thread_id']}] Nucleus {result['nucleus_id']} extraction successful")
+                        results[result["classification"]].append(
+                            {
+                                "nucleus_id": result["nucleus_id"],
+                                "event_frame": timestamp,
+                                "saved": result.get("saved", False),
+                                "save_path": result.get("save_path"),
+                                "volume_size": result.get("volume_size", 0),
+                            }
+                        )
+
+                        print(
+                            f"      ✅ [Thread {result['thread_id']}] Nucleus {result['nucleus_id']} extraction successful"
+                        )
                     else:
-                        print(f"      ❌ [Thread {result['thread_id']}] Nucleus {result['nucleus_id']} failed: {result.get('error', 'Unknown error')}")
-                        
+                        print(
+                            f"      ❌ [Thread {result['thread_id']}] Nucleus {result['nucleus_id']} failed: {result.get('error', 'Unknown error')}"
+                        )
+
                 except Exception as e:
                     nucleus_id = candidate["node"].label
-                    print(f"      ❌ Exception processing nucleus {nucleus_id}: {str(e)}")
+                    print(
+                        f"      ❌ Exception processing nucleus {nucleus_id}: {str(e)}"
+                    )
 
-        print(f"   📊 Timestamp {timestamp} completed: {timestamp_successes}/{len(valid_candidates)} nuclei extracted successfully")
+        print(
+            f"   📊 Timestamp {timestamp} completed: {timestamp_successes}/{len(valid_candidates)} nuclei extracted successfully"
+        )
 
     print(f"\n🎯 EXTRACTION COMPLETE:")
     print(f"   Successful: {successful_extractions}/{total_candidates}")
@@ -589,7 +615,11 @@ def nucleus_extractor(
 
 
 def save_single_nucleus_immediate(
-    result, base_output_dir, dataset_name, classification, total_nuclei_in_entire_frame=None
+    result,
+    base_output_dir,
+    dataset_name,
+    classification,
+    total_nuclei_in_entire_frame=None,
 ):
     """
     Save a single extracted nucleus immediately to proper folder structure.
@@ -621,8 +651,12 @@ def save_single_nucleus_immediate(
     )
 
     # Use entire frame count for folder naming, fallback to cropped region count
-    folder_nucleus_count = total_nuclei_in_entire_frame if total_nuclei_in_entire_frame is not None else total_nuclei_in_cropped_region
-    
+    folder_nucleus_count = (
+        total_nuclei_in_entire_frame
+        if total_nuclei_in_entire_frame is not None
+        else total_nuclei_in_cropped_region
+    )
+
     # Create nucleus directory with ENTIRE FRAME count
     nucleus_dir_name = f"{dataset_name}_frame_{event_frame:03d}_nucleus_{nucleus_id:03d}_count_{folder_nucleus_count}"
     nucleus_dir_path = os.path.join(class_dir, nucleus_dir_name)
@@ -761,7 +795,7 @@ def extract_nucleus_time_series(
     for frame_num, reg_volume, lbl_volume in volume_list:
         # Generate dynamic label using utility function
         frame_label = generate_frame_label(frame_num, event_frame)
-        
+
         print(f"         📸 Processing {frame_label} (frame {frame_num})")
 
         if reg_volume is None or lbl_volume is None:
@@ -773,9 +807,9 @@ def extract_nucleus_time_series(
         try:
             # Use safe_bounds utility function
             bounds = safe_bounds(reg_volume.shape, bbox)
-            z_start, z_end = bounds['z']
-            y_start, y_end = bounds['y']
-            x_start, x_end = bounds['x']
+            z_start, z_end = bounds["z"]
+            y_start, y_end = bounds["y"]
+            x_start, x_end = bounds["x"]
 
             img_roi = reg_volume[z_start:z_end, y_start:y_end, x_start:x_end]
             lbl_roi = lbl_volume[z_start:z_end, y_start:y_end, x_start:x_end]
@@ -924,7 +958,11 @@ def extract_nucleus_time_series(
 
             # Save to proper folder structure
             nucleus_dir_path = save_single_nucleus_immediate(
-                results, output_dir, dataset_name, classification, total_nuclei_in_entire_frame
+                results,
+                output_dir,
+                dataset_name,
+                classification,
+                total_nuclei_in_entire_frame,
             )
 
             print(f"      💾 Saved to: {nucleus_dir_path}")

@@ -60,6 +60,12 @@ def create_stack3_config():
     config.dark_theme = True
     config.visualization_style = "matplotlib"
 
+    # Scientific visualization mode for publication quality
+    config.scientific_mode = True  # Enable clean raw data visualization
+    config.boundary_thickness = 0.4  # Thinner boundaries for subtle outlines
+    config.boundary_opacity = 0.7  # Semi-transparent boundaries
+    config.show_raw_background = True  # Show actual microscopy data
+
     # ENHANCED: Multi-video generation features (TEMPORARILY DISABLED due to renderer issues)
     # config.generate_per_class_videos = True
     # config.probability_visualization = True

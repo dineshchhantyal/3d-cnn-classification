@@ -35,6 +35,75 @@ class NucleusVisualization:
 
 
 class FrameRenderer:
+    def _add_scientific_legend(self, image: np.ndarray) -> np.ndarray:
+        """Add a color legend for class/status to the scientific visualization frame."""
+        result_image = image.copy()
+        height, width = result_image.shape[:2]
+        legend_width = 220
+        legend_height = 110
+        legend_x = width - legend_width - 20
+        legend_y = height - legend_height - 20
+
+        # Background rectangle
+        cv2.rectangle(
+            result_image,
+            (legend_x, legend_y),
+            (legend_x + legend_width, legend_y + legend_height),
+            (40, 40, 40),  # legend_bg
+            -1,
+        )
+        cv2.rectangle(
+            result_image,
+            (legend_x, legend_y),
+            (legend_x + legend_width, legend_y + legend_height),
+            (255, 255, 255),  # white border
+            1,
+        )
+
+        # Title
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.7
+        font_thickness = 2
+        cv2.putText(
+            result_image,
+            "Legend:",
+            (legend_x + 10, legend_y + 30),
+            font,
+            font_scale,
+            (255, 255, 255),
+            font_thickness,
+        )
+
+        # Class entries
+        class_entries = [
+            ("stable", (100, 150, 255)),
+            ("mitotic", (255, 150, 80)),
+            ("new_daughter", (120, 255, 120)),
+            ("death", (255, 120, 120)),
+        ]
+        y_offset = 55
+        for class_name, color in class_entries:
+            # Color box
+            cv2.rectangle(
+                result_image,
+                (legend_x + 15, legend_y + y_offset - 15),
+                (legend_x + 35, legend_y + y_offset + 5),
+                color,
+                -1,
+            )
+            # Class label
+            cv2.putText(
+                result_image,
+                class_name.replace("_", " ").title(),
+                (legend_x + 45, legend_y + y_offset),
+                font,
+                0.6,
+                (255, 255, 255),
+                1,
+            )
+            y_offset += 25
+
+        return result_image
     """
     High-quality frame rendering for video generation.
     Supports multiple visualization modes and styling options.
@@ -297,6 +366,224 @@ class FrameRenderer:
                 )
 
         return rgb_image
+
+    def create_scientific_projection(
+        self,
+        raw_volume: np.ndarray,
+        label_volume: np.ndarray,
+        nuclei_viz: List[NucleusVisualization],
+        projection_axis: str = "z",
+    ) -> np.ndarray:
+        """
+        Create scientific visualization with subtle boundaries over raw MIP, auto-zoomed to region containing all nuclei.
+
+        Args:
+            raw_volume: Raw 3D volume
+            label_volume: Label 3D volume
+            nuclei_viz: List of nucleus visualizations
+            projection_axis: Axis to project along ('x', 'y', 'z')
+
+        Returns:
+            2D projection image with subtle classification boundaries, zoomed to nuclei region
+        """
+        axis_map = {"x": 2, "y": 1, "z": 0}
+        axis_idx = axis_map[projection_axis]
+
+        # 1. Create MIP of raw volume (background)
+        raw_mip = np.max(raw_volume, axis=axis_idx)
+        label_mip = np.max(label_volume, axis=axis_idx).astype(np.int32)
+
+        # --- Auto-zoom: compute bounding box containing all nuclei ---
+        nucleus_ids = [viz.nucleus_id for viz in nuclei_viz]
+        mask = np.isin(label_mip, nucleus_ids)
+        if np.any(mask):
+            coords = np.argwhere(mask)
+            min_y, min_x = coords.min(axis=0)
+            max_y, max_x = coords.max(axis=0)
+            # Add padding (10% of box size, at least 10px)
+            pad_y = max(10, int(0.1 * (max_y - min_y + 1)))
+            pad_x = max(10, int(0.1 * (max_x - min_x + 1)))
+            y1 = max(0, min_y - pad_y)
+            y2 = min(raw_mip.shape[0], max_y + pad_y + 1)
+            x1 = max(0, min_x - pad_x)
+            x2 = min(raw_mip.shape[1], max_x + pad_x + 1)
+            # Crop
+            raw_mip_cropped = raw_mip[y1:y2, x1:x2]
+            label_mip_cropped = label_mip[y1:y2, x1:x2]
+        else:
+            # No nuclei: use full frame
+            raw_mip_cropped = raw_mip
+            label_mip_cropped = label_mip
+
+        # Normalize raw data to 0-255 range with good contrast
+        raw_normalized = self._normalize_raw_for_display(raw_mip_cropped)
+        background = np.stack([raw_normalized] * 3, axis=-1)
+
+        # Draw subtle classification boundaries
+        # Only pass nuclei_viz that are in the cropped region
+        if np.any(mask):
+            # Filter nuclei_viz to those in the crop
+            filtered_nuclei_viz = []
+            for viz in nuclei_viz:
+                # Project center to 2D
+                if axis_idx == 0:
+                    y, x = viz.position[1], viz.position[2]
+                elif axis_idx == 1:
+                    y, x = viz.position[0], viz.position[2]
+                else:
+                    y, x = viz.position[0], viz.position[1]
+                if y1 <= y < y2 and x1 <= x < x2:
+                    # Adjust position for crop
+                    new_viz = viz
+                    new_viz = NucleusVisualization(
+                        nucleus_id=viz.nucleus_id,
+                        position=(viz.position[0], viz.position[1] - y1, viz.position[2] - x1),
+                        class_name=viz.class_name,
+                        confidence=viz.confidence,
+                        color=viz.color,
+                        radius=viz.radius,
+                        volume_data=viz.volume_data,
+                    )
+                    filtered_nuclei_viz.append(new_viz)
+        else:
+            filtered_nuclei_viz = nuclei_viz
+
+        result_image = self._draw_scientific_boundaries(
+            background, label_mip_cropped, filtered_nuclei_viz
+        )
+
+        # Resize to output size
+        output_height = getattr(self.config, "output_height", 1080)
+        output_width = getattr(self.config, "output_width", 1920)
+        result_image = cv2.resize(result_image, (output_width, output_height), interpolation=cv2.INTER_CUBIC)
+
+        # Add overall status overlay (frame info)
+        frame_number = getattr(self, "current_frame", 0)
+        predictions_data = getattr(self, "current_predictions_data", None)
+        if predictions_data is None:
+            predictions_data = {"predictions": {}}
+            for viz in filtered_nuclei_viz:
+                predictions_data["predictions"][viz.nucleus_id] = {"class_name": viz.class_name}
+        result_image = self._add_scientific_frame_info(result_image, frame_number, predictions_data)
+        result_image = self._add_scientific_legend(result_image)
+        return result_image
+
+    def _normalize_raw_for_display(self, raw_data: np.ndarray) -> np.ndarray:
+        """Normalize raw microscopy data for optimal display."""
+        # Apply gentle contrast enhancement
+        p2, p98 = np.percentile(raw_data, (2, 98))
+        raw_clipped = np.clip(raw_data, p2, p98)
+
+        # Normalize to 0-255
+        if p98 > p2:
+            normalized = ((raw_clipped - p2) / (p98 - p2) * 255).astype(np.uint8)
+        else:
+            normalized = np.zeros_like(raw_data, dtype=np.uint8)
+
+        return normalized
+
+    def _draw_scientific_boundaries(
+        self,
+        background: np.ndarray,
+        label_mip: np.ndarray,
+        nuclei_viz: List[NucleusVisualization],
+    ) -> np.ndarray:
+        """Draw thin, subtle classification boundaries."""
+        result_image = background.copy()
+
+        # Classification colors (subtle but distinguishable)
+        classification_colors = {
+            "stable": (100, 150, 255),  # Subtle blue
+            "mitotic": (255, 150, 80),  # Subtle orange
+            "new_daughter": (120, 255, 120),  # Subtle green
+            "death": (255, 120, 120),  # Subtle red
+        }
+
+        boundary_thickness = getattr(self.config, "boundary_thickness", 1)
+        boundary_opacity = getattr(self.config, "boundary_opacity", 0.8)
+
+        for viz in nuclei_viz:
+            # Create mask for this nucleus ID
+            nucleus_mask = (label_mip == viz.nucleus_id).astype(np.uint8)
+
+            if not np.any(nucleus_mask):
+                continue
+
+            # Find contours (boundaries)
+            contours, _ = cv2.findContours(
+                nucleus_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+            )
+
+            # Get classification color
+            class_color = classification_colors.get(
+                viz.class_name, (128, 128, 128)  # Default gray
+            )
+
+            # Draw thin boundaries
+            cv2.drawContours(
+                result_image, contours, -1, class_color, boundary_thickness
+            )
+
+        return result_image
+
+    def _add_scientific_frame_info(
+        self, image: np.ndarray, timestamp: int, predictions_data: Dict
+    ) -> np.ndarray:
+        """Add clean, minimal frame information for scientific visualization."""
+        result_image = image.copy()
+
+        # Count predictions by class
+        class_counts = {}
+        if "predictions" in predictions_data:
+            for pred_data in predictions_data["predictions"].values():
+                class_name = pred_data["class_name"]
+                class_counts[class_name] = class_counts.get(class_name, 0) + 1
+
+        # Add frame number
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.8
+        font_thickness = 2
+        text_color = (255, 255, 255)  # White text
+
+        # Frame info at top left
+        frame_text = f"Frame: {timestamp}"
+        cv2.putText(
+            result_image,
+            frame_text,
+            (20, 40),
+            font,
+            font_scale,
+            text_color,
+            font_thickness,
+        )
+
+        # Class statistics below frame info
+        y_offset = 70
+        total_nuclei = sum(class_counts.values())
+
+        if total_nuclei > 0:
+            stats_text = f"Total Nuclei: {total_nuclei}"
+            cv2.putText(
+                result_image, stats_text, (20, y_offset), font, 0.6, text_color, 1
+            )
+            y_offset += 25
+
+            # Individual class counts
+            for class_name, count in class_counts.items():
+                if count > 0:
+                    class_text = f"{class_name.title()}: {count}"
+                    cv2.putText(
+                        result_image,
+                        class_text,
+                        (20, y_offset),
+                        font,
+                        0.6,
+                        text_color,
+                        1,
+                    )
+                    y_offset += 25
+
+        return result_image
 
     def _overlay_nucleus_annotations(
         self,
@@ -617,8 +904,25 @@ class FrameRenderer:
                 # Create empty frame
                 return self._create_empty_frame(timestamp)
 
-            # Render frame
-            if (
+            # Render frame based on mode
+            if getattr(self.config, "scientific_mode", False):
+                # Use scientific visualization with raw data background
+                # Load frame data
+                raw_volume, label_volume = self.load_frame_data(timestamp)
+                nuclei_viz = self.extract_nucleus_visualizations(timestamp, predictions)
+                projection_axis = getattr(self.config, "projection_axis", "z")
+                projection = self.create_scientific_projection(
+                    raw_volume, label_volume, nuclei_viz, projection_axis
+                )
+                # Save the projection as an image
+                frame_path = self.frames_dir / f"frame_{timestamp:06d}.png"
+                plt.figure(figsize=(self.fig_width, self.fig_height), dpi=self.fig_dpi)
+                plt.imshow(projection, origin="lower", aspect="equal")
+                plt.axis("off")
+                plt.savefig(frame_path, dpi=self.fig_dpi, bbox_inches="tight", pad_inches=0)
+                plt.close()
+                frame_path = str(frame_path)
+            elif (
                 getattr(self.config, "visualization_style", "matplotlib")
                 == "matplotlib"
             ):

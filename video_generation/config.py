@@ -56,6 +56,15 @@ class VideoConfig:
         50.0  # Minimum distance between labels to avoid collisions
     )
 
+    # === SCIENTIFIC VISUALIZATION MODE ===
+    scientific_mode: bool = False  # Enable clean scientific visualization
+    boundary_thickness: int = 1  # Thickness of nucleus boundaries (1-2 pixels)
+    boundary_opacity: float = 0.8  # Opacity of classification boundaries
+    show_raw_background: bool = True  # Show raw MIP as background
+    show_nucleus_fills: bool = False  # Disable filled nuclei shapes
+    minimal_labels: bool = False  # Minimal text overlay (only frame info)
+    frame_info_position: str = "top"  # Position for frame information
+
     # Text and visual enhancement
     label_font_size: float = 1.0  # Font size multiplier for labels
     outline_thickness: int = 3  # Thickness of nucleus outlines
@@ -185,7 +194,7 @@ class VideoConfig:
     def to_dict(self) -> Dict[str, Any]:
         """Convert config to dictionary with Path objects converted to strings."""
         config_dict = asdict(self)
-        
+
         # Recursively convert Path objects to strings for JSON serialization
         def convert_paths(obj):
             if isinstance(obj, Path):
@@ -196,7 +205,7 @@ class VideoConfig:
                 return type(obj)(convert_paths(item) for item in obj)
             else:
                 return obj
-        
+
         return convert_paths(config_dict)
 
     def to_json(self, json_path: Union[str, Path]):

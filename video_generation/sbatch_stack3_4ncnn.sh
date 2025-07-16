@@ -6,20 +6,14 @@
 #SBATCH -N 1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus-per-node=1
-#SBATCH --cpus-per-gpu=3
-#SBATCH --mem=16G
+#SBATCH --cpus-per-gpu=2
+#SBATCH --mem=32G
 
 # Script for generating ENHANCED video from 4ncnn model predictions on 230212_stack6 dataset
 # Created: July 11, 2025 - Enhanced with congested nuclei handling and improved visualization
 # Dataset: 230212_stack6 (210 frames)
 # Model: 4ncnn best_model.pth from training_outputs/20250710-131550
 # 
-# ENHANCEMENTS:
-# - Slower FPS (3 instead of 15) for better observation
-# - Smart label positioning to handle overlapping nuclei
-# - Congestion detection and visual indicators
-# - Enhanced text size and contrast for better readability
-# - Detailed progress logging with ETA estimates
 # - Higher resolution output (2560x1440)
 
 echo "=================================================="
@@ -39,11 +33,6 @@ source ~/venvs/jupyter-gpu/bin/activate
 
 # Set up environment with optimized threading
 export PYTHONPATH="/mnt/home/dchhantyal/3d-cnn-classification:$PYTHONPATH"
-
-# Optimize threading for better CPU utilization
-export OMP_NUM_THREADS=4
-export MKL_NUM_THREADS=4
-export NUMBA_NUM_THREADS=4
 
 # Navigate to project directory
 cd /mnt/home/dchhantyal/3d-cnn-classification
