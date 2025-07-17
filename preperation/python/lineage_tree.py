@@ -4,6 +4,7 @@ OO structure for cell lineage tracking.
 
 import os
 import numpy as np
+from collections import defaultdict
 
 
 class Node:
@@ -718,7 +719,7 @@ def _classify_event_type(node, final_frame):
 
 
 def classify_nodes_by_timestamp_example(
-    forest, timestamp, final_frame, stable_window=4
+    nodes, forest, timestamp, final_frame, stable_window=4
 ):
     """
     Classify nodes in a forest based on their lineage and children count at a specific timestamp.
@@ -749,19 +750,19 @@ if __name__ == "__main__":
     forest.find_tracks_and_lineages()
 
     # Group nodes by timestamp
-    # nodes_by_timestamp = defaultdict(list)
-    # for node in forest.id_to_node.values():
-    #     nodes_by_timestamp[node.timestamp_ordinal].append(node)
+    nodes_by_timestamp = defaultdict(list)
+    for node in forest.id_to_node.values():
+        nodes_by_timestamp[node.timestamp_ordinal].append(node)
 
-    # sorted_timestamps = sorted(nodes_by_timestamp.keys())
-    # final_frame = max(sorted_timestamps)
+    sorted_timestamps = sorted(nodes_by_timestamp.keys())
+    final_frame = max(sorted_timestamps)
 
     timestamp = 65
-    final_frame = 204
     stable_window = 4
 
+    # [IN REAL USAGE, We will loop thorugh all timestamps]
     classified = classify_nodes_by_timestamp_example(
-        forest, timestamp, final_frame, stable_window
+        nodes_by_timestamp[timestamp], forest, timestamp, final_frame, stable_window
     )
     print("Classified Nodes at Timestamp", timestamp)
     for node_id, classification in classified.items():
