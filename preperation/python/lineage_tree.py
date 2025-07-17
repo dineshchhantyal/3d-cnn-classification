@@ -748,6 +748,14 @@ if __name__ == "__main__":
 
     forest.find_tracks_and_lineages()
 
+    # Group nodes by timestamp
+    # nodes_by_timestamp = defaultdict(list)
+    # for node in forest.id_to_node.values():
+    #     nodes_by_timestamp[node.timestamp_ordinal].append(node)
+
+    # sorted_timestamps = sorted(nodes_by_timestamp.keys())
+    # final_frame = max(sorted_timestamps)
+
     timestamp = 65
     final_frame = 204
     stable_window = 4
