@@ -623,3 +623,138 @@ def read_json_file(path):
         json_ob = json.load(f)
 
     return make_forest_from_haydens_json_graph(json_ob)
+
+
+def get_nodes_around(node, forest, window=4):
+    """
+    Given a node and forest, return the list of nodes before and after (excluding current node)
+    for the same track (nucleus), sorted by timestamp_ordinal.
+    Returns: (nodes_before, nodes_after)
+    """
+    track_root = node.track_ancestor()
+    track = forest.id_to_track[track_root.node_id]
+    ts_to_node = {n.timestamp_ordinal: n for n in track.id_to_node.values()}
+    ordinals = sorted(ts_to_node.keys())
+    idx = ordinals.index(node.timestamp_ordinal)
+
+    nodes_before = []
+    nodes_after = []
+    for i in range(1, window + 1):
+        if idx - i >= 0:
+            nodes_before.append(ts_to_node[ordinals[idx - i]])
+        if idx + i < len(ordinals):
+            nodes_after.append(ts_to_node[ordinals[idx + i]])
+    return list(reversed(nodes_before)), nodes_after
+
+
+def classify_node(node, final_frame, forest=None, stable_window=4, cache=None):
+    """
+    Classify a node based on its lineage and children count.
+
+    Args:
+        node: Node to classify
+        final_frame: The last frame in the dataset (used for death classification)
+        forest: Optional lineage forest for stable window checks
+        stable_window: Number of frames to consider for stable classification
+        cache: Optional cache to avoid recomputing classifications
+    Returns:
+        str: Classification type of the node
+
+    Classification types:
+    - "mitotic": Node has 2 or more children (indicating division)
+    - "new_daughter": Node has 1 child and its parent has 2 or more children
+    - "death": Node has no children and its timestamp is before the final frame
+    - "stable": Node has 1 child and no division events in the stable window
+    - "unknown": Node does not fit any of the above categories
+    """
+    if cache is None:
+        cache = {}
+
+    if node.node_id in cache:
+        return cache[node.node_id]
+
+    children_count = len(node.id_to_child)
+
+    if children_count >= 2:
+        cache[node.node_id] = "mitotic"
+        return "mitotic"
+    elif node.parent and len(node.parent.id_to_child) >= 2:
+        cache[node.node_id] = "new_daughter"
+        return "new_daughter"
+    elif children_count == 0 and node.timestamp_ordinal < final_frame:
+        cache[node.node_id] = "death"
+        return "death"
+    elif children_count == 1 and forest is not None:
+        nodes_before, nodes_after = get_nodes_around(node, forest, window=stable_window)
+        window_nodes = nodes_before + nodes_after
+        for n in window_nodes:
+            # Only check direct event, not recursively
+            c = _classify_event_type(n, final_frame)
+
+            if (
+                c != "stable"
+            ):  # if any of the nodes in the window is not stable then current node is not stable
+                cache[node.node_id] = "unknown"
+                return "unknown"
+        cache[node.node_id] = "stable"
+        return "stable"
+    else:
+        cache[node.node_id] = "unknown"
+        return "unknown"
+
+
+def _classify_event_type(node, final_frame):
+    children_count = len(node.id_to_child)
+    if children_count >= 2:
+        return "mitotic"
+    elif node.parent and len(node.parent.id_to_child) >= 2:
+        return "new_daughter"
+    elif children_count == 0 and node.timestamp_ordinal < final_frame:
+        return "death"
+    elif children_count == 1:
+        return "stable"
+    else:
+        return "unknown"
+
+
+def classify_nodes_by_timestamp_example(
+    forest, timestamp, final_frame, stable_window=4
+):
+    """
+    Classify nodes in a forest based on their lineage and children count at a specific timestamp.
+
+    Args:
+        forest: Forest containing the nodes
+        timestamp: Timestamp to classify nodes for
+        final_frame: The last frame in the dataset (used for death classification)
+        stable_window: Number of frames to consider for stable classification
+    Returns:
+        dict: Classification of nodes at the specified timestamp
+    """
+
+    classified_nodes = {}
+    for node in forest.id_to_node.values():
+        if node.timestamp_ordinal == timestamp:
+            classification = classify_node(node, final_frame, forest, stable_window)
+            classified_nodes[node.node_id] = classification
+    return classified_nodes
+
+
+if __name__ == "__main__":
+    # Sample usage of the lineage tree code
+    forest = read_json_file(
+        "/mnt/ceph/users/lbrown/MouseData/Rebecca/230212_stack6/LineageGraph.json"
+    )
+
+    forest.find_tracks_and_lineages()
+
+    timestamp = 65
+    final_frame = 204
+    stable_window = 4
+
+    classified = classify_nodes_by_timestamp_example(
+        forest, timestamp, final_frame, stable_window
+    )
+    print("Classified Nodes at Timestamp", timestamp)
+    for node_id, classification in classified.items():
+        print(f"Node ID: {node_id}, Classification: {classification}")
