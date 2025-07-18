@@ -2,10 +2,10 @@
 
 #SBATCH --job-name=epi_processing
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=4  # Conservative CPU allocation
-#SBATCH --mem=16G  # Conservative memory allocation
-#SBATCH --time=24:00:00  # 24 hours should be sufficient
+#SBATCH --ntasks-per-node=1  # Changed from 2
+#SBATCH --cpus-per-task=1    # Changed from 4
+#SBATCH --mem=16G            # This was perfect, keep it.
+#SBATCH --time=02:00:00      # Reduced from 24h to 2h (32 min runtime + buffer)
 #SBATCH --output=logs/david4epi_%j.out
 #SBATCH --error=logs/david4epi_%j.err
 
@@ -20,7 +20,6 @@ source ~/venvs/jupyter-gpu/bin/activate
 DATASET="David4EPI"
 TIMEFRAME=1
 OUTPUT_DIR="/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/david4epi_extracted"
-MAX_SAMPLES=1500  # Conservative limit to control processing time and storage
 
 # Create output directory if it doesn't exist
 mkdir -p "$OUTPUT_DIR"
@@ -35,7 +34,6 @@ echo "🖥️  Node: $SLURMD_NODENAME"
 echo "📁 Dataset: $DATASET"
 echo "⏱️  Timeframe: ±$TIMEFRAME"
 echo "📂 Output: $OUTPUT_DIR"
-echo "📊 Max samples: $MAX_SAMPLES"
 echo "========================================="
 
 # Run the processing script with verbose output
@@ -43,7 +41,6 @@ python process_dataset.py \
     --dataset "$DATASET" \
     --timeframe "$TIMEFRAME" \
     --output_dir "$OUTPUT_DIR" \
-    --max_samples "$MAX_SAMPLES" \
     --verbose
 
 # Capture exit status

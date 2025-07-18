@@ -648,7 +648,7 @@ def get_nodes_around(node, forest, window=4):
     return list(reversed(nodes_before)), nodes_after
 
 
-def classify_node(node, final_frame, forest=None, stable_window=4, cache=None):
+def classify_node(node, final_frame, forest=None, stable_window=4):
     """
     Classify a node based on its lineage and children count.
 
@@ -657,7 +657,6 @@ def classify_node(node, final_frame, forest=None, stable_window=4, cache=None):
         final_frame: The last frame in the dataset (used for death classification)
         forest: Optional lineage forest for stable window checks
         stable_window: Number of frames to consider for stable classification
-        cache: Optional cache to avoid recomputing classifications
     Returns:
         str: Classification type of the node
 
@@ -668,22 +667,14 @@ def classify_node(node, final_frame, forest=None, stable_window=4, cache=None):
     - "stable": Node has 1 child and no division events in the stable window
     - "unknown": Node does not fit any of the above categories
     """
-    if cache is None:
-        cache = {}
-
-    if node.node_id in cache:
-        return cache[node.node_id]
 
     children_count = len(node.id_to_child)
 
     if children_count >= 2:
-        cache[node.node_id] = "mitotic"
         return "mitotic"
     elif node.parent and len(node.parent.id_to_child) >= 2:
-        cache[node.node_id] = "new_daughter"
         return "new_daughter"
     elif children_count == 0 and node.timestamp_ordinal < final_frame:
-        cache[node.node_id] = "death"
         return "death"
     elif children_count == 1 and forest is not None:
         nodes_before, nodes_after = get_nodes_around(node, forest, window=stable_window)
@@ -695,12 +686,9 @@ def classify_node(node, final_frame, forest=None, stable_window=4, cache=None):
             if (
                 c != "stable"
             ):  # if any of the nodes in the window is not stable then current node is not stable
-                cache[node.node_id] = "unknown"
                 return "unknown"
-        cache[node.node_id] = "stable"
         return "stable"
     else:
-        cache[node.node_id] = "unknown"
         return "unknown"
 
 
