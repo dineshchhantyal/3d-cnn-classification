@@ -734,10 +734,9 @@ def classify_nodes_by_timestamp_example(
     """
 
     classified_nodes = {}
-    for node in forest.id_to_node.values():
-        if node.timestamp_ordinal == timestamp:
-            classification = classify_node(node, final_frame, forest, stable_window)
-            classified_nodes[node.node_id] = classification
+    for node in nodes:
+        classification = classify_node(node, final_frame, forest, stable_window)
+        classified_nodes[node.node_id] = classification
     return classified_nodes
 
 
