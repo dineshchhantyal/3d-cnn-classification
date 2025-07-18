@@ -110,36 +110,49 @@ def save_volume_slices(
 def save_segmentation_overlay(
     raw_volume: np.ndarray, mask_volume: np.ndarray, output_path: str
 ):
-    """Save overlay of segmentation mask on raw volume."""
+    """Save overlay of segmentation mask on raw volume with 2x4 grid:
+    Col 1: Max projection (raw, overlay)
+    Col 2-4: Slices at 1/4, 1/2, 3/4 depth (raw, overlay)
+    """
     if raw_volume is None or mask_volume is None:
         return
 
     depth = raw_volume.shape[0]
     slice_indices = [depth // 4, depth // 2, 3 * depth // 4]
 
-    fig, axes = plt.subplots(2, 3, figsize=(15, 10))
-    fig.suptitle("Segmentation Mask Overlay Analysis", fontsize=14, fontweight="bold")
+    fig, axes = plt.subplots(2, 4, figsize=(20, 10))
+    fig.suptitle("Segmentation Mask Overlay Analysis", fontsize=16, fontweight="bold")
 
+    # --- Column 1: Max projection ---
+    raw_max = np.max(raw_volume, axis=0)
+    mask_max = np.max(mask_volume, axis=0)
+
+    # Row 1, Col 1: Raw max projection
+    axes[0, 0].imshow(raw_max, cmap="gray")
+    axes[0, 0].set_title("Raw Max Projection")
+    axes[0, 0].axis("off")
+
+    # Row 2, Col 1: Overlay max projection
+    axes[1, 0].imshow(raw_max, cmap="gray")
+    axes[1, 0].imshow(mask_max, cmap="Reds", alpha=0.5)
+    axes[1, 0].set_title("Overlay Max Projection")
+    axes[1, 0].axis("off")
+
+    # --- Columns 2-4: Slices ---
     for i, slice_idx in enumerate(slice_indices):
-        raw_slice = raw_volume[slice_idx]
-        mask_slice = mask_volume[slice_idx]
+        # Row 1: Raw slice
+        axes[0, i + 1].imshow(raw_volume[slice_idx], cmap="gray")
+        axes[0, i + 1].set_title(f"Raw Slice {slice_idx}")
+        axes[0, i + 1].axis("off")
 
-        # Top row: Raw volume
-        axes[0, i].imshow(raw_slice, cmap="gray")
-        axes[0, i].set_title(f"Raw Volume - Slice {slice_idx}")
-        axes[0, i].axis("off")
-
-        # Bottom row: Overlay
-        axes[1, i].imshow(raw_slice, cmap="gray", alpha=0.7)
-
-        # Overlay mask in red where it exists
-        mask_rgba = np.zeros((*mask_slice.shape, 4))
-        mask_rgba[..., 0] = mask_slice  # Red channel
-        mask_rgba[..., 3] = mask_slice * 0.5  # Alpha channel
-        axes[1, i].imshow(mask_rgba)
-
-        axes[1, i].set_title(f"Overlay - Slice {slice_idx}")
-        axes[1, i].axis("off")
+        # Row 2: Overlay slice
+        axes[1, i + 1].imshow(raw_volume[slice_idx], cmap="gray", alpha=0.7)
+        mask_rgba = np.zeros((*mask_volume[slice_idx].shape, 4))
+        mask_rgba[..., 0] = mask_volume[slice_idx]  # Red channel
+        mask_rgba[..., 3] = mask_volume[slice_idx] * 0.5  # Alpha channel
+        axes[1, i + 1].imshow(mask_rgba)
+        axes[1, i + 1].set_title(f"Overlay Slice {slice_idx}")
+        axes[1, i + 1].axis("off")
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=150, bbox_inches="tight")
@@ -153,13 +166,13 @@ def save_preprocessing_comparison(
     Save before/after comparison of preprocessing steps using max intensity projections.
 
     Args:
-        original_volumes (dict): Dictionary with keys 't-1', 't', 't+1' mapping to 3D volumes.
-        processed_volumes (dict or list): List or dict of processed volumes in order [t-1, t, t+1].
+        original_volumes (dict): Dictionary with keys 't-1', 't', 't+1', 'mask' mapping to 3D volumes.
+        processed_volumes (dict or list): List or dict of processed volumes in order [t-1, t, t+1, mask].
         output_path (str): File path to save the comparison image.
     """
-    time_points = ["t-1", "t", "t+1"]
+    time_points = ["t-1", "t", "t+1", "mask"]
 
-    fig, axes = plt.subplots(2, 3, figsize=(18, 12))
+    fig, axes = plt.subplots(2, 4, figsize=(24, 12))
     fig.suptitle(
         "Preprocessing Comparison: Original vs Processed (Max Projection)",
         fontsize=16,
@@ -167,25 +180,14 @@ def save_preprocessing_comparison(
     )
 
     for i, tp in enumerate(time_points):
+        # --- Row 1: Original ---
         if tp in original_volumes and original_volumes[tp] is not None:
-            # Original volume (max projection along depth)
             orig_vol = original_volumes[tp]
             orig_slice = np.max(orig_vol, axis=0)
-
             im1 = axes[0, i].imshow(orig_slice, cmap="gray")
             axes[0, i].set_title(f"Original {tp}\n{orig_vol.shape}")
             axes[0, i].axis("off")
             plt.colorbar(im1, ax=axes[0, i], fraction=0.046, pad=0.04)
-
-            # Processed volume (max projection along depth)
-            if i < len(processed_volumes):
-                proc_vol = processed_volumes[i]
-                proc_slice = np.max(proc_vol, axis=0)
-
-                im2 = axes[1, i].imshow(proc_slice, cmap="gray")
-                axes[1, i].set_title(f"Processed {tp}\n{proc_vol.shape}")
-                axes[1, i].axis("off")
-                plt.colorbar(im2, ax=axes[1, i], fraction=0.046, pad=0.04)
         else:
             axes[0, i].text(
                 0.5,
@@ -195,6 +197,21 @@ def save_preprocessing_comparison(
                 va="center",
                 transform=axes[0, i].transAxes,
             )
+            axes[0, i].axis("off")
+
+        # --- Row 2: Processed ---
+        if isinstance(processed_volumes, dict):
+            proc_vol = processed_volumes.get(tp, None)
+        else:
+            proc_vol = processed_volumes[i] if i < len(processed_volumes) else None
+
+        if proc_vol is not None:
+            proc_slice = np.max(proc_vol, axis=0)
+            im2 = axes[1, i].imshow(proc_slice, cmap="gray")
+            axes[1, i].set_title(f"Processed {tp}\n{proc_vol.shape}")
+            axes[1, i].axis("off")
+            plt.colorbar(im2, ax=axes[1, i], fraction=0.046, pad=0.04)
+        else:
             axes[1, i].text(
                 0.5,
                 0.5,
@@ -203,7 +220,6 @@ def save_preprocessing_comparison(
                 va="center",
                 transform=axes[1, i].transAxes,
             )
-            axes[0, i].axis("off")
             axes[1, i].axis("off")
 
     plt.tight_layout()

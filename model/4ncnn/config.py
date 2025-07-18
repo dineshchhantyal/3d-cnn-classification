@@ -18,13 +18,12 @@ HPARAMS = {
     "num_input_channels": 4,  # [t-1, t, t+1, segmentation_mask]
     # Class-specific sample limits (matches your dataset)
     "max_samples_per_class": {
-        "mitotic": 213,
-        "new_daughter": 433,
-        "stable": 20919,
-        "death": 24,
+        "mitotic": 329,
+        "new_daughter": 329,
+        "stable": 329,
     },
     # Class weights calculated to balance the training loss
-    "class_weights": [25.34, 12.47, 0.26],  # [mitotic, new_daughter, stable, death]
+    "class_weights": [1, 1, 1],  # [mitotic, new_daughter, stable]
 }
 
 # --- Shared Constants ---

@@ -22,43 +22,17 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 from functools import partial
 from sliding_window_volume_manager import SlidingWindowVolumeManager
-from linage_tree import classify_node
+from volume_utils import (
+    get_volume_by_timestamp,
+    check_if_frame_exists,
+    get_file_paths,
+    generate_frame_label,
+    safe_bounds,
+)
+from lineage_tree import classify_node
+from matplotlib import pyplot as plt
 
 STABLE_WINDOW_LIMIT = 4
-
-
-# Extract common utilities
-def get_file_paths(base_dir, frame_num):
-    """Get paths for registered and label files"""
-    label_dir = Path(base_dir) / "registered_label_images"
-    registered_dir = Path(base_dir) / "registered_images"
-    return {
-        "label": list(label_dir.glob(f"label_reg8_{frame_num}.tif")),
-        "registered": list(registered_dir.glob(f"nuclei_reg8_{frame_num}.tif")),
-    }
-
-
-def generate_frame_label(frame_num, event_frame):
-    """Generate frame label (t, t-1, t+1, etc.)"""
-    offset = frame_num - event_frame
-    if offset == 0:
-        return "t"
-    elif offset < 0:
-        return f"t{offset}"
-    else:
-        return f"t+{offset}"
-
-
-def safe_bounds(volume_shape, bbox):
-    """Safely calculate bounds within volume limits"""
-    z_min, z_max, y_min, y_max, x_min, x_max = bbox
-    vol_z, vol_y, vol_x = volume_shape
-
-    return {
-        "z": (max(0, min(z_min, vol_z - 1)), max(z_min + 1, min(z_max + 1, vol_z))),
-        "y": (max(0, min(y_min, vol_y - 1)), max(y_min + 1, min(y_max + 1, vol_y))),
-        "x": (max(0, min(x_min, vol_x - 1)), max(x_min + 1, min(x_max + 1, vol_x))),
-    }
 
 
 def process_single_nucleus_threadsafe(
@@ -158,43 +132,6 @@ def process_single_nucleus_threadsafe(
         }
 
 
-def check_if_frame_exists(base_dir, event_frame):
-    """
-    Check if a specific frame exists in the dataset.
-
-    Args:
-        base_dir (str): Base directory of the dataset
-        event_frame (int): The timestamp to check
-
-    Returns:
-        bool: True if the frame exists, False otherwise
-    """
-    file_paths = get_file_paths(base_dir, event_frame)
-    return bool(file_paths["label"] and file_paths["registered"])
-
-
-def get_volume_by_timestamp(base_dir, event_frame):
-    """
-    Get the volume of nodes at a specific timestamp.
-
-    Args:
-        base_dir (str): Base directory of the dataset
-        event_frame (int): The timestamp to get the volume for
-
-    Returns:
-        dict: 'registered_image' and 'label_image' 3d numpy arrays
-    """
-    file_paths = get_file_paths(base_dir, event_frame)
-
-    if not file_paths["label"] or not file_paths["registered"]:
-        return {"registered_image": None, "label_image": None}
-
-    label_volume = tifffile.imread(file_paths["label"][0])
-    registered_volume = tifffile.imread(file_paths["registered"][0])
-
-    return {"registered_image": registered_volume, "label_image": label_volume}
-
-
 def find_nucleus_bounding_box(label_volume, nucleus_id, padding_factor=2.0):
     """
     Find 3D bounding box around a nucleus with optional padding
@@ -238,6 +175,82 @@ def find_nucleus_bounding_box(label_volume, nucleus_id, padding_factor=2.0):
     return (z_min, z_max, y_min, y_max, x_min, x_max)
 
 
+def print_classification_distribution(
+    classification_counts, max_samples=None, output_dir=None, save=False
+):
+    """
+    Print and optionally save the classification distribution.
+
+    Args:
+        classification_counts (dict): Dictionary with classification counts
+        max_samples (int, optional): Maximum samples per classification to display
+        output_dir (str, optional): Directory to save the distribution Plot
+        save (bool, optional): Whether to save the distribution chart or not
+    """
+    print(f"\n📊 CLASSIFICATION DISTRIBUTION:")
+    for classification, count in classification_counts.items():
+        if max_samples and count > max_samples:
+            print(f"   • {classification.upper()}: {max_samples} (limited)")
+        else:
+            print(f"   • {classification.upper()}: {count}")
+
+    if save and output_dir:
+        # Use today's date for subfolder
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        output_dir = Path(output_dir) / date_str
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_file = output_dir / "classification_distribution.png"
+
+        plt.figure(figsize=(10, 6))
+        plt.bar(classification_counts.keys(), classification_counts.values())
+        plt.xlabel("Classification")
+        plt.ylabel("Count")
+        plt.title("Nucleus Classification Distribution")
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.savefig(output_file)
+        plt.close()
+        print(f"   Distribution chart saved to {output_file}")
+
+
+def get_extraction_plan_with_sample_limits(
+    extraction_plan, valid_timestamps, max_samples
+):
+    """
+    Apply sample limits to the extraction plan.
+
+    Args:
+        extraction_plan (dict): The initial extraction plan.
+        valid_timestamps (list): List of valid timestamps for extraction.
+        max_samples (int, optional): Maximum samples per classification.
+
+    Returns:
+        dict: Updated extraction plan with sample limits applied.
+    """
+    if max_samples is None:
+        return extraction_plan
+
+    class_samples = defaultdict(int)
+    filtered_plan = {}
+
+    for timestamp in valid_timestamps:
+        filtered_candidates = []
+        for candidate in extraction_plan[timestamp]:
+            classification = candidate["classification"]
+            if class_samples[classification] < max_samples:
+                filtered_candidates.append(candidate)
+                class_samples[classification] += 1
+
+        if filtered_candidates:  # Only include timestamps with valid candidates
+            filtered_plan[timestamp] = filtered_candidates
+
+    print(f"\n🎯 LIMITED TO {max_samples} SAMPLES PER CLASS:")
+    for classification, count in class_samples.items():
+        print(f"   • {classification.upper()}: {count} samples")
+
+    return filtered_plan
+
+
 def nucleus_extractor(
     forest,
     timeframe=1,
@@ -249,21 +262,21 @@ def nucleus_extractor(
     Extract nuclei by processing all nuclei at each timestamp together.
 
     Algorithm:
-    1. Load initial sliding window (e.g., frames [0,1,2,3,4] for timestamp 2, timeframe=2)
-    2. Process ALL nuclei at current timestamp using the same loaded volumes
-    3. Slide window by one frame and repeat for next timestamp
+    1. Load the initial sliding window (e.g., frames [0,1,2,3,4] for timestamp 2, timeframe=2).
+    2. Process ALL nuclei at the current timestamp using the same loaded volumes.
+    3. Slide the window by one frame and repeat for the next timestamp.
 
     This minimizes volume loading and maximizes efficiency.
 
     Args:
-        forest: Forest object containing the lineage tree
-        timeframe: Timeframe for extraction (default is 1)
-        base_dir: Base directory of the dataset
-        output_dir: Directory to save extracted nuclei
-        max_samples: Maximum number of samples to extract per classification (None for all)
+        forest: Forest object containing the lineage tree.
+        timeframe: Timeframe for extraction (default is 1).
+        base_dir: Base directory of the dataset.
+        output_dir: Directory to save extracted nuclei.
+        max_samples: Maximum number of samples to extract per classification (None for all). Note: this is per classification, not total. Only the first max_samples will be extracted per classification. TODO: Random sampling.
 
     Returns:
-        dict: Extraction results organized by classification
+        dict: Extraction results organized by classification.
     """
     print("🚀 Starting nucleus extraction with timestamp-based processing...")
     # print configuration
@@ -342,30 +355,17 @@ def nucleus_extractor(
 
         extraction_plan[timestamp] = timestamp_candidates
 
-    print(f"\n📊 CLASSIFICATION DISTRIBUTION:")
-    for classification, count in classification_counts.items():
-        print(f"   • {classification.upper()}: {count} candidates")
+    # show classification distribution
+    print_classification_distribution(
+        classification_counts, max_samples, output_dir, save=True
+    )
 
     # Apply sample limits if specified
+
     if max_samples:
-        class_samples = defaultdict(int)
-        filtered_plan = {}
-
-        for timestamp in valid_timestamps:
-            filtered_candidates = []
-            for candidate in extraction_plan[timestamp]:
-                classification = candidate["classification"]
-                if class_samples[classification] < max_samples:
-                    filtered_candidates.append(candidate)
-                    class_samples[classification] += 1
-
-            if filtered_candidates:  # Only include timestamps with valid candidates
-                filtered_plan[timestamp] = filtered_candidates
-
-        extraction_plan = filtered_plan
-        print(f"\n🎯 LIMITED TO {max_samples} SAMPLES PER CLASS:")
-        for classification, count in class_samples.items():
-            print(f"   • {classification.upper()}: {count} samples")
+        extraction_plan = get_extraction_plan_with_sample_limits(
+            extraction_plan, valid_timestamps, max_samples
+        )
 
     # Initialize sliding window volume manager
     volume_manager = SlidingWindowVolumeManager(base_dir, timeframe)
