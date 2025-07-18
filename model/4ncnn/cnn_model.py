@@ -15,6 +15,7 @@ from sklearn.metrics import (
     accuracy_score,
     f1_score,
 )
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 import seaborn as sns
 import matplotlib.pyplot as plt
 import platform
@@ -23,7 +24,10 @@ import platform
 from config import HPARAMS, CLASS_NAMES, DEVICE
 from data_utils import preprocess_sample
 from model_utils import Simple3DCNN
-DATA_ROOT_DIR = "/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v2"
+
+DATA_ROOT_DIR = (
+    "/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v2"
+)
 # Define a directory to save all outputs
 OUTPUT_DIR = "training_outputs"
 
@@ -31,31 +35,31 @@ OUTPUT_DIR = "training_outputs"
 # --- Data Augmentation for Temporal Data ---
 class RandomAugmentation3D:
     """
-    Conservative augmentation that maintains spatial consistency between 
+    Conservative augmentation that maintains spatial consistency between
     temporal channels and binary segmentation mask.
     """
 
     def __call__(self, volume_stack):
         # volume_stack shape: (4, D, H, W) = [t-1, t, t+1, binary_mask]
-        
+
         # 1. Safe transformations - apply to all channels identically
-        
+
         # Horizontal flip (safe)
         if random.random() > 0.5:
             volume_stack = np.flip(volume_stack, axis=2).copy()  # Flip Height
-        
-        # Vertical flip (safe)  
+
+        # Vertical flip (safe)
         if random.random() > 0.5:
             volume_stack = np.flip(volume_stack, axis=3).copy()  # Flip Width
-        
+
         # Depth flip (safe for 3D)
         if random.random() > 0.5:
             volume_stack = np.flip(volume_stack, axis=1).copy()  # Flip Depth
-        
+
         # 2. Conservative rotation - smaller angles to minimize interpolation issues
         if random.random() > 0.5:  # Only rotate 50% of the time
             angle = random.uniform(-5, 5)  # Reduced from -15,15 to -5,5 degrees
-            
+
             # Apply same rotation to all channels
             for i in range(volume_stack.shape[0]):
                 if i == 3:  # Binary mask - use nearest neighbor
@@ -78,14 +82,9 @@ class RandomAugmentation3D:
                         mode="constant",
                         cval=0,
                     )
-        
+
         # 3. Intensity augmentation - ONLY for raw channels (0,1,2), NOT binary mask
         if random.random() > 0.3:  # Apply to 70% of samples
-            # Brightness adjustment
-            brightness_factor = random.uniform(0.8, 1.2)
-            volume_stack[:3] = np.clip(volume_stack[:3] * brightness_factor, 0, 1)
-        
-        if random.random() > 0.3:  # Apply to 70% of samples  
             # Contrast adjustment
             contrast_factor = random.uniform(0.8, 1.2)
             for i in range(3):  # Only raw channels
@@ -93,7 +92,7 @@ class RandomAugmentation3D:
                 volume_stack[i] = np.clip(
                     (volume_stack[i] - mean_val) * contrast_factor + mean_val, 0, 1
                 )
-        
+
         return volume_stack
 
 
@@ -108,24 +107,26 @@ class NucleusDataset(Dataset):
     def __init__(self, root_dir, transform=None, max_samples_per_class=None):
         self.root_dir = root_dir
         self.transform = transform
-        self.max_samples_per_class = max_samples_per_class or HPARAMS.get("max_samples_per_class")
+        self.max_samples_per_class = max_samples_per_class or HPARAMS.get(
+            "max_samples_per_class"
+        )
         self.classes = HPARAMS.get("classes_names", [])
         self.class_to_idx = {name: i for i, name in enumerate(self.classes)}
         self.samples = self._make_dataset()
-        
+
         # Print class distribution after limiting
         self._print_class_distribution()
 
     def _make_dataset(self):
         samples = []
         class_counts = {}
-        
+
         for class_name in self.classes:
             class_dir = os.path.join(self.root_dir, class_name)
             if not os.path.isdir(class_dir):
                 class_counts[class_name] = 0
                 continue
-                
+
             # Collect all valid samples for this class
             class_samples = []
             for sample_name in os.listdir(class_dir):
@@ -134,25 +135,28 @@ class NucleusDataset(Dataset):
                     os.path.join(sample_path, "t", "raw_cropped.tif")
                 ):
                     class_samples.append((sample_path, self.class_to_idx[class_name]))
-            
+
             # Apply per-class sample limiting with random selection
             if self.max_samples_per_class is not None:
                 if isinstance(self.max_samples_per_class, dict):
                     # Use class-specific limits
-                    max_samples = self.max_samples_per_class.get(class_name, len(class_samples))
+                    max_samples = self.max_samples_per_class.get(
+                        class_name, len(class_samples)
+                    )
                 else:
                     # Use same limit for all classes (backward compatibility)
                     max_samples = self.max_samples_per_class
-                
+
                 if len(class_samples) > max_samples:
                     # Randomly select up to max_samples samples
                     import random
+
                     random.seed(42)  # For reproducibility
                     class_samples = random.sample(class_samples, max_samples)
-            
+
             samples.extend(class_samples)
             class_counts[class_name] = len(class_samples)
-        
+
         self.class_counts = class_counts
         return samples
 
@@ -162,27 +166,29 @@ class NucleusDataset(Dataset):
         for class_name in self.classes:
             count = self.class_counts.get(class_name, 0)
             print(f"  - {class_name}: {count} samples")
-        
+
         if self.max_samples_per_class is not None:
             if isinstance(self.max_samples_per_class, dict):
                 print("  Applied per-class limits:")
                 for class_name, limit in self.max_samples_per_class.items():
                     print(f"    - {class_name}: {limit} max samples")
             else:
-                print(f"  Applied per-class limit: {self.max_samples_per_class} samples/class")
+                print(
+                    f"  Applied per-class limit: {self.max_samples_per_class} samples/class"
+                )
 
     def __len__(self):
         return len(self.samples)
 
     def __getitem__(self, idx):
         sample_path, label = self.samples[idx]
-        
+
         # Use shared preprocessing function
         volume_processed = preprocess_sample(folder_path=sample_path, for_training=True)
-        
+
         # Remove batch dimension for training
         volume_processed = volume_processed.squeeze(0)
-        
+
         # Apply augmentation if specified
         if self.transform:
             volume_processed = self.transform(volume_processed.numpy())
@@ -200,7 +206,7 @@ def train_one_epoch(model, dataloader, criterion, optimizer, device):
     for inputs, labels in dataloader:
         inputs, labels = inputs.to(device), labels.to(device)
         optimizer.zero_grad()
-        outputs = model(inputs)
+        outputs = model(inputs[:, : HPARAMS["num_input_channels"]])
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
@@ -222,7 +228,7 @@ def validate(model, dataloader, criterion, device):
     with torch.no_grad():
         for inputs, labels in dataloader:
             inputs, labels = inputs.to(device), labels.to(device)
-            outputs = model(inputs)
+            outputs = model(inputs[:, : HPARAMS["num_input_channels"]])
             total_loss += criterion(outputs, labels).item()
             _, predicted = torch.max(outputs.data, 1)
             all_preds.extend(predicted.cpu().numpy())
@@ -300,12 +306,20 @@ def main():
     print(f"Hyperparameters: {HPARAMS}")
 
     model = Simple3DCNN().to(DEVICE)
-    
-    # Use class weights to handle imbalanced dataset
-    class_weights = torch.tensor(HPARAMS["class_weights"], dtype=torch.float32).to(DEVICE)
+
+    class_weights = torch.tensor(HPARAMS["class_weights"], dtype=torch.float32).to(
+        DEVICE
+    )
     criterion = nn.CrossEntropyLoss(weight=class_weights)
-    
-    optimizer = optim.Adam(model.parameters(), lr=HPARAMS["learning_rate"])
+
+    optimizer = optim.Adam(
+        model.parameters(),
+        lr=HPARAMS["learning_rate"],
+        weight_decay=HPARAMS.get("weight_decay", 1e-5),
+    )
+
+    # --- FIX: Removed the 'verbose' argument which is not supported in older PyTorch versions ---
+    scheduler = ReduceLROnPlateau(optimizer, mode="min", factor=0.2, patience=10)
 
     print("\nLoading datasets...")
     train_full_dataset = NucleusDataset(
@@ -352,6 +366,9 @@ def main():
     }
     best_val_f1 = -1
 
+    epochs_no_improve = 0
+    early_stopping_patience = HPARAMS.get("early_stopping_patience", 25)
+
     print("\n--- Starting Training ---")
     for epoch in range(HPARAMS["num_epochs"]):
         start_time = time.time()
@@ -378,19 +395,34 @@ def main():
             f"Val Loss: {val_loss:.4f} | Val Acc: {val_accuracy:.4f} | Val F1: {val_f1:.4f}"
         )
 
+        scheduler.step(val_loss)
+
         if val_f1 > best_val_f1:
             best_val_f1 = val_f1
+            epochs_no_improve = 0
             model_path = os.path.join(run_output_dir, "best_model.pth")
             torch.save(model.state_dict(), model_path)
             print(
                 f"🎉 New best model found! F1-Score: {best_val_f1:.4f}. Saved to {model_path}"
             )
+        else:
+            epochs_no_improve += 1
+
+        if epochs_no_improve >= early_stopping_patience:
+            print(
+                f"\n🛑 Early stopping triggered after {early_stopping_patience} epochs with no improvement."
+            )
+            break
 
     print("\n✅ Training finished.")
 
     print("\n💾 Saving final artifacts...")
     class_names = val_full_dataset.classes
-    model.load_state_dict(torch.load(os.path.join(run_output_dir, "best_model.pth")))
+    best_model_path = os.path.join(run_output_dir, "best_model.pth")
+    if os.path.exists(best_model_path):
+        model.load_state_dict(torch.load(best_model_path))
+        print(f"Loaded best model from {best_model_path} for final evaluation.")
+
     _, final_labels, final_preds = validate(model, val_loader, criterion, DEVICE)
 
     save_final_plots(history, final_labels, final_preds, class_names, run_output_dir)
