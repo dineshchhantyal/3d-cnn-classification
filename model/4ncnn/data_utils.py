@@ -171,7 +171,29 @@ def preprocess_sample(
     # --- Step 4: Stack and return ---
     volume_stack = np.stack(all_volumes, axis=0)  # [t-1, t, t+1, binary_mask]
 
-    # --- Step 5: Save Analysis (if requested) ---
+    # --- Step 5: Add a subtle focus on channels 0, 1, 2, based on the binary mask ---
+    if processed_label is not None and processed_label.sum() > 0:
+        # This factor determines how much to dim the background (e.g., 0.5 means 50% brightness).
+        background_factor = 0.5
+
+        # Ensure the mask is boolean for indexing
+        # This assumes processed_label has values of 0 and 1.
+        mask_boolean = processed_label.astype(bool)
+
+        # Apply the highlighting effect to the first three channels
+        for i in range(3):
+            channel = volume_stack[i]
+
+            # Create a copy to avoid modifying the original array in place while indexing
+            highlighted_channel = channel.copy()
+
+            # Select the background (where the mask is False) and dim it
+            highlighted_channel[~mask_boolean] *= background_factor
+
+            # Update the volume stack with the highlighted channel
+            volume_stack[i] = highlighted_channel
+
+        # --- Step 6: Save Analysis (if requested) ---
     if save_analysis and analysis_output_dir:
         try:
             from visualization_utils import (

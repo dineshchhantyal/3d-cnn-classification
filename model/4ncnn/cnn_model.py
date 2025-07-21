@@ -92,6 +92,17 @@ class RandomAugmentation3D:
                 volume_stack[i] = np.clip(
                     (volume_stack[i] - mean_val) * contrast_factor + mean_val, 0, 1
                 )
+        # 4. Gaussian noise - ONLY for raw channels (0,1,2), NOT binary mask
+        if random.random() > 0.3:
+            for i in range(3):
+                noise = np.random.normal(0, 0.02, size=volume_stack[i].shape)
+                volume_stack[i] = np.clip(volume_stack[i] + noise, 0, 1)
+
+        # # 5. Brightness adjustment - ONLY for raw channels (0,1,2), NOT binary mask
+        if random.random() > 0.3:
+            shift = random.uniform(-0.1, 0.1)
+            for i in range(3):
+                volume_stack[i] = np.clip(volume_stack[i] + shift, 0, 1)
 
         return volume_stack
 

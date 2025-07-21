@@ -175,6 +175,34 @@ def find_nucleus_bounding_box(label_volume, nucleus_id, padding_factor=2.0):
     return (z_min, z_max, y_min, y_max, x_min, x_max)
 
 
+def get_fixed_size_bbox(centroid, output_size, volume_shape):
+    """
+    Given a centroid (z, y, x), output_size [dz, dy, dx], and volume_shape,
+    return a bounding box (z_min, z_max, y_min, y_max, x_min, x_max)
+    centered on the centroid and clipped to the volume boundaries.
+    """
+    zc, yc, xc = [int(round(c)) for c in centroid]
+    dz, dy, dx = output_size
+    sz, sy, sx = volume_shape
+
+    z_min = max(zc - dz // 2, 0)
+    z_max = min(z_min + dz, sz)
+    if z_max - z_min < dz and z_min > 0:
+        z_min = max(z_max - dz, 0)
+
+    y_min = max(yc - dy // 2, 0)
+    y_max = min(y_min + dy, sy)
+    if y_max - y_min < dy and y_min > 0:
+        y_min = max(y_max - dy, 0)
+
+    x_min = max(xc - dx // 2, 0)
+    x_max = min(x_min + dx, sx)
+    if x_max - x_min < dx and x_min > 0:
+        x_min = max(x_max - dx, 0)
+
+    return (z_min, z_max, y_min, y_max, x_min, x_max)
+
+
 def print_classification_distribution(
     classification_counts, max_samples=None, output_dir=None, save=False
 ):
@@ -617,6 +645,7 @@ def extract_nucleus_time_series(
     output_dir=None,
     dataset_name="230212_stack6",
     total_nuclei_in_entire_frame=None,
+    fixed_size=None,
 ):
     """
     Extract time series for a nucleus and save immediately to disk.
@@ -638,6 +667,8 @@ def extract_nucleus_time_series(
         node_info: Node information (for metadata)
         output_dir: Output directory for saving (if None, saves to memory only)
         dataset_name: Dataset name for file naming
+        total_nuclei_in_entire_frame: Total nuclei count in the entire frame (for metadata)
+        fixed_size: Optional fixed size for bounding box (if None, uses dynamic bounding box else uses fixed_size) e.g [32, 32, 32], center of the nucelus will be at the center of the bounding box
 
     Returns:
         dict: Minimal extraction results (save status and path)
@@ -671,6 +702,17 @@ def extract_nucleus_time_series(
             "extraction_success": False,
             "error": f"Nucleus {nucleus_id} not found in event frame {event_frame}",
         }
+
+    # If fixed_size is provided, override bbox
+    if fixed_size is not None:
+        # Compute centroid from bbox
+        zc = (bbox[0] + bbox[1]) // 2
+        yc = (bbox[2] + bbox[3]) // 2
+        xc = (bbox[4] + bbox[5]) // 2
+        centroid = (zc, yc, xc)
+        bbox = get_fixed_size_bbox(
+            centroid, fixed_size, event_volume_data["label_image"].shape
+        )
 
     z_min, z_max, y_min, y_max, x_min, x_max = bbox
     print(

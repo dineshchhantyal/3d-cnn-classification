@@ -5,6 +5,7 @@ OO structure for cell lineage tracking.
 import os
 import numpy as np
 from collections import defaultdict
+import math
 
 
 class Node:
@@ -14,6 +15,7 @@ class Node:
         self.node_id = node_id
         self.timestamp_ordinal = timestamp_ordinal
         self.label = label
+        self.state = None
         self.parent = None
         self.id_to_child = {}
         self.reset()
@@ -679,6 +681,15 @@ def classify_node(node, final_frame, forest=None, stable_window=4):
     elif children_count == 1 and forest is not None:
         nodes_before, nodes_after = get_nodes_around(node, forest, window=stable_window)
         window_nodes = nodes_before + nodes_after
+        print(
+            f"Current node: {node.node_id}, Window nodes: {[n.node_id for n in window_nodes]}"
+        )
+
+        if len(window_nodes) < math.floor(
+            stable_window * 1.5
+        ):  # if not enough nodes in the window
+            return "unknown"
+
         for n in window_nodes:
             # Only check direct event, not recursively
             c = _classify_event_type(n, final_frame)
@@ -731,7 +742,7 @@ def classify_nodes_by_timestamp_example(
 if __name__ == "__main__":
     # Sample usage of the lineage tree code
     forest = read_json_file(
-        "/mnt/ceph/users/lbrown/MouseData/Rebecca/230212_stack6/LineageGraph.json"
+        "/mnt/home/dchhantyal/3d-cnn-classification/raw-data/220321_stack11/LineageGraph.json"
     )
 
     forest.find_tracks_and_lineages()
@@ -744,7 +755,7 @@ if __name__ == "__main__":
     sorted_timestamps = sorted(nodes_by_timestamp.keys())
     final_frame = max(sorted_timestamps)
 
-    timestamp = 65
+    timestamp = 1
     stable_window = 4
 
     # [IN REAL USAGE, We will loop thorugh all timestamps]
