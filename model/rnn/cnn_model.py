@@ -28,7 +28,7 @@ from data_utils import preprocess_sample
 from model_utils import SpatioTemporalModel
 
 DATA_ROOT_DIR = (
-    "/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v2"
+    "/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3"
 )
 # Define a directory to save all outputs
 OUTPUT_DIR = "training_outputs"
@@ -38,12 +38,66 @@ OUTPUT_DIR = "training_outputs"
 # This class is currently unused with the new model but kept for reference.
 class RandomAugmentation3D:
     def __call__(self, volume_stack):
+        # Horizontal flip (safe)
         if random.random() > 0.5:
-            volume_stack = np.flip(volume_stack, axis=2).copy()
+            volume_stack = np.flip(volume_stack, axis=2).copy()  # Flip Height
+
+        # Vertical flip (safe)
         if random.random() > 0.5:
-            volume_stack = np.flip(volume_stack, axis=3).copy()
+            volume_stack = np.flip(volume_stack, axis=3).copy()  # Flip Width
+
+        # Depth flip (safe for 3D)
         if random.random() > 0.5:
-            volume_stack = np.flip(volume_stack, axis=1).copy()
+            volume_stack = np.flip(volume_stack, axis=1).copy()  # Flip Depth
+
+        # 2. Conservative rotation - smaller angles to minimize interpolation issues
+        if random.random() > 0.5:  # Only rotate 50% of the time
+            angle = random.uniform(-5, 5)  # Reduced from -15,15 to -5,5 degrees
+
+            # Apply same rotation to all channels
+            for i in range(volume_stack.shape[0]):
+                if i == 3:  # Binary mask - use nearest neighbor
+                    volume_stack[i] = rotate(
+                        volume_stack[i],
+                        angle,
+                        axes=(1, 2),  # H, W plane
+                        reshape=False,
+                        order=0,  # Nearest neighbor
+                        mode="constant",
+                        cval=0,
+                    )
+                else:  # Raw volumes - use linear interpolation
+                    volume_stack[i] = rotate(
+                        volume_stack[i],
+                        angle,
+                        axes=(1, 2),
+                        reshape=False,
+                        order=1,  # Linear interpolation
+                        mode="constant",
+                        cval=0,
+                    )
+
+        # 3. Intensity augmentation - ONLY for raw channels (0,1,2), NOT binary mask
+        if random.random() > 0.3:  # Apply to 70% of samples
+            # Contrast adjustment
+            contrast_factor = random.uniform(0.8, 1.2)
+            for i in range(3):  # Only raw channels
+                mean_val = volume_stack[i].mean()
+                volume_stack[i] = np.clip(
+                    (volume_stack[i] - mean_val) * contrast_factor + mean_val, 0, 1
+                )
+        # 4. Gaussian noise - ONLY for raw channels (0,1,2), NOT binary mask
+        if random.random() > 0.3:
+            for i in range(3):
+                noise = np.random.normal(0, 0.02, size=volume_stack[i].shape)
+                volume_stack[i] = np.clip(volume_stack[i] + noise, 0, 1)
+
+        # # 5. Brightness adjustment - ONLY for raw channels (0,1,2), NOT binary mask
+        if random.random() > 0.3:
+            shift = random.uniform(-0.1, 0.1)
+            for i in range(3):
+                volume_stack[i] = np.clip(volume_stack[i] + shift, 0, 1)
+
         return volume_stack
 
 

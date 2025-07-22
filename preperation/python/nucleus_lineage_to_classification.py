@@ -32,7 +32,7 @@ from volume_utils import (
 from lineage_tree import classify_node
 from matplotlib import pyplot as plt
 
-STABLE_WINDOW_LIMIT = 4
+STABLE_WINDOW_LIMIT = 8
 
 
 def process_single_nucleus_threadsafe(
@@ -43,6 +43,7 @@ def process_single_nucleus_threadsafe(
     output_dir,
     dataset_name="230212_stack6",
     total_nuclei_in_entire_frame=None,
+    fixed_size=None,
 ):
     """
     Thread-safe function to process a single nucleus extraction and save.
@@ -100,6 +101,7 @@ def process_single_nucleus_threadsafe(
             output_dir=output_dir,
             dataset_name=dataset_name,
             total_nuclei_in_entire_frame=total_nuclei_in_entire_frame,
+            fixed_size=fixed_size,
         )
 
         if result and result.get("extraction_success"):
@@ -285,6 +287,7 @@ def nucleus_extractor(
     base_dir="data",
     output_dir="extracted_nuclei",
     max_samples=None,
+    fixed_size=None,
 ):
     """
     Extract nuclei by processing all nuclei at each timestamp together.
@@ -302,6 +305,7 @@ def nucleus_extractor(
         base_dir: Base directory of the dataset.
         output_dir: Directory to save extracted nuclei.
         max_samples: Maximum number of samples to extract per classification (None for all). Note: this is per classification, not total. Only the first max_samples will be extracted per classification. TODO: Random sampling.
+        fixed_size: Optional fixed size for bounding box (if None, uses dynamic bounding box) e.g [32, 32, 32], center of the nucleus will be at the center of the bounding box.
 
     Returns:
         dict: Extraction results organized by classification.
@@ -314,6 +318,7 @@ def nucleus_extractor(
     print(
         f"Max samples per classification: {max_samples if max_samples else 'unlimited'}"
     )
+    print(f"Fixed size for bounding box: {fixed_size if fixed_size else 'dynamic'}")
     print("=" * 60)
 
     forest.find_tracks_and_lineages()
@@ -368,7 +373,7 @@ def nucleus_extractor(
     extraction_plan = {}
     classification_counts = defaultdict(int)
 
-    for timestamp in valid_timestamps:
+    for timestamp in valid_timestamps[76:]:  # Skip first 76 timestamps for testing
         nodes = nodes_by_timestamp[timestamp]
         timestamp_candidates = []
 
@@ -465,7 +470,7 @@ def nucleus_extractor(
 
         # Use ThreadPoolExecutor for concurrent processing of nuclei within this timestamp
         # We use a conservative number of threads to avoid overwhelming the system
-        max_workers = min(8, len(valid_candidates), os.cpu_count() or 4)
+        max_workers = min(len(valid_candidates), os.cpu_count() or 4)
 
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             # Create a partial function with fixed arguments for all nuclei in this timestamp
@@ -477,6 +482,7 @@ def nucleus_extractor(
                 output_dir=output_dir,
                 dataset_name=Path(base_dir).name,
                 total_nuclei_in_entire_frame=len(all_nucleus_ids),
+                fixed_size=fixed_size,  # Use dynamic bounding box by default
             )
 
             # Submit all tasks

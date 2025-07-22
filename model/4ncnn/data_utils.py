@@ -172,7 +172,7 @@ def preprocess_sample(
     volume_stack = np.stack(all_volumes, axis=0)  # [t-1, t, t+1, binary_mask]
 
     # --- Step 5: Add a subtle focus on channels 0, 1, 2, based on the binary mask ---
-    if processed_label is not None and processed_label.sum() > 0:
+    if False and processed_label is not None and processed_label.sum() > 0:
         # This factor determines how much to dim the background (e.g., 0.5 means 50% brightness).
         background_factor = 0.5
 

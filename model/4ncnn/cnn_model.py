@@ -5,8 +5,7 @@ from torch.utils.data import Dataset, DataLoader, Subset
 import numpy as np
 import time
 import os
-import tifffile
-from scipy.ndimage import zoom, rotate
+from scipy.ndimage import rotate
 import random
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
@@ -26,7 +25,7 @@ from data_utils import preprocess_sample
 from model_utils import Simple3DCNN
 
 DATA_ROOT_DIR = (
-    "/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v2"
+    "/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3"
 )
 # Define a directory to save all outputs
 OUTPUT_DIR = "training_outputs"

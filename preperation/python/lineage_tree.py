@@ -681,10 +681,6 @@ def classify_node(node, final_frame, forest=None, stable_window=4):
     elif children_count == 1 and forest is not None:
         nodes_before, nodes_after = get_nodes_around(node, forest, window=stable_window)
         window_nodes = nodes_before + nodes_after
-        print(
-            f"Current node: {node.node_id}, Window nodes: {[n.node_id for n in window_nodes]}"
-        )
-
         if len(window_nodes) < math.floor(
             stable_window * 1.5
         ):  # if not enough nodes in the window

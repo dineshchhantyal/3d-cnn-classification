@@ -4,10 +4,10 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=16G
+#SBATCH --mem=32G
 #SBATCH --time=24:00:00
-#SBATCH --output=logs/DATASET="220321_stack11_%j.out
-#SBATCH --error=logs/DATASET="220321_stack11_%j.err
+#SBATCH --output=logs/DATASET="220321_stack11_%j.out"
+#SBATCH --error=logs/DATASET="220321_stack11_%j.err"
 
 # Load required modules
 module purge

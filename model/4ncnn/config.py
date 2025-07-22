@@ -12,19 +12,19 @@ HPARAMS = {
     "num_classes": 3,
     "classes_names": ["mitotic", "new_daughter", "stable"],
     # --- Training Parameters ---
-    "learning_rate": 1e-6,
+    "learning_rate": 1e-5,
     "batch_size": 16,
     "num_epochs": 300,
-    "num_input_channels": 3,  # [t-1, t, t+1, segmentation_mask]
+    "num_input_channels": 4,  # [t-1, t, t+1, segmentation_mask]
     # --- Regularization & Early Stopping ---
-    "dropout_rate": 0.5,
+    "dropout_rate": 0.1,
     "weight_decay": 1e-5,  # L2 regularization for the Adam optimizer
     "early_stopping_patience": 35,  # Epochs to wait for improvement before stopping
     # --- Data Handling ---
     "max_samples_per_class": {
-        "mitotic": 329,
-        "new_daughter": 329,
-        "stable": 329,
+        "mitotic": 218,
+        "new_daughter": 218,
+        "stable": 218,
     },
     "class_weights": [1.0, 1.0, 1.0],  # [mitotic, new_daughter, stable]
 }

@@ -14,6 +14,7 @@ import sys
 import os
 import argparse
 from pathlib import Path
+from datetime import datetime
 
 # Add the python directory to the path
 script_dir = Path(__file__).parent
@@ -27,11 +28,11 @@ from lineage_tree import read_json_file
 
 # Available datasets configuration
 DATASETS = {
-    "230212_stack6": "/mnt/ceph/users/lbrown/MouseData/Rebecca/230212_stack6/",
-    "220321_stack11": "/mnt/ceph/users/lbrown/MouseData/Eszter1",
+    # "230212_stack6": "/mnt/ceph/users/lbrown/MouseData/Rebecca/230212_stack6/",
+    # "220321_stack11": "/mnt/ceph/users/lbrown/MouseData/Eszter1",
     "221016_FUCCI_Nanog_stack_3": "/mnt/ceph/users/lbrown/Labels3DMouse/Abhishek/RebeccaData/221016_FUCCI_Nanog_stack_3/",
-    "David4EPI": "/mnt/ceph/users/lbrown/MouseData/David4EPI/",
-    "230101_Gata6Nanog_stack_19": "/mnt/ceph/users/lbrown/Labels3DMouse/Abhishek/RebeccaData/230101_Gata6Nanog_stack_19/stack_19_channel_1_obj_left/",
+    # "David4EPI": "/mnt/ceph/users/lbrown/MouseData/David4EPI/",
+    # "230101_Gata6Nanog_stack_19": "/mnt/ceph/users/lbrown/Labels3DMouse/Abhishek/RebeccaData/230101_Gata6Nanog_stack_19/stack_19_channel_1_obj_left/",
 }
 
 
@@ -67,6 +68,13 @@ def main():
         help="Maximum number of samples per classification (None for unlimited)",
     )
 
+    parser.add_argument(
+        "--cube_max_size",
+        type=int,
+        default=None,
+        help="Maximum size of the cube for extraction (None for unlimited)",
+    )
+
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
 
     args = parser.parse_args()
@@ -92,6 +100,9 @@ def main():
 
     # Verify LineageGraph.json exists
     lineage_file = Path(base_dir) / "LineageGraph.json"
+    # lineage_file = Path(
+    #     "/mnt/ceph/users/lbrown/Labels3DMouse/Abhishek/RebeccaData/230101_Gata6Nanog_stack_19/stack_19_channel_1_obj_left/st19_CombinedGraph_1_110_graph.json"
+    # )
     if not lineage_file.exists():
         print(f"❌ Error: LineageGraph.json not found: {lineage_file}")
         sys.exit(1)
@@ -118,6 +129,15 @@ def main():
             base_dir=base_dir,
             output_dir=args.output_dir,
             max_samples=args.max_samples,
+            fixed_size=(
+                [
+                    int(args.cube_max_size),
+                    int(args.cube_max_size),
+                    int(args.cube_max_size),
+                ]
+                if args.cube_max_size
+                else [64, 64, 64]
+            ),  # Use fixed size if max_samples is set
         )
 
         print(f"\n✅ Successfully completed processing for {dataset_name}")

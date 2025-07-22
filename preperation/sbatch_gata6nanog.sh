@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=2
-#SBATCH --mem=16G  # Conservative memory allocation
+#SBATCH --mem=32G  # Conservative memory allocation
 #SBATCH --time=24:00:00  # 24 hours should be sufficient
 #SBATCH --output=logs/gata6nanog_%x_%j.out
 #SBATCH --error=logs/gata6nanog_%x_%j.err

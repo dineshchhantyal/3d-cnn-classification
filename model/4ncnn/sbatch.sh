@@ -1,6 +1,6 @@
 #!/bin/bash -l
 
-#SBATCH --job-name=3classes-no-mask
+#SBATCH --job-name=resized
 #SBATCH -p gpu
 #SBATCH -N 1
 #SBATCH --ntasks-per-node=1

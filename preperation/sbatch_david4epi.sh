@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1  # Changed from 2
 #SBATCH --cpus-per-task=1    # Changed from 4
-#SBATCH --mem=16G            # This was perfect, keep it.
+#SBATCH --mem=32G            # This was perfect, keep it.
 #SBATCH --time=02:00:00      # Reduced from 24h to 2h (32 min runtime + buffer)
 #SBATCH --output=logs/david4epi_%j.out
 #SBATCH --error=logs/david4epi_%j.err
