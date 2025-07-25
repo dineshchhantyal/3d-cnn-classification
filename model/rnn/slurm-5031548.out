@@ -1,0 +1,170 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) modules/2.3-20240529   2) openblas/single-0.3.26
+🚀 Starting Run. All outputs will be saved to: training_outputs/20250724-105346
+⚙️ Using device: cuda
+Hyperparameters: {'input_depth': 32, 'input_height': 32, 'input_width': 32, 'num_classes': 3, 'classes_names': ['mitotic', 'new_daughter', 'stable'], 'learning_rate': 0.0001, 'batch_size': 16, 'num_epochs': 300, 'num_input_channels': 3, 'dropout_rate': 0.5, 'weight_decay': 1e-05, 'early_stopping_patience': 25, 'max_samples_per_class': {'mitotic': 221, 'new_daughter': 221, 'stable': 221}, 'class_weights': [1.0, 1.0, 1.0]}
+
+Loading datasets...
+Dataset loaded with 660 total samples:
+  - mitotic: 218 samples
+  - new_daughter: 221 samples
+  - stable: 221 samples
+Dataset loaded with 660 total samples:
+  - mitotic: 218 samples
+  - new_daughter: 221 samples
+  - stable: 221 samples
+
+Training on 528 samples, validating on 132 samples.
+Model has 236,035 trainable parameters.
+
+--- Starting Training ---
+Epoch [001/300] | Duration: 48.87s | Train Loss: 1.0850 | Train Acc: 0.3561 | Val Loss: 1.0603 | Val Acc: 0.4091 | Val F1: 0.3477
+🎉 New best model found! F1-Score: 0.3477. Saved.
+Epoch [002/300] | Duration: 5.92s | Train Loss: 1.0644 | Train Acc: 0.4394 | Val Loss: 1.0371 | Val Acc: 0.4848 | Val F1: 0.4903
+🎉 New best model found! F1-Score: 0.4903. Saved.
+Epoch [003/300] | Duration: 5.51s | Train Loss: 1.0434 | Train Acc: 0.4735 | Val Loss: 1.0167 | Val Acc: 0.5152 | Val F1: 0.5173
+🎉 New best model found! F1-Score: 0.5173. Saved.
+Epoch [004/300] | Duration: 5.35s | Train Loss: 1.0279 | Train Acc: 0.4867 | Val Loss: 1.0033 | Val Acc: 0.5455 | Val F1: 0.5438
+🎉 New best model found! F1-Score: 0.5438. Saved.
+Epoch [005/300] | Duration: 5.32s | Train Loss: 1.0062 | Train Acc: 0.5360 | Val Loss: 1.0013 | Val Acc: 0.5227 | Val F1: 0.5218
+Epoch [006/300] | Duration: 5.67s | Train Loss: 1.0056 | Train Acc: 0.5076 | Val Loss: 0.9999 | Val Acc: 0.5227 | Val F1: 0.5171
+Epoch [007/300] | Duration: 6.23s | Train Loss: 0.9750 | Train Acc: 0.5587 | Val Loss: 0.9871 | Val Acc: 0.5227 | Val F1: 0.5217
+Epoch [008/300] | Duration: 5.68s | Train Loss: 0.9821 | Train Acc: 0.5341 | Val Loss: 0.9701 | Val Acc: 0.5833 | Val F1: 0.5831
+🎉 New best model found! F1-Score: 0.5831. Saved.
+Epoch [009/300] | Duration: 5.30s | Train Loss: 0.9723 | Train Acc: 0.5436 | Val Loss: 0.9893 | Val Acc: 0.5909 | Val F1: 0.5916
+🎉 New best model found! F1-Score: 0.5916. Saved.
+Epoch [010/300] | Duration: 5.90s | Train Loss: 0.9375 | Train Acc: 0.5833 | Val Loss: 0.9517 | Val Acc: 0.5833 | Val F1: 0.5826
+Epoch [011/300] | Duration: 6.49s | Train Loss: 0.9345 | Train Acc: 0.5701 | Val Loss: 0.9361 | Val Acc: 0.6288 | Val F1: 0.6279
+🎉 New best model found! F1-Score: 0.6279. Saved.
+Epoch [012/300] | Duration: 6.49s | Train Loss: 0.9132 | Train Acc: 0.6098 | Val Loss: 0.9439 | Val Acc: 0.6364 | Val F1: 0.6348
+🎉 New best model found! F1-Score: 0.6348. Saved.
+Epoch [013/300] | Duration: 5.88s | Train Loss: 0.9112 | Train Acc: 0.6023 | Val Loss: 0.9251 | Val Acc: 0.6288 | Val F1: 0.6267
+Epoch [014/300] | Duration: 4.95s | Train Loss: 0.8878 | Train Acc: 0.6269 | Val Loss: 0.9451 | Val Acc: 0.5758 | Val F1: 0.5727
+Epoch [015/300] | Duration: 5.04s | Train Loss: 0.8719 | Train Acc: 0.6515 | Val Loss: 0.9113 | Val Acc: 0.6515 | Val F1: 0.6447
+🎉 New best model found! F1-Score: 0.6447. Saved.
+Epoch [016/300] | Duration: 5.12s | Train Loss: 0.8639 | Train Acc: 0.6345 | Val Loss: 0.9181 | Val Acc: 0.6742 | Val F1: 0.6737
+🎉 New best model found! F1-Score: 0.6737. Saved.
+Epoch [017/300] | Duration: 6.35s | Train Loss: 0.8414 | Train Acc: 0.6402 | Val Loss: 0.8909 | Val Acc: 0.6061 | Val F1: 0.6039
+Epoch [018/300] | Duration: 5.95s | Train Loss: 0.8196 | Train Acc: 0.6723 | Val Loss: 0.8722 | Val Acc: 0.6667 | Val F1: 0.6680
+Epoch [019/300] | Duration: 6.22s | Train Loss: 0.8009 | Train Acc: 0.6894 | Val Loss: 0.8952 | Val Acc: 0.6212 | Val F1: 0.6149
+Epoch [020/300] | Duration: 5.58s | Train Loss: 0.8107 | Train Acc: 0.6686 | Val Loss: 0.8394 | Val Acc: 0.6818 | Val F1: 0.6823
+🎉 New best model found! F1-Score: 0.6823. Saved.
+Epoch [021/300] | Duration: 5.17s | Train Loss: 0.7855 | Train Acc: 0.6856 | Val Loss: 0.8535 | Val Acc: 0.7121 | Val F1: 0.7128
+🎉 New best model found! F1-Score: 0.7128. Saved.
+Epoch [022/300] | Duration: 5.79s | Train Loss: 0.7633 | Train Acc: 0.7159 | Val Loss: 0.8498 | Val Acc: 0.7045 | Val F1: 0.7044
+Epoch [023/300] | Duration: 6.49s | Train Loss: 0.7563 | Train Acc: 0.7008 | Val Loss: 0.7983 | Val Acc: 0.7197 | Val F1: 0.7193
+🎉 New best model found! F1-Score: 0.7193. Saved.
+Epoch [024/300] | Duration: 5.81s | Train Loss: 0.7588 | Train Acc: 0.7178 | Val Loss: 0.7932 | Val Acc: 0.7121 | Val F1: 0.7122
+Epoch [025/300] | Duration: 5.16s | Train Loss: 0.7411 | Train Acc: 0.7273 | Val Loss: 0.8319 | Val Acc: 0.7045 | Val F1: 0.7027
+Epoch [026/300] | Duration: 4.92s | Train Loss: 0.7231 | Train Acc: 0.7235 | Val Loss: 0.7689 | Val Acc: 0.7121 | Val F1: 0.7124
+Epoch [027/300] | Duration: 5.23s | Train Loss: 0.6752 | Train Acc: 0.7443 | Val Loss: 0.8066 | Val Acc: 0.6970 | Val F1: 0.6975
+Epoch [028/300] | Duration: 5.90s | Train Loss: 0.6795 | Train Acc: 0.7462 | Val Loss: 0.7833 | Val Acc: 0.7121 | Val F1: 0.7116
+Epoch [029/300] | Duration: 5.78s | Train Loss: 0.6668 | Train Acc: 0.7614 | Val Loss: 0.7554 | Val Acc: 0.7121 | Val F1: 0.7117
+Epoch [030/300] | Duration: 5.69s | Train Loss: 0.6613 | Train Acc: 0.7557 | Val Loss: 0.7498 | Val Acc: 0.7652 | Val F1: 0.7653
+🎉 New best model found! F1-Score: 0.7653. Saved.
+Epoch [031/300] | Duration: 6.36s | Train Loss: 0.6594 | Train Acc: 0.7405 | Val Loss: 0.6996 | Val Acc: 0.7348 | Val F1: 0.7348
+Epoch [032/300] | Duration: 6.01s | Train Loss: 0.6235 | Train Acc: 0.7652 | Val Loss: 0.7643 | Val Acc: 0.7273 | Val F1: 0.7277
+Epoch [033/300] | Duration: 5.70s | Train Loss: 0.6157 | Train Acc: 0.7708 | Val Loss: 0.7253 | Val Acc: 0.7121 | Val F1: 0.7124
+Epoch [034/300] | Duration: 5.21s | Train Loss: 0.6447 | Train Acc: 0.7614 | Val Loss: 0.7340 | Val Acc: 0.7273 | Val F1: 0.7260
+Epoch [035/300] | Duration: 5.43s | Train Loss: 0.5937 | Train Acc: 0.7992 | Val Loss: 0.7512 | Val Acc: 0.7500 | Val F1: 0.7496
+Epoch [036/300] | Duration: 5.09s | Train Loss: 0.5811 | Train Acc: 0.7879 | Val Loss: 0.7263 | Val Acc: 0.7348 | Val F1: 0.7319
+Epoch [037/300] | Duration: 5.37s | Train Loss: 0.5869 | Train Acc: 0.7708 | Val Loss: 0.6905 | Val Acc: 0.7197 | Val F1: 0.7188
+Epoch [038/300] | Duration: 6.18s | Train Loss: 0.5950 | Train Acc: 0.7652 | Val Loss: 0.8040 | Val Acc: 0.6742 | Val F1: 0.6708
+Epoch [039/300] | Duration: 5.51s | Train Loss: 0.5902 | Train Acc: 0.7765 | Val Loss: 0.8018 | Val Acc: 0.6894 | Val F1: 0.6839
+Epoch [040/300] | Duration: 5.76s | Train Loss: 0.5490 | Train Acc: 0.7822 | Val Loss: 0.6705 | Val Acc: 0.7727 | Val F1: 0.7726
+🎉 New best model found! F1-Score: 0.7726. Saved.
+Epoch [041/300] | Duration: 5.48s | Train Loss: 0.5462 | Train Acc: 0.8011 | Val Loss: 0.7144 | Val Acc: 0.7576 | Val F1: 0.7571
+Epoch [042/300] | Duration: 6.91s | Train Loss: 0.5614 | Train Acc: 0.7936 | Val Loss: 0.7043 | Val Acc: 0.7500 | Val F1: 0.7498
+Epoch [043/300] | Duration: 6.38s | Train Loss: 0.5337 | Train Acc: 0.7879 | Val Loss: 0.7815 | Val Acc: 0.7045 | Val F1: 0.7005
+Epoch [044/300] | Duration: 7.33s | Train Loss: 0.5230 | Train Acc: 0.8049 | Val Loss: 0.6992 | Val Acc: 0.7500 | Val F1: 0.7501
+Epoch [045/300] | Duration: 6.55s | Train Loss: 0.5195 | Train Acc: 0.8030 | Val Loss: 0.6711 | Val Acc: 0.7500 | Val F1: 0.7500
+Epoch [046/300] | Duration: 6.03s | Train Loss: 0.4880 | Train Acc: 0.8239 | Val Loss: 0.7667 | Val Acc: 0.7273 | Val F1: 0.7261
+Epoch [047/300] | Duration: 6.05s | Train Loss: 0.4990 | Train Acc: 0.8201 | Val Loss: 0.6744 | Val Acc: 0.7576 | Val F1: 0.7574
+Epoch [048/300] | Duration: 7.06s | Train Loss: 0.4870 | Train Acc: 0.8258 | Val Loss: 0.6438 | Val Acc: 0.7424 | Val F1: 0.7425
+Epoch [049/300] | Duration: 6.59s | Train Loss: 0.4847 | Train Acc: 0.8220 | Val Loss: 0.6238 | Val Acc: 0.7500 | Val F1: 0.7495
+Epoch [050/300] | Duration: 6.99s | Train Loss: 0.4760 | Train Acc: 0.7992 | Val Loss: 0.6472 | Val Acc: 0.7500 | Val F1: 0.7499
+Epoch [051/300] | Duration: 5.15s | Train Loss: 0.4804 | Train Acc: 0.8277 | Val Loss: 0.6798 | Val Acc: 0.7273 | Val F1: 0.7255
+Epoch [052/300] | Duration: 5.57s | Train Loss: 0.4574 | Train Acc: 0.8258 | Val Loss: 0.6212 | Val Acc: 0.7803 | Val F1: 0.7793
+🎉 New best model found! F1-Score: 0.7793. Saved.
+Epoch [053/300] | Duration: 5.47s | Train Loss: 0.5117 | Train Acc: 0.8087 | Val Loss: 0.6173 | Val Acc: 0.7652 | Val F1: 0.7649
+Epoch [054/300] | Duration: 5.94s | Train Loss: 0.4810 | Train Acc: 0.8277 | Val Loss: 0.7308 | Val Acc: 0.7273 | Val F1: 0.7260
+Epoch [055/300] | Duration: 6.05s | Train Loss: 0.4680 | Train Acc: 0.8333 | Val Loss: 0.5923 | Val Acc: 0.7652 | Val F1: 0.7646
+Epoch [056/300] | Duration: 5.34s | Train Loss: 0.4582 | Train Acc: 0.8314 | Val Loss: 0.6340 | Val Acc: 0.7879 | Val F1: 0.7864
+🎉 New best model found! F1-Score: 0.7864. Saved.
+Epoch [057/300] | Duration: 5.24s | Train Loss: 0.4276 | Train Acc: 0.8352 | Val Loss: 0.6363 | Val Acc: 0.7500 | Val F1: 0.7500
+Epoch [058/300] | Duration: 5.36s | Train Loss: 0.4297 | Train Acc: 0.8409 | Val Loss: 0.6649 | Val Acc: 0.7879 | Val F1: 0.7878
+🎉 New best model found! F1-Score: 0.7878. Saved.
+Epoch [059/300] | Duration: 5.61s | Train Loss: 0.4015 | Train Acc: 0.8523 | Val Loss: 0.7622 | Val Acc: 0.7045 | Val F1: 0.6968
+Epoch [060/300] | Duration: 5.21s | Train Loss: 0.4507 | Train Acc: 0.8201 | Val Loss: 0.5785 | Val Acc: 0.7727 | Val F1: 0.7719
+Epoch [061/300] | Duration: 5.36s | Train Loss: 0.4387 | Train Acc: 0.8277 | Val Loss: 0.5588 | Val Acc: 0.7879 | Val F1: 0.7874
+Epoch [062/300] | Duration: 6.32s | Train Loss: 0.4046 | Train Acc: 0.8636 | Val Loss: 0.5791 | Val Acc: 0.8030 | Val F1: 0.8026
+🎉 New best model found! F1-Score: 0.8026. Saved.
+Epoch [063/300] | Duration: 6.16s | Train Loss: 0.4193 | Train Acc: 0.8504 | Val Loss: 0.6431 | Val Acc: 0.7500 | Val F1: 0.7495
+Epoch [064/300] | Duration: 6.47s | Train Loss: 0.3990 | Train Acc: 0.8504 | Val Loss: 0.5883 | Val Acc: 0.8106 | Val F1: 0.8100
+🎉 New best model found! F1-Score: 0.8100. Saved.
+Epoch [065/300] | Duration: 6.86s | Train Loss: 0.3844 | Train Acc: 0.8693 | Val Loss: 0.5999 | Val Acc: 0.8106 | Val F1: 0.8104
+🎉 New best model found! F1-Score: 0.8104. Saved.
+Epoch [066/300] | Duration: 6.28s | Train Loss: 0.3952 | Train Acc: 0.8617 | Val Loss: 0.6911 | Val Acc: 0.7273 | Val F1: 0.7229
+Epoch [067/300] | Duration: 5.73s | Train Loss: 0.4002 | Train Acc: 0.8523 | Val Loss: 0.5959 | Val Acc: 0.8106 | Val F1: 0.8104
+Epoch [068/300] | Duration: 5.80s | Train Loss: 0.3855 | Train Acc: 0.8712 | Val Loss: 0.6098 | Val Acc: 0.7652 | Val F1: 0.7633
+Epoch [069/300] | Duration: 5.59s | Train Loss: 0.3906 | Train Acc: 0.8466 | Val Loss: 0.6630 | Val Acc: 0.7424 | Val F1: 0.7406
+Epoch [070/300] | Duration: 6.08s | Train Loss: 0.3986 | Train Acc: 0.8466 | Val Loss: 0.6380 | Val Acc: 0.7879 | Val F1: 0.7860
+Epoch [071/300] | Duration: 6.76s | Train Loss: 0.3897 | Train Acc: 0.8598 | Val Loss: 0.5644 | Val Acc: 0.7879 | Val F1: 0.7878
+Epoch [072/300] | Duration: 6.58s | Train Loss: 0.3596 | Train Acc: 0.8826 | Val Loss: 0.5883 | Val Acc: 0.8106 | Val F1: 0.8105
+🎉 New best model found! F1-Score: 0.8105. Saved.
+Epoch [073/300] | Duration: 6.49s | Train Loss: 0.3706 | Train Acc: 0.8674 | Val Loss: 0.5926 | Val Acc: 0.8182 | Val F1: 0.8179
+🎉 New best model found! F1-Score: 0.8179. Saved.
+Epoch [074/300] | Duration: 5.51s | Train Loss: 0.3399 | Train Acc: 0.8883 | Val Loss: 0.6119 | Val Acc: 0.8106 | Val F1: 0.8104
+Epoch [075/300] | Duration: 6.14s | Train Loss: 0.3395 | Train Acc: 0.8655 | Val Loss: 0.6392 | Val Acc: 0.7803 | Val F1: 0.7796
+Epoch [076/300] | Duration: 5.82s | Train Loss: 0.3594 | Train Acc: 0.8864 | Val Loss: 0.5764 | Val Acc: 0.7879 | Val F1: 0.7883
+Epoch [077/300] | Duration: 5.98s | Train Loss: 0.3375 | Train Acc: 0.8826 | Val Loss: 0.6525 | Val Acc: 0.7727 | Val F1: 0.7706
+Epoch [078/300] | Duration: 5.33s | Train Loss: 0.3420 | Train Acc: 0.8731 | Val Loss: 0.6044 | Val Acc: 0.7879 | Val F1: 0.7873
+Epoch [079/300] | Duration: 5.42s | Train Loss: 0.3571 | Train Acc: 0.8958 | Val Loss: 0.5798 | Val Acc: 0.7879 | Val F1: 0.7875
+Epoch [080/300] | Duration: 5.12s | Train Loss: 0.3669 | Train Acc: 0.8693 | Val Loss: 0.5807 | Val Acc: 0.8106 | Val F1: 0.8102
+Epoch [081/300] | Duration: 5.27s | Train Loss: 0.3392 | Train Acc: 0.8883 | Val Loss: 0.5623 | Val Acc: 0.8106 | Val F1: 0.8105
+Epoch [082/300] | Duration: 5.59s | Train Loss: 0.3559 | Train Acc: 0.8807 | Val Loss: 0.5665 | Val Acc: 0.8106 | Val F1: 0.8106
+Epoch [083/300] | Duration: 5.86s | Train Loss: 0.3356 | Train Acc: 0.8958 | Val Loss: 0.5775 | Val Acc: 0.7955 | Val F1: 0.7950
+Epoch [084/300] | Duration: 5.95s | Train Loss: 0.3238 | Train Acc: 0.8902 | Val Loss: 0.6206 | Val Acc: 0.7803 | Val F1: 0.7799
+Epoch [085/300] | Duration: 6.13s | Train Loss: 0.3474 | Train Acc: 0.8655 | Val Loss: 0.6279 | Val Acc: 0.7803 | Val F1: 0.7780
+Epoch [086/300] | Duration: 6.52s | Train Loss: 0.3177 | Train Acc: 0.8939 | Val Loss: 0.6046 | Val Acc: 0.8030 | Val F1: 0.8026
+Epoch [087/300] | Duration: 5.76s | Train Loss: 0.3414 | Train Acc: 0.8864 | Val Loss: 0.5889 | Val Acc: 0.8182 | Val F1: 0.8181
+🎉 New best model found! F1-Score: 0.8181. Saved.
+Epoch [088/300] | Duration: 7.28s | Train Loss: 0.3249 | Train Acc: 0.8845 | Val Loss: 0.5831 | Val Acc: 0.8030 | Val F1: 0.8025
+Epoch [089/300] | Duration: 5.61s | Train Loss: 0.3375 | Train Acc: 0.8883 | Val Loss: 0.5677 | Val Acc: 0.8106 | Val F1: 0.8106
+Epoch [090/300] | Duration: 5.75s | Train Loss: 0.3096 | Train Acc: 0.8939 | Val Loss: 0.5834 | Val Acc: 0.7955 | Val F1: 0.7950
+Epoch [091/300] | Duration: 6.73s | Train Loss: 0.3196 | Train Acc: 0.8883 | Val Loss: 0.5521 | Val Acc: 0.8106 | Val F1: 0.8102
+Epoch [092/300] | Duration: 6.27s | Train Loss: 0.3307 | Train Acc: 0.8864 | Val Loss: 0.5746 | Val Acc: 0.8030 | Val F1: 0.8030
+Epoch [093/300] | Duration: 6.31s | Train Loss: 0.3337 | Train Acc: 0.8845 | Val Loss: 0.5774 | Val Acc: 0.8106 | Val F1: 0.8100
+Epoch [094/300] | Duration: 6.66s | Train Loss: 0.3477 | Train Acc: 0.8826 | Val Loss: 0.5726 | Val Acc: 0.7955 | Val F1: 0.7950
+Epoch [095/300] | Duration: 6.29s | Train Loss: 0.3140 | Train Acc: 0.9053 | Val Loss: 0.5772 | Val Acc: 0.8030 | Val F1: 0.8030
+Epoch [096/300] | Duration: 5.32s | Train Loss: 0.3292 | Train Acc: 0.8883 | Val Loss: 0.5669 | Val Acc: 0.8106 | Val F1: 0.8102
+Epoch [097/300] | Duration: 5.41s | Train Loss: 0.3090 | Train Acc: 0.9072 | Val Loss: 0.5936 | Val Acc: 0.7955 | Val F1: 0.7950
+Epoch [098/300] | Duration: 5.43s | Train Loss: 0.3226 | Train Acc: 0.8883 | Val Loss: 0.6018 | Val Acc: 0.7879 | Val F1: 0.7871
+Epoch [099/300] | Duration: 5.98s | Train Loss: 0.3177 | Train Acc: 0.8977 | Val Loss: 0.5930 | Val Acc: 0.7879 | Val F1: 0.7871
+Epoch [100/300] | Duration: 5.96s | Train Loss: 0.3292 | Train Acc: 0.9015 | Val Loss: 0.5646 | Val Acc: 0.8106 | Val F1: 0.8102
+Epoch [101/300] | Duration: 5.34s | Train Loss: 0.3376 | Train Acc: 0.8883 | Val Loss: 0.6144 | Val Acc: 0.7955 | Val F1: 0.7950
+Epoch [102/300] | Duration: 5.97s | Train Loss: 0.3304 | Train Acc: 0.8920 | Val Loss: 0.6073 | Val Acc: 0.7955 | Val F1: 0.7952
+Epoch [103/300] | Duration: 5.62s | Train Loss: 0.3143 | Train Acc: 0.8977 | Val Loss: 0.5988 | Val Acc: 0.7879 | Val F1: 0.7878
+Epoch [104/300] | Duration: 5.32s | Train Loss: 0.3320 | Train Acc: 0.8807 | Val Loss: 0.5580 | Val Acc: 0.8106 | Val F1: 0.8100
+Epoch [105/300] | Duration: 5.93s | Train Loss: 0.3159 | Train Acc: 0.8958 | Val Loss: 0.6053 | Val Acc: 0.7727 | Val F1: 0.7723
+Epoch [106/300] | Duration: 7.09s | Train Loss: 0.3222 | Train Acc: 0.8902 | Val Loss: 0.6087 | Val Acc: 0.8030 | Val F1: 0.8026
+Epoch [107/300] | Duration: 6.61s | Train Loss: 0.3353 | Train Acc: 0.9015 | Val Loss: 0.6054 | Val Acc: 0.7803 | Val F1: 0.7778
+Epoch [108/300] | Duration: 5.63s | Train Loss: 0.3319 | Train Acc: 0.8939 | Val Loss: 0.5708 | Val Acc: 0.8106 | Val F1: 0.8100
+Epoch [109/300] | Duration: 5.98s | Train Loss: 0.3203 | Train Acc: 0.9034 | Val Loss: 0.6103 | Val Acc: 0.7955 | Val F1: 0.7950
+Epoch [110/300] | Duration: 6.34s | Train Loss: 0.3251 | Train Acc: 0.8920 | Val Loss: 0.5801 | Val Acc: 0.8106 | Val F1: 0.8102
+Epoch [111/300] | Duration: 5.36s | Train Loss: 0.3408 | Train Acc: 0.8845 | Val Loss: 0.5919 | Val Acc: 0.8030 | Val F1: 0.8030
+Epoch [112/300] | Duration: 6.29s | Train Loss: 0.3238 | Train Acc: 0.9091 | Val Loss: 0.6032 | Val Acc: 0.7955 | Val F1: 0.7950
+
+🛑 Early stopping triggered after 25 epochs.
+
+✅ Training finished.
+
+💾 Saving final artifacts...
+Loaded best model from training_outputs/20250724-105346/best_model.pth for final evaluation.
+📈 Saved training metrics plot.
+📊 Saved final confusion matrix.
+📝 Saved final classification report.
+
+✨ Run complete.

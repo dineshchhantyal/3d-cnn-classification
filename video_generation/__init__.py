@@ -1,15 +1,7 @@
 """
 3D CNN Video Generation System
 
-A comprehensive pipeline for generating videos from 3D CNN nucleus classification predictions.
 Supports both 3ncnn and 4ncnn models with GPU acceleration and parallel processing.
-
-Main Components:
-- VideoConfig: Configuration management
-- ModelInferenceEngine: Model loading and inference
-- SlidingWindowProcessor: Efficient data processing
-- FrameRenderer: Visualization and rendering
-- VideoGenerator: Complete pipeline orchestration
 
 Quick Usage:
     from video_generation import VideoGenerator

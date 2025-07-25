@@ -22,11 +22,11 @@ HPARAMS = {
     "early_stopping_patience": 35,  # Epochs to wait for improvement before stopping
     # --- Data Handling ---
     "max_samples_per_class": {
-        "mitotic": 218,
-        "new_daughter": 218,
-        "stable": 218,
+        "mitotic": 221,
+        "new_daughter": 221,
+        "stable": 221,
     },
-    "class_weights": [1.0, 1.0, 1.0],  # [mitotic, new_daughter, stable]
+    "class_weights": [1.0, 1.0, 1.0],  # [mitotic, new_daughter, stable, death]
 }
 
 # --- Shared Constants ---

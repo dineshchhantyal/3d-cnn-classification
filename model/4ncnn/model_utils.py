@@ -102,6 +102,7 @@ def run_inference(
     Returns:
         tuple: (predicted_index, predicted_class, confidence)
     """
+
     with torch.no_grad():
         input_tensor = input_tensor.to(DEVICE)
         output = model(input_tensor)

@@ -28,6 +28,8 @@ def transform_and_pad_volume(
     target_shape: tuple,
     is_label: bool = False,
     target_nucleus_id: int = None,
+    v_min: float = None,
+    v_max: float = None,
 ) -> np.ndarray:
     """
     Center-crop or pad a 3D volume to the target shape without resizing.
@@ -42,9 +44,13 @@ def transform_and_pad_volume(
 
     if not is_label:
         # Normalize raw volumes to [0, 1]
-        min_val, max_val = processed.min(), processed.max()
-        if max_val > min_val:
-            processed = (processed - min_val) / (max_val - min_val)
+        if v_min is None or v_max is None:
+            v_min, v_max = processed.min(), processed.max()
+        if v_max <= v_min:
+            raise ValueError(
+                f"Invalid volume range: min={v_min}, max={v_max}. Cannot normalize."
+            )
+        processed = (processed - v_min) / (v_max - v_min)
     else:
         # Check if already binary (only 0 and 1)
         unique_vals = np.unique(processed)
@@ -129,6 +135,7 @@ def preprocess_sample(
 
     # --- Step 2: Process all temporal volumes ---
     all_volumes = []
+    v_min, v_max = t_volume.min(), t_volume.max()
 
     for i, (tp, path) in enumerate(zip(TIME_POINTS, temporal_paths)):
         if os.path.exists(path):
@@ -136,18 +143,28 @@ def preprocess_sample(
                 vol_to_process = t_volume
             else:
                 vol_to_process = tifffile.imread(path).astype(np.float32)
+                v_min, v_max = min(vol_to_process.min(), v_min), max(
+                    vol_to_process.max(), v_max
+                )
 
-            processed_vol = transform_and_pad_volume(
-                vol_to_process,
-                target_shape,
-                is_label=False,
-            )
-            all_volumes.append(processed_vol)
+            all_volumes.append(vol_to_process)
         else:
             if for_training:
                 raise FileNotFoundError(f"Required temporal volume not found: {path}")
             print(f"⚠️ Warning: File not found at {path}. Using blank volume.")
             all_volumes.append(np.zeros(target_shape, dtype=np.float32))
+
+    # Normalize and transform all temporal volumes
+    for i, vol in enumerate(all_volumes):
+        processed_vol = transform_and_pad_volume(
+            vol,
+            target_shape,
+            is_label=False,
+            target_nucleus_id=nucleus_id,
+            v_min=v_min,
+            v_max=v_max,
+        )
+        all_volumes[i] = processed_vol
 
     # --- Step 3: Process binary segmentation mask ---
     if label_path and os.path.exists(label_path):

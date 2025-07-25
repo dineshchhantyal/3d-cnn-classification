@@ -185,167 +185,11 @@ def save_benchmark_summary(summary_data, output_dir):
         with open(json_path, "w") as f:
             json.dump(summary_data, f, indent=2, default=str)
 
-        # Create simple HTML report
-        html_content = create_html_report(summary_data)
-        html_filename = f"benchmark_report_{timestamp}.html"
-        html_path = os.path.join(output_dir, html_filename)
-
-        with open(html_path, "w") as f:
-            f.write(html_content)
-
-        return json_path, html_path
+        return json_path, None
 
     except Exception as e:
         print(f"⚠️ Failed to save benchmark summary: {e}")
         return None, None
-
-
-def create_html_report(summary_data):
-    """
-    Create HTML report from summary data.
-
-    Args:
-        summary_data (dict): Summary data structure
-
-    Returns:
-        str: HTML content
-    """
-    metadata = summary_data["metadata"]
-    overall = summary_data["overall_statistics"]
-    per_class = summary_data["per_class_performance"]
-    confidence = summary_data["confidence_analysis"]
-    results = summary_data["detailed_results"]
-
-    html = f"""<!DOCTYPE html>
-<html>
-<head>
-    <title>Benchmark Analysis Report - {metadata.get('model_timestamp', 'Unknown')}</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }}
-        .container {{ max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
-        h1 {{ color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }}
-        h2 {{ color: #34495e; margin-top: 30px; }}
-        .metrics-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }}
-        .metric-card {{ background: #ecf0f1; padding: 15px; border-radius: 5px; text-align: center; }}
-        .metric-value {{ font-size: 24px; font-weight: bold; color: #2980b9; }}
-        .metric-label {{ font-size: 14px; color: #7f8c8d; margin-top: 5px; }}
-        table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
-        th, td {{ padding: 8px 12px; text-align: left; border-bottom: 1px solid #ddd; }}
-        th {{ background-color: #3498db; color: white; }}
-        tr:nth-child(even) {{ background-color: #f9f9f9; }}
-        .correct {{ color: #27ae60; }}
-        .incorrect {{ color: #e74c3c; }}
-        .unknown {{ color: #f39c12; }}
-        .summary-section {{ margin: 30px 0; }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Benchmark Analysis Report</h1>
-        
-        <div class="summary-section">
-            <h2>📊 Executive Summary</h2>
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <div class="metric-value">{overall['overall_accuracy']:.1f}%</div>
-                    <div class="metric-label">Overall Accuracy</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">{confidence['overall_avg_confidence']:.1f}%</div>
-                    <div class="metric-label">Avg Confidence</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">{overall['total_processed']}</div>
-                    <div class="metric-label">Samples Processed</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value">{metadata.get('total_processing_time', 0):.1f}s</div>
-                    <div class="metric-label">Total Time</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="summary-section">
-            <h2>🎯 Per-Class Performance</h2>
-            <table>
-                <thead>
-                    <tr><th>Class</th><th>Samples</th><th>Correct</th><th>Accuracy</th><th>Avg Confidence</th></tr>
-                </thead>
-                <tbody>"""
-
-    for class_name, stats in per_class.items():
-        html += f"""
-                    <tr>
-                        <td>{class_name.upper()}</td>
-                        <td>{stats['total_samples']}</td>
-                        <td>{stats['correct_predictions']}</td>
-                        <td>{stats['accuracy']:.1f}%</td>
-                        <td>{stats['avg_confidence']:.1f}%</td>
-                    </tr>"""
-
-    html += f"""
-                </tbody>
-            </table>
-        </div>
-        
-        <div class="summary-section">
-            <h2>📋 Detailed Results</h2>
-            <table>
-                <thead>
-                    <tr><th>Sample</th><th>True</th><th>Predicted</th><th>Confidence</th><th>Status</th><th>Time (s)</th></tr>
-                </thead>
-                <tbody>"""
-
-    for result in results:
-        if result.get("error"):
-            status_class = "incorrect"
-            status_text = "ERROR"
-            true_class = "N/A"
-            pred_class = "N/A"
-            confidence = "N/A"
-        else:
-            true_class = (result.get("true_class") or "UNKNOWN").upper()
-            pred_class = (result.get("predicted_class") or "UNKNOWN").upper()
-            confidence = f"{result.get('confidence', 0):.1%}"
-
-            if result.get("correct") is True:
-                status_class = "correct"
-                status_text = "✅"
-            elif result.get("correct") is False:
-                status_class = "incorrect"
-                status_text = "❌"
-            else:
-                status_class = "unknown"
-                status_text = "❓"
-
-        processing_time = result.get("processing_time", 0)
-
-        html += f"""
-                    <tr>
-                        <td>{result['sample_name'][:40]}</td>
-                        <td>{true_class}</td>
-                        <td>{pred_class}</td>
-                        <td>{confidence}</td>
-                        <td class="{status_class}">{status_text}</td>
-                        <td>{processing_time:.1f}</td>
-                    </tr>"""
-
-    html += f"""
-                </tbody>
-            </table>
-        </div>
-        
-        <div class="summary-section">
-            <h2>ℹ️ Run Information</h2>
-            <p><strong>Model:</strong> {metadata.get('model_path', 'Unknown')}</p>
-            <p><strong>Timestamp:</strong> {metadata.get('timestamp', 'Unknown')}</p>
-            <p><strong>Analysis Level:</strong> {metadata.get('analysis_level', 'Unknown')}</p>
-        </div>
-    </div>
-</body>
-</html>"""
-
-    return html
 
 
 # --- Main Execution ---
@@ -415,6 +259,10 @@ if __name__ == "__main__":
         print("Loading model...")
         start_time = datetime.now()
         model = load_model(args.model_path)
+        model.eval()  # Set model to evaluation mode
+        print(
+            f"Model loaded in {(datetime.now() - start_time).total_seconds():.2f} seconds"
+        )
 
         # Setup analysis output directory if needed
         if args.save_analysis:

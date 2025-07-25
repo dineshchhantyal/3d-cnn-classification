@@ -146,6 +146,13 @@ if __name__ == "__main__":
         default="./analysis_output",
         help="Directory to save outputs.",
     )
+
+    parser.add_argument(
+        "--analysis_level",
+        choices=["basic", "detailed", "full"],
+        default="detailed",
+        help="Level of analysis detail to save (default: detailed).",
+    )
     args = parser.parse_args()
 
     try:

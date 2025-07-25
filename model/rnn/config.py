@@ -6,9 +6,9 @@ import torch
 # --- Shared Hyperparameters ---
 HPARAMS = {
     # --- MODIFIED: Input dimensions reduced to 32x32x32 ---
-    "input_depth": 32,
-    "input_height": 32,
-    "input_width": 32,
+    "input_depth": 64,
+    "input_height": 64,
+    "input_width": 64,
     "num_classes": 3,
     "classes_names": ["mitotic", "new_daughter", "stable"],
     # --- Training Parameters ---
@@ -22,9 +22,9 @@ HPARAMS = {
     "early_stopping_patience": 25,  # Epochs to wait for improvement before stopping
     # --- Data Handling ---
     "max_samples_per_class": {
-        "mitotic": 329,
-        "new_daughter": 329,
-        "stable": 329,
+        "mitotic": 221,
+        "new_daughter": 221,
+        "stable": 221,
     },
     "class_weights": [1.0, 1.0, 1.0],  # [mitotic, new_daughter, stable]
 }

@@ -1,0 +1,69 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) modules/2.3-20240529   2) openblas/single-0.3.26
+🚀 Starting Run. All outputs will be saved to: training_outputs/20250724-185911
+⚙️ Using device: cuda
+Hyperparameters: {'input_depth': 32, 'input_height': 32, 'input_width': 32, 'num_classes': 3, 'classes_names': ['mitotic', 'new_daughter', 'stable'], 'learning_rate': 1e-05, 'batch_size': 16, 'num_epochs': 300, 'num_input_channels': 4, 'dropout_rate': 0.1, 'weight_decay': 1e-05, 'early_stopping_patience': 35, 'class_weights': [1.0, 1.0, 1.0, 1.0]}
+
+Loading datasets...
+Dataset loaded with 7765 total samples:
+  - mitotic: 218 samples
+  - new_daughter: 434 samples
+  - stable: 7113 samples
+Dataset loaded with 7765 total samples:
+  - mitotic: 218 samples
+  - new_daughter: 434 samples
+  - stable: 7113 samples
+
+Training on 6212 samples, validating on 1553 samples.
+Model has 71,379 trainable parameters.
+
+--- Starting Training ---
+Traceback (most recent call last):
+  File "/mnt/home/dchhantyal/3d-cnn-classification/model/4ncnn/cnn_model.py", line 459, in <module>
+    main()
+  File "/mnt/home/dchhantyal/3d-cnn-classification/model/4ncnn/cnn_model.py", line 386, in main
+    train_loss, train_acc = train_one_epoch(
+  File "/mnt/home/dchhantyal/3d-cnn-classification/model/4ncnn/cnn_model.py", line 220, in train_one_epoch
+    loss = criterion(outputs, labels)
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/nn/modules/loss.py", line 1297, in forward
+    return F.cross_entropy(
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/nn/functional.py", line 3494, in cross_entropy
+    return torch._C._nn.cross_entropy_loss(
+RuntimeError: weight tensor should be defined either for all 3 classes or no classes but got weight tensor of shape: [4]
+E0724 18:59:51.235000 1926729 torch/distributed/elastic/multiprocessing/api.py:874] failed (exitcode: 1) local_rank: 0 (pid: 1926752) of binary: /mnt/home/dchhantyal/venvs/jupyter-gpu/bin/python
+Traceback (most recent call last):
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/bin/torchrun", line 8, in <module>
+    sys.exit(main())
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/distributed/run.py", line 892, in main
+    run(args)
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/distributed/run.py", line 883, in run
+    elastic_launch(
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 139, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/mnt/home/dchhantyal/venvs/jupyter-gpu/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 270, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+cnn_model.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2025-07-24_18:59:51
+  host      : workergpu001.cm.cluster
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 1926752)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+srun: error: workergpu001: task 0: Exited with exit code 1
