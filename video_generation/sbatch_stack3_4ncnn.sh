@@ -42,10 +42,10 @@ mkdir -p logs
 mkdir -p video_generation/output
 
 # Dataset and model paths
-RAW_DATA_PATH="/mnt/home/dchhantyal/3d-cnn-classification/raw-data/230212_stack6/registered_images"
-LABEL_DATA_PATH="/mnt/home/dchhantyal/3d-cnn-classification/raw-data/230212_stack6/registered_label_images"
-MODEL_PATH="/mnt/home/dchhantyal/3d-cnn-classification/model/4ncnn/training_outputs/20250710-131550/best_model.pth"
-OUTPUT_DIR="/mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack3_4ncnn_$(date +%Y%m%d_%H%M%S)"
+RAW_DATA_PATH="/mnt/home/dchhantyal/3d-cnn-classification/raw-data/220321_stack11/registered_images"
+LABEL_DATA_PATH="/mnt/home/dchhantyal/3d-cnn-classification/raw-data/220321_stack11/registered_label_images"
+MODEL_PATH="/mnt/home/dchhantyal/3d-cnn-classification/model/4ncnn/training_outputs/20250724-174101/best_model.pth"
+OUTPUT_DIR="/mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_4ncnn_$(date +%Y%m%d_%H%M%S)"
 
 echo "Data Configuration:"
 echo "  Raw data: $RAW_DATA_PATH"
@@ -148,7 +148,7 @@ if [ $EXIT_CODE -eq 0 ]; then
     echo ""
     
     # Display output information if directory was created
-    OUTPUT_DIR_ACTUAL=$(ls -d /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack3_4ncnn_* 2>/dev/null | tail -1)
+    OUTPUT_DIR_ACTUAL=$(ls -d /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_4ncnn_* 2>/dev/null | tail -1)
     if [ -n "$OUTPUT_DIR_ACTUAL" ] && [ -d "$OUTPUT_DIR_ACTUAL" ]; then
         echo "📁 Output Files:"
         ls -la "$OUTPUT_DIR_ACTUAL"/*.mp4 2>/dev/null || echo "No MP4 files found"

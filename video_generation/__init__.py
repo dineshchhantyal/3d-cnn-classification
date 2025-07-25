@@ -6,36 +6,33 @@ Supports both 3ncnn and 4ncnn models with GPU acceleration and parallel processi
 
 Main Components:
 - VideoConfig: Configuration management
-- ModelInferenceEngine: Model loading and inference  
+- ModelInferenceEngine: Model loading and inference
 - SlidingWindowProcessor: Efficient data processing
 - FrameRenderer: Visualization and rendering
 - VideoGenerator: Complete pipeline orchestration
 
 Quick Usage:
     from video_generation import VideoGenerator
-    
+
     video_path = VideoGenerator.quick_video(
         raw_data_path="/path/to/raw",
-        label_data_path="/path/to/labels", 
+        label_data_path="/path/to/labels",
         model_path="/path/to/model",
         output_dir="./output"
     )
 
 Custom Usage:
     from video_generation import VideoConfig, VideoGenerator
-    
+
     config = VideoConfig()
     config.raw_data_path = "/path/to/raw"
-    config.model_path = "/path/to/model" 
+    config.model_path = "/path/to/model"
     config.use_gpu = True
     config.show_multiple_projections = True
-    
+
     generator = VideoGenerator(config)
     video_path = generator.generate_video()
 """
-
-__version__ = "1.0.0"
-__author__ = "3D CNN Classification Team"
 
 # Core components
 from .config import VideoConfig, ConfigPresets
@@ -47,24 +44,23 @@ from .video_generator import VideoGenerator
 # Convenience imports
 __all__ = [
     # Main classes
-    'VideoGenerator',
-    'VideoConfig', 
-    'ConfigPresets',
-    'ModelInferenceEngine',
-    'SlidingWindowProcessor',
-    'FrameRenderer',
-    
+    "VideoGenerator",
+    "VideoConfig",
+    "ConfigPresets",
+    "ModelInferenceEngine",
+    "SlidingWindowProcessor",
+    "FrameRenderer",
     # Data structures
-    'FrameData',
-    'NucleusVisualization',
-    
+    "FrameData",
+    "NucleusVisualization",
     # Version info
-    '__version__',
+    "__version__",
 ]
 
 # Package-level configuration
 import warnings
 import torch
+
 
 def _check_dependencies():
     """Check if required dependencies are available."""
@@ -79,6 +75,7 @@ def _check_dependencies():
         return False
     return True
 
+
 def _check_gpu_availability():
     """Check GPU availability and provide helpful info."""
     if torch.cuda.is_available():
@@ -91,9 +88,11 @@ def _check_gpu_availability():
         print("⚠️ GPU not available, using CPU mode")
         return False
 
+
 # Initialize package
 _check_dependencies()
 _gpu_available = _check_gpu_availability()
+
 
 # Default configuration hints
 def get_recommended_config():
@@ -106,10 +105,12 @@ def get_recommended_config():
         config.batch_size = 4  # Smaller batches for CPU
         return config
 
+
 # Helper function for first-time users
 def quick_start_guide():
     """Print quick start guide."""
-    print("""
+    print(
+        """
     🎬 3D CNN Video Generation - Quick Start Guide
     
     1. Basic Usage:
@@ -137,10 +138,13 @@ def quick_start_guide():
        - Check README.md for detailed documentation
        - Run examples.py for working demonstrations
        - Use ConfigPresets for common configurations
-    """)
+    """
+    )
+
 
 # Version check and compatibility warnings
 import sys
+
 if sys.version_info < (3, 8):
     warnings.warn("Python 3.8+ recommended for best performance")
 
@@ -155,6 +159,7 @@ except NameError:
 if IN_NOTEBOOK:
     # Notebook-specific optimizations
     import matplotlib
-    matplotlib.use('inline')
+
+    matplotlib.use("inline")
     print("📓 Jupyter notebook environment detected")
     print("   Use %matplotlib inline for best visualization")

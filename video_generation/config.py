@@ -17,7 +17,7 @@ class VideoConfig:
     """
 
     # ===== MODEL SETTINGS =====
-    model_type: str = "3ncnn"  # '3ncnn' or '4ncnn'
+    model_type: str = "4ncnn"  # '3ncnn' or '4ncnn'
     model_path: Optional[str] = None  # Custom model path (auto-detect if None)
     batch_size: int = 32  # GPU batch size
     device: str = "auto"  # 'auto', 'cuda', 'cpu', 'cuda:0'
