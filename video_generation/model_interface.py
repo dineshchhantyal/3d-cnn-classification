@@ -12,9 +12,7 @@ import importlib.util
 from pathlib import Path
 from typing import List, Tuple, Optional, Union, TYPE_CHECKING
 import glob
-
-if TYPE_CHECKING:
-    from .config import VideoConfig
+from video_generation.config import VideoConfig
 
 # Project root for model paths
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -88,9 +86,9 @@ class ModelInferenceEngine:
         if not os.path.exists(self.model_path):
             raise FileNotFoundError(f"Model file not found: {self.model_path}")
 
-        if self.model_type == "3ncnn":
+        if self.model_type == "ncnn3":
             self._load_3ncnn_model()
-        elif self.model_type == "4ncnn":
+        elif self.model_type == "ncnn4":
             self._load_4ncnn_model()
         else:
             raise ValueError(f"Unsupported model type: {self.model_type}")
@@ -107,21 +105,16 @@ class ModelInferenceEngine:
 
     def _load_3ncnn_model(self):
         """Load 3-channel CNN model with isolated imports."""
-        model_3ncnn_path = PROJECT_ROOT / "model" / "3ncnn"
+        model_3ncnn_path = self.model_path
 
         # Save current sys.path and working directory
         original_sys_path = sys.path.copy()
         original_cwd = os.getcwd()
 
         try:
-            # Temporarily modify sys.path to prioritize 3ncnn directory
-            sys.path.insert(0, str(model_3ncnn_path))
-
-            # Change to 3ncnn directory
-            os.chdir(str(model_3ncnn_path))
 
             # Import cnn_model from 3ncnn directory
-            import cnn_model
+            import model.ncnn3.model_utils as cnn_model
 
             # Create the model
             self.model = cnn_model.Simple3DCNN()
@@ -158,32 +151,23 @@ class ModelInferenceEngine:
 
     def _load_4ncnn_model(self):
         """Load 4-channel CNN model with isolated imports."""
-        model_4ncnn_path = PROJECT_ROOT / "model" / "4ncnn"
-
-        # Save current sys.path and working directory
-        original_sys_path = sys.path.copy()
-        original_cwd = os.getcwd()
+        model_4ncnn_path = self.model_path
 
         try:
-            # Temporarily modify sys.path to prioritize 4ncnn directory
-            # This ensures 'from config import' finds the 4ncnn config first
-            sys.path.insert(0, str(model_4ncnn_path))
-
-            # Change to 4ncnn directory to ensure relative imports work
-            os.chdir(str(model_4ncnn_path))
 
             # Import model_utils which will now find the correct config
-            import model_utils
+            from model.ncnn4 import model_utils
+            from model.ncnn4.config import HPARAMS
 
             # Create the model
             self.model = model_utils.Simple3DCNN()
             self.model.load_state_dict(torch.load(self.model_path, map_location="cpu"))
-            self.class_names = model_utils.CLASS_NAMES
-            self.input_channels = 4
+            self.class_names = HPARAMS["classes_names"]
+            self.input_channels = HPARAMS["num_input_channels"]
             self.input_shape = (
-                model_utils.HPARAMS["input_depth"],
-                model_utils.HPARAMS["input_height"],
-                model_utils.HPARAMS["input_width"],
+                HPARAMS["input_depth"],
+                HPARAMS["input_height"],
+                HPARAMS["input_width"],
             )
 
             print(f"✅ 4ncnn model loaded successfully")
@@ -197,16 +181,11 @@ class ModelInferenceEngine:
             traceback.print_exc()
             raise ImportError(f"Failed to import 4ncnn model: {e}")
 
-        finally:
-            # Always restore original state
-            sys.path[:] = original_sys_path
-            os.chdir(original_cwd)
-
     def _setup_preprocessor(self):
         """Setup model-specific preprocessing."""
-        if self.model_type == "3ncnn":
+        if self.model_type == "ncnn3":
             self.preprocessor = self._preprocess_3ncnn
-        elif self.model_type == "4ncnn":
+        elif self.model_type == "ncnn4":
             self.preprocessor = self._preprocess_4ncnn
 
     def _preprocess_3ncnn(self, nucleus_sequence: dict) -> torch.Tensor:
@@ -247,7 +226,7 @@ class ModelInferenceEngine:
         """
         try:
             # Import center_crop_or_pad from data_utils
-            from model.4ncnn.data_utils import center_crop_or_pad
+            from model.ncnn4.data_utils import center_crop_or_pad
 
             # Collect all available volumes for min-max normalization
             raw_volumes = []
@@ -258,10 +237,13 @@ class ModelInferenceEngine:
             # Compute global min/max for normalization
             if raw_volumes:
                 stacked = np.concatenate([v.flatten() for v in raw_volumes])
-                v_min = stacked.min()
-                v_max = stacked.max()
-                if v_max <= v_min:
+                if stacked.size == 0:
                     v_min, v_max = 0.0, 1.0
+                else:
+                    v_min = stacked.min()
+                    v_max = stacked.max()
+                    if v_max <= v_min:
+                        v_min, v_max = 0.0, 1.0
             else:
                 v_min, v_max = 0.0, 1.0
 
@@ -379,15 +361,15 @@ class ModelInferenceEngine:
 def load_3ncnn_model(
     model_path: Optional[str] = None, **kwargs
 ) -> ModelInferenceEngine:
-    """Load a 3ncnn model."""
-    return ModelInferenceEngine(model_type="3ncnn", model_path=model_path, **kwargs)
+    """Load a ncnn3 model."""
+    return ModelInferenceEngine(model_type="ncnn3", model_path=model_path, **kwargs)
 
 
 def load_4ncnn_model(
     model_path: Optional[str] = None, **kwargs
 ) -> ModelInferenceEngine:
     """Load a 4ncnn model."""
-    return ModelInferenceEngine(model_type="4ncnn", model_path=model_path, **kwargs)
+    return ModelInferenceEngine(model_type="ncnn4", model_path=model_path, **kwargs)
 
 
 if __name__ == "__main__":

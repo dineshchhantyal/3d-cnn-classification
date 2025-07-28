@@ -17,12 +17,14 @@ class VideoConfig:
     """
 
     # ===== MODEL SETTINGS =====
-    model_type: str = "4ncnn"  # '3ncnn' or '4ncnn'
+    model_type: str = "ncnn4"  # 'ncnn3' or 'ncnn4'
     model_path: Optional[str] = None  # Custom model path (auto-detect if None)
     batch_size: int = 32  # GPU batch size
     device: str = "auto"  # 'auto', 'cuda', 'cpu', 'cuda:0'
     use_gpu: bool = True  # Enable GPU acceleration
     compile_model: bool = False  # Enable model compilation (TorchScript optimization)
+
+    crop_shape: tuple = (32, 32, 32)  # Input shape for model (D, H, W)
 
     # ===== DATASET SETTINGS =====
     raw_data_path: str = ""  # Path to raw volume data

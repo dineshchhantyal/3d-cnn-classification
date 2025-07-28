@@ -2,16 +2,14 @@
 
 #SBATCH --job-name=enhanced_video_gen_4ncnn_stack3
 #SBATCH --time=24:00:00
-#SBATCH -p gpu
+SBATCH -p gpu
 #SBATCH -N 1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gpus-per-node=1
-#SBATCH --cpus-per-gpu=2
+# SBATCH --cpus-per-gpu=2
 #SBATCH --mem=32G
 
-# Script for generating ENHANCED video from 4ncnn model predictions on 230212_stack6 dataset
-# Created: July 11, 2025 - Enhanced with congested nuclei handling and improved visualization
-# Dataset: 230212_stack6 (210 frames)
+
 # Model: 4ncnn best_model.pth from training_outputs/20250710-131550
 # 
 # - Higher resolution output (2560x1440)
@@ -42,56 +40,14 @@ mkdir -p logs
 mkdir -p video_generation/output
 
 # Dataset and model paths
-RAW_DATA_PATH="/mnt/home/dchhantyal/3d-cnn-classification/raw-data/220321_stack11/registered_images"
-LABEL_DATA_PATH="/mnt/home/dchhantyal/3d-cnn-classification/raw-data/220321_stack11/registered_label_images"
-MODEL_PATH="/mnt/home/dchhantyal/3d-cnn-classification/model/4ncnn/training_outputs/20250724-174101/best_model.pth"
-OUTPUT_DIR="/mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_4ncnn_$(date +%Y%m%d_%H%M%S)"
+OUTPUT_DIR="/mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack19_ncnn4_$(date +%Y%m%d_%H%M%S)"
 
 echo "Data Configuration:"
-echo "  Raw data: $RAW_DATA_PATH"
-echo "  Label data: $LABEL_DATA_PATH" 
-echo "  Model: $MODEL_PATH"
 echo "  Output: $OUTPUT_DIR"
 echo ""
 
-# Verify paths exist
-if [ ! -d "$RAW_DATA_PATH" ]; then
-    echo "❌ ERROR: Raw data path does not exist: $RAW_DATA_PATH"
-    exit 1
-fi
-
-if [ ! -d "$LABEL_DATA_PATH" ]; then
-    echo "❌ ERROR: Label data path does not exist: $LABEL_DATA_PATH"
-    exit 1
-fi
-
-if [ ! -f "$MODEL_PATH" ]; then
-    echo "❌ ERROR: Model file does not exist: $MODEL_PATH"
-    exit 1
-fi
-
 echo "✅ All paths verified"
 
-# Count available frames
-RAW_FRAME_COUNT=$(ls "$RAW_DATA_PATH"/nuclei_reg8_*.tif 2>/dev/null | wc -l)
-LABEL_FRAME_COUNT=$(ls "$LABEL_DATA_PATH"/label_reg8_*.tif 2>/dev/null | wc -l)
-
-echo "Frame Analysis:"
-echo "  Raw frames found: $RAW_FRAME_COUNT"
-echo "  Label frames found: $LABEL_FRAME_COUNT"
-
-if [ "$RAW_FRAME_COUNT" -eq 0 ] || [ "$LABEL_FRAME_COUNT" -eq 0 ]; then
-    echo "❌ ERROR: No frames found with expected naming pattern"
-    echo "Expected patterns: nuclei_reg8_*.tif and label_reg8_*.tif"
-    exit 1
-fi
-
-if [ "$RAW_FRAME_COUNT" -ne "$LABEL_FRAME_COUNT" ]; then
-    echo "⚠️ WARNING: Frame count mismatch between raw and label data"
-fi
-
-echo "✅ Frame verification complete"
-echo ""
 
 # Print system information
 echo "System Information:"
@@ -148,7 +104,7 @@ if [ $EXIT_CODE -eq 0 ]; then
     echo ""
     
     # Display output information if directory was created
-    OUTPUT_DIR_ACTUAL=$(ls -d /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_4ncnn_* 2>/dev/null | tail -1)
+    OUTPUT_DIR_ACTUAL=$(ls -d /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack19_ncnn4_* 2>/dev/null | tail -1)
     if [ -n "$OUTPUT_DIR_ACTUAL" ] && [ -d "$OUTPUT_DIR_ACTUAL" ]; then
         echo "📁 Output Files:"
         ls -la "$OUTPUT_DIR_ACTUAL"/*.mp4 2>/dev/null || echo "No MP4 files found"

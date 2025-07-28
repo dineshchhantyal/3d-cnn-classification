@@ -1,0 +1,37 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) modules/2.3-20240529   2) openblas/single-0.3.26
+[W socket.cpp:464] [c10d] The server socket has failed to bind to [::]:29500 (errno: 98 - Address already in use).
+[W socket.cpp:464] [c10d] The server socket has failed to bind to 0.0.0.0:29500 (errno: 98 - Address already in use).
+[E socket.cpp:500] [c10d] The server socket has failed to listen on any local network address.
+🚀 Starting Run. All outputs will be saved to: training_outputs/20250728-162224
+⚙️ Using device: cuda
+Hyperparameters: {'input_depth': 32, 'input_height': 32, 'input_width': 32, 'num_classes': 3, 'classes_names': ['mitotic', 'new_daughter', 'stable'], 'learning_rate': 1e-05, 'batch_size': 16, 'num_epochs': 300, 'num_input_channels': 4, 'dropout_rate': 0.1, 'weight_decay': 1e-05, 'early_stopping_patience': 35, 'max_samples_per_class': {'mitotic': 221, 'new_daughter': 221, 'stable': 221}, 'class_weights': [1.0, 1.0, 1.0]}
+
+Loading datasets...
+Dataset loaded with 660 total samples:
+  - mitotic: 218 samples
+  - new_daughter: 221 samples
+  - stable: 221 samples
+  Applied per-class limits:
+    - mitotic: 221 max samples
+    - new_daughter: 221 max samples
+    - stable: 221 max samples
+Dataset loaded with 660 total samples:
+  - mitotic: 218 samples
+  - new_daughter: 221 samples
+  - stable: 221 samples
+  Applied per-class limits:
+    - mitotic: 221 max samples
+    - new_daughter: 221 max samples
+    - stable: 221 max samples
+
+Training on 528 samples, validating on 132 samples.
+Model has 71,379 trainable parameters.
+
+--- Starting Training ---
+Epoch [001/300] | Duration: 13.14s | Train Loss: 1.0581 | Train Acc: 0.4527 | Val Loss: 1.1774 | Val Acc: 0.3333 | Val F1: 0.1667
+🎉 New best model found! F1-Score: 0.1667. Saved to training_outputs/20250728-162224/best_model.pth
+Epoch [002/300] | Duration: 13.26s | Train Loss: 1.0191 | Train Acc: 0.5436 | Val Loss: 1.0468 | Val Acc: 0.4242 | Val F1: 0.3230
+🎉 New best model found! F1-Score: 0.3230. Saved to training_outputs/20250728-162224/best_model.pth

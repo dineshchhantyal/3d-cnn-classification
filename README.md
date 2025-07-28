@@ -1,12 +1,8 @@
 # 3D Nucleus State Classification in Time-Series Microscopy
 
-**Author:** Dinesh Chhantyal, SCC
-
----
-
 ## Project Summary
 
-This project is a complete solution for automatically extracting, cleaning, and classifying the states of cell nuclei in 3D time-series microscopy images. The main model, **4ncnn**, uses both spatial and temporal information, plus segmentation masks, to achieve high accuracy. Other models (CNN-only, 3ncnn, RNN) are included for comparison, but may not have the latest improvements.
+This project is a solution for extracting, cleaning, and classifying the states of cell nuclei in 3D time-series microscopy images. The main model, **4ncnn**, uses both spatial and temporal information, plus segmentation masks, to achieve high accuracy. Other models (CNN-only, 3ncnn, RNN) are included for comparison, but may not have the latest improvements.
 
 ---
 

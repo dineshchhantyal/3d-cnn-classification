@@ -79,7 +79,9 @@ class VideoGenerator:
 
             # Step 2: Enhanced frame rendering with multiple modes
             print("\n🎨 Step 2: Enhanced frame rendering...")
-            all_frame_sets = self._render_enhanced_frames(predictions_file)
+            all_frame_sets = self._render_enhanced_frames(
+                predictions_file, mode="single_class", class_filter="mitotic"
+            )
 
             # Step 3: Generate multiple videos
             print("\n🎞️ Step 3: Generating multiple video formats...")

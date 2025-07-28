@@ -24,22 +24,22 @@ def create_stack3_config():
     """Create optimized configuration for stack3 dataset processing."""
     config = VideoConfig()
     raw_dataset_path = Path(
-        "/mnt/home/dchhantyal/3d-cnn-classification/raw-data/220321_stack11"
+        "/mnt/home/dchhantyal/3d-cnn-classification/raw-data/230101_Gata6Nanog_stack_19/stack_19_channel_1_obj_left/"
     )
 
     # Dataset specific paths
     config.raw_data_path = str(raw_dataset_path / "registered_images")
     config.label_data_path = str(raw_dataset_path / "registered_label_images")
-    config.model_path = "/mnt/home/dchhantyal/3d-cnn-classification/model/4ncnn/training_outputs/20250724-174101/best_model.pth"
+    config.model_path = "/mnt/home/dchhantyal/3d-cnn-classification/model/ncnn4/training_outputs/latest-4ncnn/best_model.pth"
 
     # Output configuration
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    config.output_dir = f"/mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_4ncnn_{timestamp}"
+    config.output_dir = f"/mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_{timestamp}"
     config.video_name = "stack11_video"
     config.cache_dir = f"{config.output_dir}/cache"
 
-    # Model configuration - 4ncnn specific
-    config.model_type = "4ncnn"
+    # Model configuration - ncnn4 specific
+    config.model_type = "ncnn4"
 
     # Video settings optimized for clarity and observation
     config.fps = 3  # Slower for better observation (was 15)
@@ -62,7 +62,7 @@ def create_stack3_config():
 
     # Scientific visualization mode for publication quality
     config.scientific_mode = True  # Enable clean raw data visualization
-    config.boundary_thickness = 0.4  # Thinner boundaries for subtle outlines
+    config.boundary_thickness = 1  # Thinner boundaries for subtle outlines
     config.boundary_opacity = 0.7  # Semi-transparent boundaries
     config.show_raw_background = True  # Show actual microscopy data
 
@@ -122,128 +122,10 @@ def create_stack3_config():
     return config
 
 
-def verify_dataset():
-    """Verify the dataset structure and count frames."""
-    raw_path = Path(
-        "/mnt/home/dchhantyal/3d-cnn-classification/raw-data/220321_stack11/registered_images"
-    )
-    label_path = Path(
-        "/mnt/home/dchhantyal/3d-cnn-classification/raw-data/220321_stack11/registered_label_images"
-    )
-
-    print("🔍 Verifying dataset structure...")
-
-    # Check paths exist
-    if not raw_path.exists():
-        print(f"❌ Raw data path does not exist: {raw_path}")
-        return False
-
-    if not label_path.exists():
-        print(f"❌ Label data path does not exist: {label_path}")
-        return False
-
-    # Count frames
-    raw_files = list(raw_path.glob("nuclei_reg8_*.tif"))
-    label_files = list(label_path.glob("label_reg8_*.tif"))
-
-    print(f"📊 Dataset verification:")
-    print(f"   Raw frames: {len(raw_files)}")
-    print(f"   Label frames: {len(label_files)}")
-
-    if len(raw_files) == 0:
-        print("❌ No raw frames found with pattern 'nuclei_reg8_*.tif'")
-        return False
-
-    if len(label_files) == 0:
-        print("❌ No label frames found with pattern 'label_reg8_*.tif'")
-        return False
-
-    if len(raw_files) != len(label_files):
-        print(
-            f"⚠️ WARNING: Frame count mismatch (raw: {len(raw_files)}, labels: {len(label_files)})"
-        )
-
-    # Check frame number ranges
-    raw_numbers = []
-    label_numbers = []
-
-    for f in raw_files:
-        try:
-            num = int(f.stem.split("_")[-1])
-            raw_numbers.append(num)
-        except:
-            continue
-
-    for f in label_files:
-        try:
-            num = int(f.stem.split("_")[-1])
-            label_numbers.append(num)
-        except:
-            continue
-
-    if raw_numbers and label_numbers:
-        print(f"   Frame range: {min(raw_numbers)} to {max(raw_numbers)}")
-        print(
-            f"   Processable frames: {len(raw_numbers) - 2}"
-        )  # Exclude boundaries for sliding window
-
-    print("✅ Dataset verification complete")
-    return True
-
-
-def verify_model():
-    """Verify the model file exists and is loadable."""
-    model_path = Path(
-        "/mnt/home/dchhantyal/3d-cnn-classification/model/4ncnn/training_outputs/20250724-174101/best_model.pth"
-    )
-
-    print("🔍 Verifying model...")
-
-    if not model_path.exists():
-        print(f"❌ Model file does not exist: {model_path}")
-        return False
-
-    # Check file size
-    size_mb = model_path.stat().st_size / (1024 * 1024)
-    print(f"📊 Model file: {model_path.name} ({size_mb:.1f} MB)")
-
-    # Try to load with PyTorch
-    try:
-        import torch
-
-        checkpoint = torch.load(model_path, map_location="cpu")
-        print(f"✅ Model checkpoint loaded successfully")
-
-        # Print some checkpoint info if available
-        if isinstance(checkpoint, dict):
-            for key in ["epoch", "best_val_accuracy", "model_state_dict"]:
-                if key in checkpoint:
-                    print(f"   {key}: {checkpoint[key]}")
-
-    except Exception as e:
-        print(f"⚠️ Warning: Could not load model checkpoint: {e}")
-        print("   This may be normal if the model uses custom components")
-
-    print("✅ Model verification complete")
-    return True
-
-
 def main():
     """Main execution function."""
     print("🎬 Stack3 4ncnn Video Generation")
     print("=" * 50)
-
-    # Verify prerequisites
-    if not verify_dataset():
-        print("❌ Dataset verification failed")
-        return 1
-
-    if not verify_model():
-        print("❌ Model verification failed")
-        return 1
-
-    print()
-
     # Create configuration
     print("⚙️ Creating configuration...")
     config = create_stack3_config()

@@ -14,9 +14,19 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import time
 from dataclasses import dataclass
 import torch
+import logging
 
 from .config import VideoConfig
 from .model_interface import ModelInferenceEngine
+
+# Setup logger
+logger = logging.getLogger("video_generation")
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+handler.setFormatter(formatter)
+if not logger.hasHandlers():
+    logger.addHandler(handler)
 
 
 @dataclass
@@ -47,12 +57,11 @@ class SlidingWindowProcessor:
         self.label_path = Path(config.label_data_path)
         self.cache_dir = Path(config.cache_dir)
 
-        # DEBUG: Print the paths received from config
-        print(f"🔍 DEBUG SlidingWindowProcessor init:")
-        print(f"   config.raw_data_path: {config.raw_data_path}")
-        print(f"   config.label_data_path: {config.label_data_path}")
-        print(f"   self.raw_path: {self.raw_path}")
-        print(f"   self.label_path: {self.label_path}")
+        logger.info(f"🔍 SlidingWindowProcessor init:")
+        logger.info(f"   config.raw_data_path: {config.raw_data_path}")
+        logger.info(f"   config.label_data_path: {config.label_data_path}")
+        logger.info(f"   self.raw_path: {self.raw_path}")
+        logger.info(f"   self.label_path: {self.label_path}")
 
         # Create cache directory
         self.cache_dir.mkdir(parents=True, exist_ok=True)
@@ -71,15 +80,17 @@ class SlidingWindowProcessor:
         else:
             self.frame_indices = list(range(1, self.frame_count - 1))  # Fallback
 
-        print(f"📊 Dataset discovered:")
-        print(f"   Raw data: {self.raw_path}")
-        print(f"   Label data: {self.label_path}")
-        print(f"   Total frames: {self.frame_count}")
+        logger.info(f"📊 Dataset discovered:")
+        logger.info(f"   Raw data: {self.raw_path}")
+        logger.info(f"   Label data: {self.label_path}")
+        logger.info(f"   Total frames: {self.frame_count}")
         if self.frame_range:
-            print(f"   Frame range: {self.frame_range[0]} to {self.frame_range[1]}")
-        print(f"   Processable frames: {len(self.frame_indices)}")
+            logger.info(
+                f"   Frame range: {self.frame_range[0]} to {self.frame_range[1]}"
+            )
+        logger.info(f"   Processable frames: {len(self.frame_indices)}")
         if self.frame_indices:
-            print(
+            logger.info(
                 f"   Processing range: {self.frame_indices[0]} to {self.frame_indices[-1]}"
             )
 
@@ -162,15 +173,15 @@ class SlidingWindowProcessor:
             Tuple of (raw_volume, label_volume)
         """
         # DEBUG: Print the base paths being used
-        print(f"🔍 DEBUG _load_frame: Looking for frame {frame_idx}")
-        print(f"   Raw path base: {self.raw_path}")
-        print(f"   Label path base: {self.label_path}")
+        logger.info(f"🔍 _load_frame: Looking for frame {frame_idx}")
+        logger.debug(f"   Raw path base: {self.raw_path}")
+        logger.debug(f"   Label path base: {self.label_path}")
 
         # Pattern 1: nuclei_reg8_XXX.tif and label_reg8_XXX.tif (your current data)
         raw_file = self.raw_path / f"nuclei_reg8_{frame_idx}.tif"
         label_file = self.label_path / f"label_reg8_{frame_idx}.tif"
 
-        print(f"   Trying pattern 1: {raw_file}")
+        logger.debug(f"   Trying pattern 1: {raw_file}")
 
         # Check if the primary pattern exists
         if raw_file.exists() and label_file.exists():
@@ -179,13 +190,15 @@ class SlidingWindowProcessor:
                 label_volume = tifffile.imread(str(label_file)).astype(np.int32)
                 return raw_volume, label_volume
             except Exception as e:
-                print(f"⚠️ Error loading primary pattern for frame {frame_idx}: {e}")
+                logger.warning(
+                    f"⚠️ Error loading primary pattern for frame {frame_idx}: {e}"
+                )
 
         # Pattern 2: frame_XXX.tif format
         if not (raw_file.exists() and label_file.exists()):
             raw_file = self.raw_path / f"frame_{frame_idx:03d}.tif"
             label_file = self.label_path / f"frame_{frame_idx:03d}.tif"
-            print(f"   Trying pattern 2: {raw_file}")
+            logger.debug(f"   Trying pattern 2: {raw_file}")
 
             if raw_file.exists() and label_file.exists():
                 try:
@@ -193,13 +206,15 @@ class SlidingWindowProcessor:
                     label_volume = tifffile.imread(str(label_file)).astype(np.int32)
                     return raw_volume, label_volume
                 except Exception as e:
-                    print(f"⚠️ Error loading pattern 2 for frame {frame_idx}: {e}")
+                    logger.warning(
+                        f"⚠️ Error loading pattern 2 for frame {frame_idx}: {e}"
+                    )
 
         # Pattern 3: XXX.tif format (last resort)
         if not (raw_file.exists() and label_file.exists()):
             raw_file = self.raw_path / f"{frame_idx:03d}.tif"
             label_file = self.label_path / f"{frame_idx:03d}.tif"
-            print(f"   Trying pattern 3: {raw_file}")
+            logger.debug(f"   Trying pattern 3: {raw_file}")
 
             if raw_file.exists() and label_file.exists():
                 try:
@@ -207,18 +222,20 @@ class SlidingWindowProcessor:
                     label_volume = tifffile.imread(str(label_file)).astype(np.int32)
                     return raw_volume, label_volume
                 except Exception as e:
-                    print(f"⚠️ Error loading pattern 3 for frame {frame_idx}: {e}")
+                    logger.warning(
+                        f"⚠️ Error loading pattern 3 for frame {frame_idx}: {e}"
+                    )
 
         # If we get here, the frame doesn't exist with any pattern
-        print(f"❌ Frame {frame_idx} not found with any naming pattern")
+        logger.error(f"❌ Frame {frame_idx} not found with any naming pattern")
         if hasattr(self, "frame_range") and self.frame_range:
             min_frame, max_frame = self.frame_range
-            print(f"   Available frame range: {min_frame} to {max_frame}")
+            logger.info(f"   Available frame range: {min_frame} to {max_frame}")
             if frame_idx < min_frame or frame_idx > max_frame:
-                print(f"   Frame {frame_idx} is outside available range!")
+                logger.warning(f"   Frame {frame_idx} is outside available range!")
 
         # Return empty volumes as fallback
-        print(f"   Returning empty volumes for frame {frame_idx}")
+        logger.warning(f"   Returning empty volumes for frame {frame_idx}")
         return np.zeros((64, 64, 64), dtype=np.float32), np.zeros(
             (64, 64, 64), dtype=np.int32
         )
@@ -314,23 +331,34 @@ class SlidingWindowProcessor:
     def _get_nucleus_bbox(
         self, nucleus_id: int, label_volume: np.ndarray
     ) -> Optional[Tuple[slice, ...]]:
-        """Get bounding box for a nucleus."""
+        """Get fixed-size crop centered at nucleus centroid."""
         mask = label_volume == nucleus_id
         if not np.any(mask):
             return None
 
-        # Find bounding box coordinates
         coords = np.where(mask)
-        min_coords = [int(np.min(c)) for c in coords]
-        max_coords = [int(np.max(c)) for c in coords]
+        centroid = [int(np.round(np.mean(c))) for c in coords]
 
-        # Add padding
-        padding = 5
+        # Get desired output shape from config (assume tuple: (D, H, W))
+        if hasattr(self.config, "input_shape"):
+            crop_shape = self.config.input_shape
+        elif hasattr(self.config, "crop_shape"):
+            crop_shape = self.config.crop_shape
+        else:
+            crop_shape = (64, 64, 64)  # fallback default
+
         slices = []
-        for i, (min_c, max_c) in enumerate(zip(min_coords, max_coords)):
+        for i, center in enumerate(centroid):
             shape_max = label_volume.shape[i]
-            slice_min = max(0, min_c - padding)
-            slice_max = min(shape_max, max_c + padding + 1)
+            half = crop_shape[i] // 2
+            slice_min = max(0, center - half)
+            slice_max = min(shape_max, center + half)
+            # If crop_shape is odd, ensure correct size
+            if (slice_max - slice_min) < crop_shape[i]:
+                if slice_min == 0:
+                    slice_max = min(shape_max, slice_min + crop_shape[i])
+                else:
+                    slice_min = max(0, slice_max - crop_shape[i])
             slices.append(slice(slice_min, slice_max))
 
         return tuple(slices)
@@ -376,7 +404,7 @@ class SlidingWindowProcessor:
                 try:
                     results[nucleus_id] = future.result()
                 except Exception as e:
-                    print(f"⚠️ Error extracting nucleus {nucleus_id}: {e}")
+                    logger.warning(f"⚠️ Error extracting nucleus {nucleus_id}: {e}")
                     results[nucleus_id] = None
 
         return results
@@ -468,7 +496,9 @@ class SlidingWindowProcessor:
                             valid_nuclei.append(nucleus_id)
                             processed_tensors.append(processed_tensor)
                         except Exception as e:
-                            print(f"⚠️ Failed to preprocess nucleus {nucleus_id}: {e}")
+                            logger.warning(
+                                f"⚠️ Failed to preprocess nucleus {nucleus_id}: {e}"
+                            )
 
                 # Batch prediction on GPU
                 if processed_tensors:
@@ -506,7 +536,7 @@ class SlidingWindowProcessor:
                 remaining_frames = len(self.frame_indices) - (i + 1)
                 eta = remaining_frames * avg_time
 
-                print(
+                logger.info(
                     f"📊 Frame {timestamp:3d}/{self.frame_indices[-1]} | "
                     f"Nuclei: {len(valid_nuclei):2d} | "
                     f"Time: {frame_time:.1f}s | "
@@ -514,10 +544,12 @@ class SlidingWindowProcessor:
                 )
 
         total_time = time.time() - start_time
-        print(f"✅ Dataset processing complete!")
-        print(f"   Total time: {total_time/60:.1f} minutes")
-        print(f"   Average time per frame: {total_time/len(self.frame_indices):.1f}s")
-        print(f"   Predictions saved to: {predictions_file}")
+        logger.info(f"✅ Dataset processing complete!")
+        logger.info(f"   Total time: {total_time/60:.1f} minutes")
+        logger.info(
+            f"   Average time per frame: {total_time/len(self.frame_indices):.1f}s"
+        )
+        logger.info(f"   Predictions saved to: {predictions_file}")
 
         return str(predictions_file)
 
@@ -526,7 +558,7 @@ if __name__ == "__main__":
     # Test the data pipeline
     from config import VideoConfig
 
-    print("Testing SlidingWindowProcessor...")
+    logger.info("Testing SlidingWindowProcessor...")
 
     # Create test configuration
     config = VideoConfig()
@@ -536,10 +568,10 @@ if __name__ == "__main__":
 
     try:
         processor = SlidingWindowProcessor(config)
-        print("✅ SlidingWindowProcessor created successfully")
-        print(f"   Frame count: {processor.frame_count}")
-        print(f"   Processable frames: {len(processor.frame_indices)}")
+        logger.info("✅ SlidingWindowProcessor created successfully")
+        logger.info(f"   Frame count: {processor.frame_count}")
+        logger.info(f"   Processable frames: {len(processor.frame_indices)}")
     except Exception as e:
-        print(f"❌ Failed to create processor: {e}")
+        logger.error(f"❌ Failed to create processor: {e}")
 
-    print("Data pipeline testing complete!")
+    logger.info("Data pipeline testing complete!")

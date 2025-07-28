@@ -1,0 +1,742 @@
+/var/spool/slurmd/job5037696/slurm_script: line 5: SBATCH: command not found
+==================================================
+ENHANCED Video Generation Job Started: Fri Jul 25 18:27:46 EDT 2025
+Job ID: 5037696
+Node: worker6012
+Enhancements: Smart labeling, congestion detection, better visuals
+==================================================
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) modules/2.3-20240529   2) openblas/single-0.3.26
+Data Configuration:
+  Output: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_182746
+
+✅ All paths verified
+System Information:
+  SLURM_JOB_ID: 5037696
+  SLURM_JOB_NUM_NODES: 1
+  SLURM_GPUS_PER_NODE: 
+  SLURM_CPUS_PER_GPU: 
+  Node: worker6012
+  Memory allocated:  MB
+
+Resource Information:
+  CPU cores available: 64
+  Memory available: 1.0Ti
+  Disk space: 439G available
+
+GPU Information:
+NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver. Make sure that the latest NVIDIA driver is installed and running.
+
+GPU not available
+
+Python Environment:
+Python 3.10.13
+PyTorch: 2.7.1+cu126
+CUDA available: False
+
+🚀 Starting video generation...
+==================================================
+2025-07-25 18:27:55,649 [INFO] 🔍 SlidingWindowProcessor init:
+2025-07-25 18:27:55,649 [INFO]    config.raw_data_path: /mnt/home/dchhantyal/3d-cnn-classification/raw-data/220321_stack11/registered_images
+2025-07-25 18:27:55,649 [INFO]    config.label_data_path: /mnt/home/dchhantyal/3d-cnn-classification/raw-data/220321_stack11/registered_label_images
+2025-07-25 18:27:55,649 [INFO]    self.raw_path: /mnt/home/dchhantyal/3d-cnn-classification/raw-data/220321_stack11/registered_images
+2025-07-25 18:27:55,649 [INFO]    self.label_path: /mnt/home/dchhantyal/3d-cnn-classification/raw-data/220321_stack11/registered_label_images
+2025-07-25 18:27:55,654 [INFO] 📊 Dataset discovered:
+2025-07-25 18:27:55,655 [INFO]    Raw data: /mnt/home/dchhantyal/3d-cnn-classification/raw-data/220321_stack11/registered_images
+2025-07-25 18:27:55,655 [INFO]    Label data: /mnt/home/dchhantyal/3d-cnn-classification/raw-data/220321_stack11/registered_label_images
+2025-07-25 18:27:55,655 [INFO]    Total frames: 144
+2025-07-25 18:27:55,655 [INFO]    Frame range: 1 to 143
+2025-07-25 18:27:55,655 [INFO]    Processable frames: 141
+2025-07-25 18:27:55,655 [INFO]    Processing range: 2 to 142
+2025-07-25 18:27:55,657 [INFO] 🔍 _load_frame: Looking for frame 1
+2025-07-25 18:27:55,877 [INFO] 🔍 _load_frame: Looking for frame 2
+2025-07-25 18:27:56,082 [INFO] 🔍 _load_frame: Looking for frame 3
+2025-07-25 18:27:59,032 [INFO] 📊 Frame   2/142 | Nuclei:  7 | Time: 3.4s | ETA: 7.9min
+2025-07-25 18:27:59,032 [INFO] 🔍 _load_frame: Looking for frame 4
+2025-07-25 18:28:02,389 [INFO] 📊 Frame   3/142 | Nuclei: 13 | Time: 3.4s | ETA: 7.8min
+2025-07-25 18:28:02,389 [INFO] 🔍 _load_frame: Looking for frame 5
+2025-07-25 18:28:05,745 [INFO] 📊 Frame   4/142 | Nuclei: 13 | Time: 3.4s | ETA: 7.7min
+2025-07-25 18:28:05,746 [INFO] 🔍 _load_frame: Looking for frame 6
+2025-07-25 18:28:09,312 [INFO] 📊 Frame   5/142 | Nuclei: 17 | Time: 3.6s | ETA: 7.8min
+2025-07-25 18:28:09,312 [INFO] 🔍 _load_frame: Looking for frame 7
+2025-07-25 18:28:12,244 [INFO] 📊 Frame   6/142 | Nuclei:  8 | Time: 2.9s | ETA: 7.5min
+2025-07-25 18:28:12,244 [INFO] 🔍 _load_frame: Looking for frame 8
+2025-07-25 18:28:15,425 [INFO] 📊 Frame   7/142 | Nuclei: 10 | Time: 3.2s | ETA: 7.4min
+2025-07-25 18:28:15,425 [INFO] 🔍 _load_frame: Looking for frame 9
+2025-07-25 18:28:18,360 [INFO] 📊 Frame   8/142 | Nuclei:  7 | Time: 2.9s | ETA: 7.2min
+2025-07-25 18:28:18,360 [INFO] 🔍 _load_frame: Looking for frame 10
+2025-07-25 18:28:21,936 [INFO] 📊 Frame   9/142 | Nuclei: 17 | Time: 3.6s | ETA: 7.3min
+2025-07-25 18:28:21,936 [INFO] 🔍 _load_frame: Looking for frame 11
+2025-07-25 18:28:22,294 [INFO] 🔍 _load_frame: Looking for frame 12
+2025-07-25 18:28:22,641 [INFO] 🔍 _load_frame: Looking for frame 13
+2025-07-25 18:28:26,205 [INFO] 📊 Frame  12/142 | Nuclei: 17 | Time: 3.6s | ETA: 6.0min
+2025-07-25 18:28:26,205 [INFO] 🔍 _load_frame: Looking for frame 14
+2025-07-25 18:28:29,766 [INFO] 📊 Frame  13/142 | Nuclei: 17 | Time: 3.6s | ETA: 6.1min
+2025-07-25 18:28:29,766 [INFO] 🔍 _load_frame: Looking for frame 15
+2025-07-25 18:28:30,123 [INFO] 🔍 _load_frame: Looking for frame 16
+2025-07-25 18:28:30,483 [INFO] 🔍 _load_frame: Looking for frame 17
+2025-07-25 18:28:30,829 [INFO] 🔍 _load_frame: Looking for frame 18
+2025-07-25 18:28:34,380 [INFO] 📊 Frame  17/142 | Nuclei: 17 | Time: 3.6s | ETA: 5.0min
+2025-07-25 18:28:34,380 [INFO] 🔍 _load_frame: Looking for frame 19
+2025-07-25 18:28:37,911 [INFO] 📊 Frame  18/142 | Nuclei: 17 | Time: 3.5s | ETA: 5.1min
+2025-07-25 18:28:37,911 [INFO] 🔍 _load_frame: Looking for frame 20
+2025-07-25 18:28:41,461 [INFO] 📊 Frame  19/142 | Nuclei: 17 | Time: 3.6s | ETA: 5.2min
+2025-07-25 18:28:41,462 [INFO] 🔍 _load_frame: Looking for frame 21
+2025-07-25 18:28:45,034 [INFO] 📊 Frame  20/142 | Nuclei: 17 | Time: 3.6s | ETA: 5.3min
+2025-07-25 18:28:45,034 [INFO] 🔍 _load_frame: Looking for frame 22
+2025-07-25 18:28:45,385 [INFO] 🔍 _load_frame: Looking for frame 23
+2025-07-25 18:28:48,958 [INFO] 📊 Frame  22/142 | Nuclei: 17 | Time: 3.6s | ETA: 5.1min
+2025-07-25 18:28:48,958 [INFO] 🔍 _load_frame: Looking for frame 24
+2025-07-25 18:28:51,690 [INFO] 📊 Frame  23/142 | Nuclei:  2 | Time: 2.7s | ETA: 5.1min
+2025-07-25 18:28:51,690 [INFO] 🔍 _load_frame: Looking for frame 25
+2025-07-25 18:28:54,807 [INFO] 📊 Frame  24/142 | Nuclei:  9 | Time: 3.1s | ETA: 5.1min
+2025-07-25 18:28:54,807 [INFO] 🔍 _load_frame: Looking for frame 26
+2025-07-25 18:28:58,378 [INFO] 📊 Frame  25/142 | Nuclei: 17 | Time: 3.6s | ETA: 5.1min
+2025-07-25 18:28:58,378 [INFO] 🔍 _load_frame: Looking for frame 27
+2025-07-25 18:29:01,932 [INFO] 📊 Frame  26/142 | Nuclei: 17 | Time: 3.6s | ETA: 5.1min
+2025-07-25 18:29:01,932 [INFO] 🔍 _load_frame: Looking for frame 28
+2025-07-25 18:29:05,540 [INFO] 📊 Frame  27/142 | Nuclei: 17 | Time: 3.6s | ETA: 5.2min
+2025-07-25 18:29:05,540 [INFO] 🔍 _load_frame: Looking for frame 29
+2025-07-25 18:29:09,130 [INFO] 📊 Frame  28/142 | Nuclei: 17 | Time: 3.6s | ETA: 5.2min
+2025-07-25 18:29:09,130 [INFO] 🔍 _load_frame: Looking for frame 30
+2025-07-25 18:29:12,303 [INFO] 📊 Frame  29/142 | Nuclei: 11 | Time: 3.2s | ETA: 5.2min
+2025-07-25 18:29:12,303 [INFO] 🔍 _load_frame: Looking for frame 31
+2025-07-25 18:29:15,865 [INFO] 📊 Frame  30/142 | Nuclei: 17 | Time: 3.6s | ETA: 5.2min
+2025-07-25 18:29:15,866 [INFO] 🔍 _load_frame: Looking for frame 32
+2025-07-25 18:29:19,022 [INFO] 📊 Frame  31/142 | Nuclei: 11 | Time: 3.2s | ETA: 5.1min
+2025-07-25 18:29:19,022 [INFO] 🔍 _load_frame: Looking for frame 33
+2025-07-25 18:29:19,385 [INFO] 🔍 _load_frame: Looking for frame 34
+2025-07-25 18:29:19,736 [INFO] 🔍 _load_frame: Looking for frame 35
+2025-07-25 18:29:22,481 [INFO] 📊 Frame  34/142 | Nuclei:  3 | Time: 2.7s | ETA: 4.7min
+2025-07-25 18:29:22,481 [INFO] 🔍 _load_frame: Looking for frame 36
+2025-07-25 18:29:22,828 [INFO] 🔍 _load_frame: Looking for frame 37
+2025-07-25 18:29:26,392 [INFO] 📊 Frame  36/142 | Nuclei: 17 | Time: 3.6s | ETA: 4.6min
+2025-07-25 18:29:26,392 [INFO] 🔍 _load_frame: Looking for frame 38
+2025-07-25 18:29:29,103 [INFO] 📊 Frame  37/142 | Nuclei:  1 | Time: 2.7s | ETA: 4.5min
+2025-07-25 18:29:29,103 [INFO] 🔍 _load_frame: Looking for frame 39
+2025-07-25 18:29:32,027 [INFO] 📊 Frame  38/142 | Nuclei:  5 | Time: 2.9s | ETA: 4.5min
+2025-07-25 18:29:32,027 [INFO] 🔍 _load_frame: Looking for frame 40
+2025-07-25 18:29:32,385 [INFO] 🔍 _load_frame: Looking for frame 41
+2025-07-25 18:29:32,732 [INFO] 🔍 _load_frame: Looking for frame 42
+2025-07-25 18:29:36,326 [INFO] 📊 Frame  41/142 | Nuclei: 17 | Time: 3.6s | ETA: 4.2min
+2025-07-25 18:29:36,326 [INFO] 🔍 _load_frame: Looking for frame 43
+2025-07-25 18:29:39,873 [INFO] 📊 Frame  42/142 | Nuclei: 17 | Time: 3.5s | ETA: 4.2min
+2025-07-25 18:29:39,873 [INFO] 🔍 _load_frame: Looking for frame 44
+2025-07-25 18:29:42,795 [INFO] 📊 Frame  43/142 | Nuclei:  6 | Time: 2.9s | ETA: 4.2min
+2025-07-25 18:29:42,795 [INFO] 🔍 _load_frame: Looking for frame 45
+2025-07-25 18:29:45,733 [INFO] 📊 Frame  44/142 | Nuclei:  7 | Time: 2.9s | ETA: 4.2min
+2025-07-25 18:29:45,733 [INFO] 🔍 _load_frame: Looking for frame 46
+2025-07-25 18:29:49,347 [INFO] 📊 Frame  45/142 | Nuclei: 18 | Time: 3.6s | ETA: 4.2min
+2025-07-25 18:29:49,347 [INFO] 🔍 _load_frame: Looking for frame 47
+2025-07-25 18:29:52,895 [INFO] 📊 Frame  46/142 | Nuclei: 17 | Time: 3.5s | ETA: 4.2min
+2025-07-25 18:29:52,895 [INFO] 🔍 _load_frame: Looking for frame 48
+2025-07-25 18:29:56,473 [INFO] 📊 Frame  47/142 | Nuclei: 19 | Time: 3.6s | ETA: 4.2min
+2025-07-25 18:29:56,474 [INFO] 🔍 _load_frame: Looking for frame 49
+2025-07-25 18:30:00,095 [INFO] 📊 Frame  48/142 | Nuclei: 20 | Time: 3.6s | ETA: 4.1min
+2025-07-25 18:30:00,095 [INFO] 🔍 _load_frame: Looking for frame 50
+2025-07-25 18:30:03,896 [INFO] 📊 Frame  49/142 | Nuclei: 22 | Time: 3.8s | ETA: 4.1min
+2025-07-25 18:30:03,897 [INFO] 🔍 _load_frame: Looking for frame 51
+2025-07-25 18:30:04,247 [INFO] 🔍 _load_frame: Looking for frame 52
+2025-07-25 18:30:08,262 [INFO] 📊 Frame  51/142 | Nuclei: 27 | Time: 4.0s | ETA: 4.0min
+2025-07-25 18:30:08,262 [INFO] 🔍 _load_frame: Looking for frame 53
+2025-07-25 18:30:11,443 [INFO] 📊 Frame  52/142 | Nuclei: 12 | Time: 3.2s | ETA: 4.0min
+2025-07-25 18:30:11,443 [INFO] 🔍 _load_frame: Looking for frame 54
+2025-07-25 18:30:11,790 [INFO] 🔍 _load_frame: Looking for frame 55
+2025-07-25 18:30:16,021 [INFO] 📊 Frame  54/142 | Nuclei: 31 | Time: 4.2s | ETA: 3.9min
+2025-07-25 18:30:16,021 [INFO] 🔍 _load_frame: Looking for frame 56
+2025-07-25 18:30:20,058 [INFO] 📊 Frame  55/142 | Nuclei: 28 | Time: 4.0s | ETA: 3.9min
+2025-07-25 18:30:20,058 [INFO] 🔍 _load_frame: Looking for frame 57
+2025-07-25 18:30:24,338 [INFO] 📊 Frame  56/142 | Nuclei: 32 | Time: 4.3s | ETA: 3.9min
+2025-07-25 18:30:24,338 [INFO] 🔍 _load_frame: Looking for frame 58
+2025-07-25 18:30:24,699 [INFO] 🔍 _load_frame: Looking for frame 59
+2025-07-25 18:30:28,676 [INFO] 📊 Frame  58/142 | Nuclei: 25 | Time: 4.0s | ETA: 3.8min
+2025-07-25 18:30:28,676 [INFO] 🔍 _load_frame: Looking for frame 60
+2025-07-25 18:30:31,813 [INFO] 📊 Frame  59/142 | Nuclei:  9 | Time: 3.1s | ETA: 3.7min
+2025-07-25 18:30:31,813 [INFO] 🔍 _load_frame: Looking for frame 61
+2025-07-25 18:30:36,095 [INFO] 📊 Frame  60/142 | Nuclei: 32 | Time: 4.3s | ETA: 3.7min
+2025-07-25 18:30:36,096 [INFO] 🔍 _load_frame: Looking for frame 62
+2025-07-25 18:30:40,508 [INFO] 📊 Frame  61/142 | Nuclei: 33 | Time: 4.4s | ETA: 3.7min
+2025-07-25 18:30:40,508 [INFO] 🔍 _load_frame: Looking for frame 63
+2025-07-25 18:30:44,284 [INFO] 📊 Frame  62/142 | Nuclei: 23 | Time: 3.8s | ETA: 3.7min
+2025-07-25 18:30:44,284 [INFO] 🔍 _load_frame: Looking for frame 64
+2025-07-25 18:30:47,217 [INFO] 📊 Frame  63/142 | Nuclei:  7 | Time: 2.9s | ETA: 3.6min
+2025-07-25 18:30:47,217 [INFO] 🔍 _load_frame: Looking for frame 65
+2025-07-25 18:30:51,594 [INFO] 📊 Frame  64/142 | Nuclei: 33 | Time: 4.4s | ETA: 3.6min
+2025-07-25 18:30:51,594 [INFO] 🔍 _load_frame: Looking for frame 66
+2025-07-25 18:30:51,955 [INFO] 🔍 _load_frame: Looking for frame 67
+2025-07-25 18:30:52,310 [INFO] 🔍 _load_frame: Looking for frame 68
+2025-07-25 18:30:56,273 [INFO] 📊 Frame  67/142 | Nuclei: 26 | Time: 4.0s | ETA: 3.4min
+2025-07-25 18:30:56,273 [INFO] 🔍 _load_frame: Looking for frame 69
+2025-07-25 18:31:00,678 [INFO] 📊 Frame  68/142 | Nuclei: 33 | Time: 4.4s | ETA: 3.4min
+2025-07-25 18:31:00,678 [INFO] 🔍 _load_frame: Looking for frame 70
+2025-07-25 18:31:05,033 [INFO] 📊 Frame  69/142 | Nuclei: 33 | Time: 4.4s | ETA: 3.4min
+2025-07-25 18:31:05,033 [INFO] 🔍 _load_frame: Looking for frame 71
+2025-07-25 18:31:09,456 [INFO] 📊 Frame  70/142 | Nuclei: 33 | Time: 4.4s | ETA: 3.4min
+2025-07-25 18:31:09,456 [INFO] 🔍 _load_frame: Looking for frame 72
+2025-07-25 18:31:12,393 [INFO] 📊 Frame  71/142 | Nuclei:  7 | Time: 2.9s | ETA: 3.3min
+2025-07-25 18:31:12,394 [INFO] 🔍 _load_frame: Looking for frame 73
+2025-07-25 18:31:16,784 [INFO] 📊 Frame  72/142 | Nuclei: 33 | Time: 4.4s | ETA: 3.3min
+2025-07-25 18:31:16,785 [INFO] 🔍 _load_frame: Looking for frame 74
+2025-07-25 18:31:21,160 [INFO] 📊 Frame  73/142 | Nuclei: 33 | Time: 4.4s | ETA: 3.3min
+2025-07-25 18:31:21,160 [INFO] 🔍 _load_frame: Looking for frame 75
+2025-07-25 18:31:21,516 [INFO] 🔍 _load_frame: Looking for frame 76
+2025-07-25 18:31:25,977 [INFO] 📊 Frame  75/142 | Nuclei: 33 | Time: 4.5s | ETA: 3.2min
+2025-07-25 18:31:25,977 [INFO] 🔍 _load_frame: Looking for frame 77
+2025-07-25 18:31:30,357 [INFO] 📊 Frame  76/142 | Nuclei: 33 | Time: 4.4s | ETA: 3.1min
+2025-07-25 18:31:30,357 [INFO] 🔍 _load_frame: Looking for frame 78
+2025-07-25 18:31:34,744 [INFO] 📊 Frame  77/142 | Nuclei: 33 | Time: 4.4s | ETA: 3.1min
+2025-07-25 18:31:34,744 [INFO] 🔍 _load_frame: Looking for frame 79
+2025-07-25 18:31:37,685 [INFO] 📊 Frame  78/142 | Nuclei:  7 | Time: 2.9s | ETA: 3.1min
+2025-07-25 18:31:37,685 [INFO] 🔍 _load_frame: Looking for frame 80
+2025-07-25 18:31:41,249 [INFO] 📊 Frame  79/142 | Nuclei: 18 | Time: 3.6s | ETA: 3.0min
+2025-07-25 18:31:41,249 [INFO] 🔍 _load_frame: Looking for frame 81
+2025-07-25 18:31:44,021 [INFO] 📊 Frame  80/142 | Nuclei:  3 | Time: 2.8s | ETA: 3.0min
+2025-07-25 18:31:44,021 [INFO] 🔍 _load_frame: Looking for frame 82
+2025-07-25 18:31:48,434 [INFO] 📊 Frame  81/142 | Nuclei: 33 | Time: 4.4s | ETA: 3.0min
+2025-07-25 18:31:48,434 [INFO] 🔍 _load_frame: Looking for frame 83
+2025-07-25 18:31:52,892 [INFO] 📊 Frame  82/142 | Nuclei: 33 | Time: 4.5s | ETA: 2.9min
+2025-07-25 18:31:52,892 [INFO] 🔍 _load_frame: Looking for frame 84
+2025-07-25 18:31:56,244 [INFO] 📊 Frame  83/142 | Nuclei: 13 | Time: 3.4s | ETA: 2.9min
+2025-07-25 18:31:56,245 [INFO] 🔍 _load_frame: Looking for frame 85
+2025-07-25 18:32:00,654 [INFO] 📊 Frame  84/142 | Nuclei: 33 | Time: 4.4s | ETA: 2.9min
+2025-07-25 18:32:00,654 [INFO] 🔍 _load_frame: Looking for frame 86
+2025-07-25 18:32:04,497 [INFO] 📊 Frame  85/142 | Nuclei: 24 | Time: 3.8s | ETA: 2.8min
+2025-07-25 18:32:04,497 [INFO] 🔍 _load_frame: Looking for frame 87
+2025-07-25 18:32:08,952 [INFO] 📊 Frame  86/142 | Nuclei: 33 | Time: 4.5s | ETA: 2.8min
+2025-07-25 18:32:08,952 [INFO] 🔍 _load_frame: Looking for frame 88
+2025-07-25 18:32:12,537 [INFO] 📊 Frame  87/142 | Nuclei: 17 | Time: 3.6s | ETA: 2.7min
+2025-07-25 18:32:12,537 [INFO] 🔍 _load_frame: Looking for frame 89
+2025-07-25 18:32:16,976 [INFO] 📊 Frame  88/142 | Nuclei: 33 | Time: 4.4s | ETA: 2.7min
+2025-07-25 18:32:16,976 [INFO] 🔍 _load_frame: Looking for frame 90
+2025-07-25 18:32:20,554 [INFO] 📊 Frame  89/142 | Nuclei: 19 | Time: 3.6s | ETA: 2.7min
+2025-07-25 18:32:20,554 [INFO] 🔍 _load_frame: Looking for frame 91
+2025-07-25 18:32:24,938 [INFO] 📊 Frame  90/142 | Nuclei: 33 | Time: 4.4s | ETA: 2.6min
+2025-07-25 18:32:24,939 [INFO] 🔍 _load_frame: Looking for frame 92
+2025-07-25 18:32:28,296 [INFO] 📊 Frame  91/142 | Nuclei: 13 | Time: 3.4s | ETA: 2.6min
+2025-07-25 18:32:28,296 [INFO] 🔍 _load_frame: Looking for frame 93
+2025-07-25 18:32:31,866 [INFO] 📊 Frame  92/142 | Nuclei: 17 | Time: 3.6s | ETA: 2.5min
+2025-07-25 18:32:31,866 [INFO] 🔍 _load_frame: Looking for frame 94
+2025-07-25 18:32:35,446 [INFO] 📊 Frame  93/142 | Nuclei: 17 | Time: 3.6s | ETA: 2.5min
+2025-07-25 18:32:35,446 [INFO] 🔍 _load_frame: Looking for frame 95
+2025-07-25 18:32:39,301 [INFO] 📊 Frame  94/142 | Nuclei: 24 | Time: 3.9s | ETA: 2.4min
+2025-07-25 18:32:39,301 [INFO] 🔍 _load_frame: Looking for frame 96
+2025-07-25 18:32:42,477 [INFO] 📊 Frame  95/142 | Nuclei: 12 | Time: 3.2s | ETA: 2.4min
+2025-07-25 18:32:42,478 [INFO] 🔍 _load_frame: Looking for frame 97
+2025-07-25 18:32:46,309 [INFO] 📊 Frame  96/142 | Nuclei: 22 | Time: 3.8s | ETA: 2.3min
+2025-07-25 18:32:46,309 [INFO] 🔍 _load_frame: Looking for frame 98
+2025-07-25 18:32:49,463 [INFO] 📊 Frame  97/142 | Nuclei: 10 | Time: 3.2s | ETA: 2.3min
+2025-07-25 18:32:49,463 [INFO] 🔍 _load_frame: Looking for frame 99
+2025-07-25 18:32:53,007 [INFO] 📊 Frame  98/142 | Nuclei: 19 | Time: 3.5s | ETA: 2.2min
+2025-07-25 18:32:53,007 [INFO] 🔍 _load_frame: Looking for frame 100
+2025-07-25 18:32:56,180 [INFO] 📊 Frame  99/142 | Nuclei: 12 | Time: 3.2s | ETA: 2.2min
+2025-07-25 18:32:56,180 [INFO] 🔍 _load_frame: Looking for frame 101
+2025-07-25 18:32:59,543 [INFO] 📊 Frame 100/142 | Nuclei: 13 | Time: 3.4s | ETA: 2.1min
+2025-07-25 18:32:59,543 [INFO] 🔍 _load_frame: Looking for frame 102
+2025-07-25 18:33:02,699 [INFO] 📊 Frame 101/142 | Nuclei: 10 | Time: 3.2s | ETA: 2.1min
+2025-07-25 18:33:02,699 [INFO] 🔍 _load_frame: Looking for frame 103
+2025-07-25 18:33:05,851 [INFO] 📊 Frame 102/142 | Nuclei: 11 | Time: 3.2s | ETA: 2.0min
+2025-07-25 18:33:05,851 [INFO] 🔍 _load_frame: Looking for frame 104
+2025-07-25 18:33:09,214 [INFO] 📊 Frame 103/142 | Nuclei: 15 | Time: 3.4s | ETA: 2.0min
+2025-07-25 18:33:09,214 [INFO] 🔍 _load_frame: Looking for frame 105
+2025-07-25 18:33:12,372 [INFO] 📊 Frame 104/142 | Nuclei: 12 | Time: 3.2s | ETA: 1.9min
+2025-07-25 18:33:12,372 [INFO] 🔍 _load_frame: Looking for frame 106
+2025-07-25 18:33:15,736 [INFO] 📊 Frame 105/142 | Nuclei: 14 | Time: 3.4s | ETA: 1.9min
+2025-07-25 18:33:15,736 [INFO] 🔍 _load_frame: Looking for frame 107
+2025-07-25 18:33:19,081 [INFO] 📊 Frame 106/142 | Nuclei: 14 | Time: 3.3s | ETA: 1.8min
+2025-07-25 18:33:19,081 [INFO] 🔍 _load_frame: Looking for frame 108
+2025-07-25 18:33:22,439 [INFO] 📊 Frame 107/142 | Nuclei: 14 | Time: 3.4s | ETA: 1.8min
+2025-07-25 18:33:22,440 [INFO] 🔍 _load_frame: Looking for frame 109
+2025-07-25 18:33:25,794 [INFO] 📊 Frame 108/142 | Nuclei: 14 | Time: 3.4s | ETA: 1.7min
+2025-07-25 18:33:25,794 [INFO] 🔍 _load_frame: Looking for frame 110
+2025-07-25 18:33:29,361 [INFO] 📊 Frame 109/142 | Nuclei: 17 | Time: 3.6s | ETA: 1.7min
+2025-07-25 18:33:29,361 [INFO] 🔍 _load_frame: Looking for frame 111
+2025-07-25 18:33:32,982 [INFO] 📊 Frame 110/142 | Nuclei: 20 | Time: 3.6s | ETA: 1.7min
+2025-07-25 18:33:32,982 [INFO] 🔍 _load_frame: Looking for frame 112
+2025-07-25 18:33:36,366 [INFO] 📊 Frame 111/142 | Nuclei: 16 | Time: 3.4s | ETA: 1.6min
+2025-07-25 18:33:36,366 [INFO] 🔍 _load_frame: Looking for frame 113
+2025-07-25 18:33:39,726 [INFO] 📊 Frame 112/142 | Nuclei: 14 | Time: 3.4s | ETA: 1.5min
+2025-07-25 18:33:39,726 [INFO] 🔍 _load_frame: Looking for frame 114
+2025-07-25 18:33:44,409 [INFO] 📊 Frame 113/142 | Nuclei: 40 | Time: 4.7s | ETA: 1.5min
+2025-07-25 18:33:44,409 [INFO] 🔍 _load_frame: Looking for frame 115
+2025-07-25 18:33:48,803 [INFO] 📊 Frame 114/142 | Nuclei: 33 | Time: 4.4s | ETA: 1.5min
+2025-07-25 18:33:48,803 [INFO] 🔍 _load_frame: Looking for frame 116
+2025-07-25 18:33:52,604 [INFO] 📊 Frame 115/142 | Nuclei: 22 | Time: 3.8s | ETA: 1.4min
+2025-07-25 18:33:52,604 [INFO] 🔍 _load_frame: Looking for frame 117
+2025-07-25 18:33:56,425 [INFO] 📊 Frame 116/142 | Nuclei: 22 | Time: 3.8s | ETA: 1.4min
+2025-07-25 18:33:56,425 [INFO] 🔍 _load_frame: Looking for frame 118
+2025-07-25 18:34:00,220 [INFO] 📊 Frame 117/142 | Nuclei: 22 | Time: 3.8s | ETA: 1.3min
+2025-07-25 18:34:00,220 [INFO] 🔍 _load_frame: Looking for frame 119
+2025-07-25 18:34:00,223 [ERROR] ❌ Frame 119 not found with any naming pattern
+2025-07-25 18:34:00,223 [INFO]    Available frame range: 1 to 143
+2025-07-25 18:34:00,223 [WARNING]    Returning empty volumes for frame 119
+2025-07-25 18:34:05,415 [INFO] 📊 Frame 118/142 | Nuclei: 55 | Time: 5.2s | ETA: 1.3min
+2025-07-25 18:34:05,415 [INFO] 🔍 _load_frame: Looking for frame 120
+2025-07-25 18:34:05,626 [INFO] 🔍 _load_frame: Looking for frame 121
+2025-07-25 18:34:11,341 [INFO] 📊 Frame 120/142 | Nuclei: 58 | Time: 5.7s | ETA: 1.2min
+2025-07-25 18:34:11,341 [INFO] 🔍 _load_frame: Looking for frame 122
+2025-07-25 18:34:17,039 [INFO] 📊 Frame 121/142 | Nuclei: 59 | Time: 5.7s | ETA: 1.1min
+2025-07-25 18:34:17,039 [INFO] 🔍 _load_frame: Looking for frame 123
+2025-07-25 18:34:22,089 [INFO] 📊 Frame 122/142 | Nuclei: 45 | Time: 5.0s | ETA: 1.1min
+2025-07-25 18:34:22,089 [INFO] 🔍 _load_frame: Looking for frame 124
+2025-07-25 18:34:26,528 [INFO] 📊 Frame 123/142 | Nuclei: 33 | Time: 4.4s | ETA: 1.0min
+2025-07-25 18:34:26,528 [INFO] 🔍 _load_frame: Looking for frame 125
+2025-07-25 18:34:29,463 [INFO] 📊 Frame 124/142 | Nuclei:  6 | Time: 2.9s | ETA: 1.0min
+2025-07-25 18:34:29,464 [INFO] 🔍 _load_frame: Looking for frame 126
+2025-07-25 18:34:34,081 [INFO] 📊 Frame 125/142 | Nuclei: 38 | Time: 4.6s | ETA: 0.9min
+2025-07-25 18:34:34,081 [INFO] 🔍 _load_frame: Looking for frame 127
+2025-07-25 18:34:40,043 [INFO] 📊 Frame 126/142 | Nuclei: 64 | Time: 6.0s | ETA: 0.9min
+2025-07-25 18:34:40,043 [INFO] 🔍 _load_frame: Looking for frame 128
+2025-07-25 18:34:45,891 [INFO] 📊 Frame 127/142 | Nuclei: 62 | Time: 5.8s | ETA: 0.8min
+2025-07-25 18:34:45,891 [INFO] 🔍 _load_frame: Looking for frame 129
+2025-07-25 18:34:51,930 [INFO] 📊 Frame 128/142 | Nuclei: 65 | Time: 6.0s | ETA: 0.8min
+2025-07-25 18:34:51,930 [INFO] 🔍 _load_frame: Looking for frame 130
+2025-07-25 18:34:57,827 [INFO] 📊 Frame 129/142 | Nuclei: 63 | Time: 5.9s | ETA: 0.7min
+2025-07-25 18:34:57,827 [INFO] 🔍 _load_frame: Looking for frame 131
+2025-07-25 18:35:02,531 [INFO] 📊 Frame 130/142 | Nuclei: 40 | Time: 4.7s | ETA: 0.7min
+2025-07-25 18:35:02,531 [INFO] 🔍 _load_frame: Looking for frame 132
+2025-07-25 18:35:06,734 [INFO] 📊 Frame 131/142 | Nuclei: 29 | Time: 4.2s | ETA: 0.6min
+2025-07-25 18:35:06,734 [INFO] 🔍 _load_frame: Looking for frame 133
+2025-07-25 18:35:07,098 [INFO] 🔍 _load_frame: Looking for frame 134
+2025-07-25 18:35:12,062 [INFO] 📊 Frame 133/142 | Nuclei: 44 | Time: 5.0s | ETA: 0.5min
+2025-07-25 18:35:12,062 [INFO] 🔍 _load_frame: Looking for frame 135
+2025-07-25 18:35:17,101 [INFO] 📊 Frame 134/142 | Nuclei: 46 | Time: 5.0s | ETA: 0.4min
+2025-07-25 18:35:17,101 [INFO] 🔍 _load_frame: Looking for frame 136
+2025-07-25 18:35:21,463 [INFO] 📊 Frame 135/142 | Nuclei: 34 | Time: 4.4s | ETA: 0.4min
+2025-07-25 18:35:21,463 [INFO] 🔍 _load_frame: Looking for frame 137
+2025-07-25 18:35:26,241 [INFO] 📊 Frame 136/142 | Nuclei: 42 | Time: 4.8s | ETA: 0.3min
+2025-07-25 18:35:26,241 [INFO] 🔍 _load_frame: Looking for frame 138
+2025-07-25 18:35:30,955 [INFO] 📊 Frame 137/142 | Nuclei: 40 | Time: 4.7s | ETA: 0.3min
+2025-07-25 18:35:30,955 [INFO] 🔍 _load_frame: Looking for frame 139
+2025-07-25 18:35:36,616 [INFO] 📊 Frame 138/142 | Nuclei: 58 | Time: 5.7s | ETA: 0.2min
+2025-07-25 18:35:36,616 [INFO] 🔍 _load_frame: Looking for frame 140
+2025-07-25 18:35:40,025 [INFO] 📊 Frame 139/142 | Nuclei: 16 | Time: 3.4s | ETA: 0.2min
+2025-07-25 18:35:40,025 [INFO] 🔍 _load_frame: Looking for frame 141
+2025-07-25 18:35:44,891 [INFO] 📊 Frame 140/142 | Nuclei: 42 | Time: 4.9s | ETA: 0.1min
+2025-07-25 18:35:44,891 [INFO] 🔍 _load_frame: Looking for frame 142
+2025-07-25 18:35:50,789 [INFO] 📊 Frame 141/142 | Nuclei: 63 | Time: 5.9s | ETA: 0.1min
+2025-07-25 18:35:50,789 [INFO] 🔍 _load_frame: Looking for frame 143
+2025-07-25 18:35:55,745 [INFO] 📊 Frame 142/142 | Nuclei: 44 | Time: 5.0s | ETA: 0.0min
+2025-07-25 18:35:55,747 [INFO] ✅ Dataset processing complete!
+2025-07-25 18:35:55,747 [INFO]    Total time: 8.0 minutes
+2025-07-25 18:35:55,747 [INFO]    Average time per frame: 3.4s
+2025-07-25 18:35:55,747 [INFO]    Predictions saved to: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_182755/cache/predictions.jsonl
+⚠️ GPU not available, using CPU mode
+🎬 Stack3 4ncnn Video Generation
+==================================================
+🔍 Verifying dataset structure...
+📊 Dataset verification:
+   Raw frames: 142
+   Label frames: 142
+   Frame range: 1 to 143
+   Processable frames: 140
+✅ Dataset verification complete
+⚙️ Creating configuration...
+🔍 DEBUG: Configuration paths:
+   Raw data path: /mnt/home/dchhantyal/3d-cnn-classification/raw-data/220321_stack11/registered_images
+   Label data path: /mnt/home/dchhantyal/3d-cnn-classification/raw-data/220321_stack11/registered_label_images
+   Model path: /mnt/home/dchhantyal/3d-cnn-classification/model/ncnn4/training_outputs/latest-4ncnn/best_model.pth
+   Output dir: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_182755
+============================================================
+📋 Enhanced Configuration Summary:
+   🤖 Model: 4ncnn
+   📁 Output: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_182755
+   🎬 Video: stack11_video.mp4
+   📺 Resolution: 2560x1440
+   ⏱️ FPS: 3 (slower for better observation)
+   🔢 Batch size: 32
+   🖥️ GPU: True
+   ⚡ Parallel: True
+
+🎨 Enhanced Visualization Features:
+   🆔 Show nucleus IDs: True
+   🎯 Smart label positioning: True
+   📏 Leader lines: True
+   📊 Congestion detection: True
+   🔤 Font size multiplier: 1.5
+   ✨ High contrast mode: True
+
+🎬 Multi-Video Generation (TEMPORARILY DISABLED):
+   🎭 Per-class videos: False
+   📊 Probability visualization: False
+   📺 Dual channel display: False
+   🔬 Raw data enhancement: False
+   💡 Confidence brightness: True
+
+⏯️ Video Timing Features:
+   ⏸️ Pause on events: True
+   ⏱️ Event pause duration: 3.0s
+   📝 Verbose logging: True
+   📊 Processing stats: True
+   ⏰ ETA estimates: True
+
+💾 Configuration saved: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_182755/config.json
+🚀 Starting video generation (standard pipeline)...
+🚀 Initializing Video Generator...
+✅ 4ncnn model loaded successfully
+   Classes: ['mitotic', 'new_daughter', 'stable']
+   Input shape: (32, 32, 32)
+🚀 Model loaded and optimized for cpu
+✅ ModelInferenceEngine initialized:
+   Model type: ncnn4
+   Device: cpu
+   Model path: /mnt/home/dchhantyal/3d-cnn-classification/model/ncnn4/training_outputs/latest-4ncnn/best_model.pth
+   Model Type: ncnn4
+   Model Path: /mnt/home/dchhantyal/3d-cnn-classification/model/ncnn4/training_outputs/latest-4ncnn/best_model.pth
+   Device: cpu
+   Batch Size: 32
+   Classes: ['mitotic', 'new_daughter', 'stable']
+✅ Model engine loaded
+🔍 Discovered frames: 142 files, range 1-143
+✅ Data processor initialized
+🎨 FrameRenderer initialized:
+   Output size: 2560x1440
+   Frames directory: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_182755/frames
+   Style: matplotlib
+✅ Frame renderer initialized
+📁 Output directory: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_182755
+🎬 Video will be saved as: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_182755/stack11_video.mp4
+📊 No existing predictions found. Running full pipeline...
+🎬 Starting ENHANCED video generation pipeline...
+
+📊 Step 1: Processing dataset with model predictions...
+🚀 Starting dataset processing...
+   Processing 141 frames
+   Batch size: 32
+   Output file: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_182755/cache/predictions.jsonl
+⚠️ No nuclei found in frame 10
+⚠️ No nuclei found in frame 11
+⚠️ No nuclei found in frame 14
+⚠️ No nuclei found in frame 15
+⚠️ No nuclei found in frame 16
+⚠️ No nuclei found in frame 21
+⚠️ No nuclei found in frame 32
+⚠️ No nuclei found in frame 33
+⚠️ No nuclei found in frame 35
+⚠️ No nuclei found in frame 39
+⚠️ No nuclei found in frame 40
+⚠️ No nuclei found in frame 50
+⚠️ No nuclei found in frame 53
+⚠️ No nuclei found in frame 57
+⚠️ No nuclei found in frame 65
+⚠️ No nuclei found in frame 66
+⚠️ No nuclei found in frame 74
+⚠️ No nuclei found in frame 119
+⚠️ No nuclei found in frame 132
+
+🎨 Step 2: Enhanced frame rendering...
+🎨 Rendering 122 frames in multiple formats...
+   📹 Formats: ['combined', 'raw_only', 'dual_channel']
+   📺 Resolution: 2560x1440
+   🎯 Probability visualization: False
+   📊 Dual channel: False
+   🎭 Frame 2: 7 nuclei | Classes: {'new_daughter': 7}
+   📊 Progress: 1/122 (0.8%) | Frame time: 4.71s | ETA: 9.5min
+   🎭 Frame 3: 13 nuclei | Classes: {'new_daughter': 13}
+   📊 Progress: 2/122 (1.6%) | Frame time: 6.47s | ETA: 11.2min
+   🎭 Frame 4: 13 nuclei | Classes: {'new_daughter': 6, 'stable': 7}
+   📊 Progress: 3/122 (2.5%) | Frame time: 6.59s | ETA: 11.8min
+   🎭 Frame 5: 17 nuclei | Classes: {'stable': 9, 'new_daughter': 8}
+   📊 Progress: 4/122 (3.3%) | Frame time: 7.96s | ETA: 12.7min
+   🎭 Frame 6: 8 nuclei | Classes: {'new_daughter': 1, 'stable': 7}
+   📊 Progress: 5/122 (4.1%) | Frame time: 5.00s | ETA: 12.0min
+   🎭 Frame 7: 10 nuclei | Classes: {'stable': 1, 'new_daughter': 9}
+   📊 Progress: 6/122 (4.9%) | Frame time: 5.62s | ETA: 11.7min
+   🎭 Frame 8: 7 nuclei | Classes: {'new_daughter': 7}
+   📊 Progress: 7/122 (5.7%) | Frame time: 4.65s | ETA: 11.2min
+   🎭 Frame 9: 17 nuclei | Classes: {'new_daughter': 3, 'stable': 14}
+   📊 Progress: 8/122 (6.6%) | Frame time: 8.12s | ETA: 11.7min
+   🎭 Frame 12: 17 nuclei | Classes: {'new_daughter': 1, 'stable': 16}
+   📊 Progress: 9/122 (7.4%) | Frame time: 7.99s | ETA: 12.0min
+   🎭 Frame 13: 17 nuclei | Classes: {'new_daughter': 15, 'stable': 2}
+   📊 Progress: 10/122 (8.2%) | Frame time: 7.92s | ETA: 12.1min
+   🎭 Frame 17: 17 nuclei | Classes: {'new_daughter': 17}
+   📊 Progress: 11/122 (9.0%) | Frame time: 7.99s | ETA: 12.3min
+   🎭 Frame 18: 17 nuclei | Classes: {'new_daughter': 17}
+   📊 Progress: 12/122 (9.8%) | Frame time: 7.82s | ETA: 12.4min
+   🎭 Frame 19: 17 nuclei | Classes: {'new_daughter': 17}
+   📊 Progress: 13/122 (10.7%) | Frame time: 7.77s | ETA: 12.4min
+   🎭 Frame 20: 17 nuclei | Classes: {'new_daughter': 16, 'stable': 1}
+   📊 Progress: 14/122 (11.5%) | Frame time: 7.78s | ETA: 12.4min
+   🎭 Frame 22: 17 nuclei | Classes: {'stable': 16, 'new_daughter': 1}
+   📊 Progress: 15/122 (12.3%) | Frame time: 7.88s | ETA: 12.4min
+   🎭 Frame 23: 2 nuclei | Classes: {'stable': 2}
+   📊 Progress: 16/122 (13.1%) | Frame time: 3.53s | ETA: 11.9min
+   🎭 Frame 24: 9 nuclei | Classes: {'stable': 7, 'new_daughter': 2}
+   📊 Progress: 17/122 (13.9%) | Frame time: 5.29s | ETA: 11.6min
+   🎭 Frame 25: 17 nuclei | Classes: {'new_daughter': 11, 'stable': 6}
+   📊 Progress: 18/122 (14.8%) | Frame time: 8.01s | ETA: 11.7min
+   🎭 Frame 26: 17 nuclei | Classes: {'new_daughter': 16, 'stable': 1}
+   📊 Progress: 19/122 (15.6%) | Frame time: 7.96s | ETA: 11.7min
+   🎭 Frame 27: 17 nuclei | Classes: {'new_daughter': 17}
+   📊 Progress: 20/122 (16.4%) | Frame time: 7.89s | ETA: 11.6min
+   🎭 Frame 28: 17 nuclei | Classes: {'new_daughter': 12, 'stable': 5}
+   📊 Progress: 21/122 (17.2%) | Frame time: 7.96s | ETA: 11.6min
+   🎭 Frame 29: 11 nuclei | Classes: {'stable': 6, 'new_daughter': 5}
+   📊 Progress: 22/122 (18.0%) | Frame time: 6.00s | ETA: 11.4min
+   🎭 Frame 30: 17 nuclei | Classes: {'stable': 16, 'new_daughter': 1}
+   📊 Progress: 23/122 (18.9%) | Frame time: 8.02s | ETA: 11.4min
+   🎭 Frame 31: 11 nuclei | Classes: {'new_daughter': 11}
+   📊 Progress: 24/122 (19.7%) | Frame time: 5.96s | ETA: 11.2min
+   🎭 Frame 34: 3 nuclei | Classes: {'stable': 3}
+   📊 Progress: 25/122 (20.5%) | Frame time: 3.32s | ETA: 10.9min
+   🎭 Frame 36: 17 nuclei | Classes: {'new_daughter': 17}
+   📊 Progress: 26/122 (21.3%) | Frame time: 7.90s | ETA: 10.8min
+   🎭 Frame 37: 1 nuclei | Classes: {'stable': 1}
+   📊 Progress: 27/122 (22.1%) | Frame time: 2.68s | ETA: 10.5min
+   🎭 Frame 38: 5 nuclei | Classes: {'new_daughter': 5}
+   📊 Progress: 28/122 (23.0%) | Frame time: 3.95s | ETA: 10.2min
+   🎭 Frame 41: 17 nuclei | Classes: {'new_daughter': 12, 'stable': 5}
+   📊 Progress: 29/122 (23.8%) | Frame time: 8.03s | ETA: 10.2min
+   🎭 Frame 42: 17 nuclei | Classes: {'stable': 16, 'new_daughter': 1}
+   📊 Progress: 30/122 (24.6%) | Frame time: 8.07s | ETA: 10.2min
+   🎭 Frame 43: 6 nuclei | Classes: {'stable': 6}
+   📊 Progress: 31/122 (25.4%) | Frame time: 4.45s | ETA: 9.9min
+   🎭 Frame 44: 7 nuclei | Classes: {'stable': 2, 'new_daughter': 5}
+   📊 Progress: 32/122 (26.2%) | Frame time: 4.72s | ETA: 9.8min
+   🎭 Frame 45: 18 nuclei | Classes: {'stable': 16, 'new_daughter': 2}
+   📊 Progress: 33/122 (27.0%) | Frame time: 8.37s | ETA: 9.7min
+   🎭 Frame 46: 17 nuclei | Classes: {'stable': 3, 'new_daughter': 14}
+   📊 Progress: 34/122 (27.9%) | Frame time: 7.98s | ETA: 9.7min
+   🎭 Frame 47: 19 nuclei | Classes: {'stable': 17, 'new_daughter': 2}
+   📊 Progress: 35/122 (28.7%) | Frame time: 8.73s | ETA: 9.7min
+   🎭 Frame 48: 20 nuclei | Classes: {'new_daughter': 19, 'stable': 1}
+   📊 Progress: 36/122 (29.5%) | Frame time: 8.87s | ETA: 9.6min
+   🎭 Frame 49: 22 nuclei | Classes: {'new_daughter': 22}
+   📊 Progress: 37/122 (30.3%) | Frame time: 9.49s | ETA: 9.6min
+   🎭 Frame 51: 27 nuclei | Classes: {'stable': 15, 'new_daughter': 12}
+   📊 Progress: 38/122 (31.1%) | Frame time: 11.15s | ETA: 9.7min
+   🎭 Frame 52: 12 nuclei | Classes: {'new_daughter': 12}
+   📊 Progress: 39/122 (32.0%) | Frame time: 6.21s | ETA: 9.5min
+   🎭 Frame 54: 31 nuclei | Classes: {'stable': 29, 'new_daughter': 2}
+   📊 Progress: 40/122 (32.8%) | Frame time: 12.62s | ETA: 9.6min
+   🎭 Frame 55: 28 nuclei | Classes: {'stable': 24, 'new_daughter': 4}
+   📊 Progress: 41/122 (33.6%) | Frame time: 11.65s | ETA: 9.7min
+   🎭 Frame 56: 32 nuclei | Classes: {'stable': 19, 'new_daughter': 13}
+   📊 Progress: 42/122 (34.4%) | Frame time: 12.85s | ETA: 9.7min
+   🎭 Frame 58: 25 nuclei | Classes: {'stable': 24, 'new_daughter': 1}
+   📊 Progress: 43/122 (35.2%) | Frame time: 10.70s | ETA: 9.7min
+   🎭 Frame 59: 9 nuclei | Classes: {'new_daughter': 5, 'stable': 4}
+   📊 Progress: 44/122 (36.1%) | Frame time: 5.45s | ETA: 9.5min
+   🎭 Frame 60: 32 nuclei | Classes: {'stable': 28, 'new_daughter': 4}
+   📊 Progress: 45/122 (36.9%) | Frame time: 12.94s | ETA: 9.6min
+   🎭 Frame 61: 33 nuclei | Classes: {'new_daughter': 31, 'stable': 2}
+   📊 Progress: 46/122 (37.7%) | Frame time: 13.07s | ETA: 9.6min
+   🎭 Frame 62: 23 nuclei | Classes: {'new_daughter': 2, 'stable': 21}
+   📊 Progress: 47/122 (38.5%) | Frame time: 9.95s | ETA: 9.5min
+   🎭 Frame 63: 7 nuclei | Classes: {'stable': 2, 'new_daughter': 5}
+   📊 Progress: 48/122 (39.3%) | Frame time: 4.75s | ETA: 9.3min
+   🎭 Frame 64: 33 nuclei | Classes: {'new_daughter': 27, 'stable': 6}
+   📊 Progress: 49/122 (40.2%) | Frame time: 13.11s | ETA: 9.3min
+   🎭 Frame 67: 26 nuclei | Classes: {'stable': 23, 'new_daughter': 3}
+   📊 Progress: 50/122 (41.0%) | Frame time: 11.05s | ETA: 9.3min
+   🎭 Frame 68: 33 nuclei | Classes: {'stable': 32, 'new_daughter': 1}
+   📊 Progress: 51/122 (41.8%) | Frame time: 13.22s | ETA: 9.3min
+   🎭 Frame 69: 33 nuclei | Classes: {'new_daughter': 32, 'stable': 1}
+   📊 Progress: 52/122 (42.6%) | Frame time: 13.12s | ETA: 9.3min
+   🎭 Frame 70: 33 nuclei | Classes: {'stable': 32, 'new_daughter': 1}
+   📊 Progress: 53/122 (43.4%) | Frame time: 13.11s | ETA: 9.3min
+   🎭 Frame 71: 7 nuclei | Classes: {'new_daughter': 7}
+   📊 Progress: 54/122 (44.3%) | Frame time: 4.49s | ETA: 9.0min
+   🎭 Frame 72: 33 nuclei | Classes: {'stable': 31, 'new_daughter': 2}
+   📊 Progress: 55/122 (45.1%) | Frame time: 12.76s | ETA: 9.0min
+   🎭 Frame 73: 33 nuclei | Classes: {'stable': 31, 'new_daughter': 2}
+   📊 Progress: 56/122 (45.9%) | Frame time: 12.65s | ETA: 9.0min
+   🎭 Frame 75: 33 nuclei | Classes: {'stable': 18, 'new_daughter': 15}
+   📊 Progress: 57/122 (46.7%) | Frame time: 12.66s | ETA: 8.9min
+   🎭 Frame 76: 33 nuclei | Classes: {'new_daughter': 28, 'stable': 5}
+   📊 Progress: 58/122 (47.5%) | Frame time: 12.64s | ETA: 8.9min
+   🎭 Frame 77: 33 nuclei | Classes: {'stable': 31, 'new_daughter': 2}
+   📊 Progress: 59/122 (48.4%) | Frame time: 12.75s | ETA: 8.8min
+   🎭 Frame 78: 7 nuclei | Classes: {'new_daughter': 6, 'stable': 1}
+   📊 Progress: 60/122 (49.2%) | Frame time: 4.50s | ETA: 8.6min
+   🎭 Frame 79: 18 nuclei | Classes: {'stable': 13, 'new_daughter': 5}
+   📊 Progress: 61/122 (50.0%) | Frame time: 7.98s | ETA: 8.4min
+   🎭 Frame 80: 3 nuclei | Classes: {'new_daughter': 2, 'stable': 1}
+   📊 Progress: 62/122 (50.8%) | Frame time: 3.28s | ETA: 8.2min
+   🎭 Frame 81: 33 nuclei | Classes: {'stable': 30, 'new_daughter': 3}
+   📊 Progress: 63/122 (51.6%) | Frame time: 12.92s | ETA: 8.2min
+   🎭 Frame 82: 33 nuclei | Classes: {'stable': 30, 'new_daughter': 3}
+   📊 Progress: 64/122 (52.5%) | Frame time: 12.94s | ETA: 8.1min
+   🎭 Frame 83: 13 nuclei | Classes: {'stable': 12, 'new_daughter': 1}
+   📊 Progress: 65/122 (53.3%) | Frame time: 6.50s | ETA: 7.9min
+   🎭 Frame 84: 33 nuclei | Classes: {'stable': 29, 'new_daughter': 4}
+   📊 Progress: 66/122 (54.1%) | Frame time: 12.85s | ETA: 7.9min
+   🎭 Frame 85: 24 nuclei | Classes: {'stable': 20, 'new_daughter': 4}
+   📊 Progress: 67/122 (54.9%) | Frame time: 9.82s | ETA: 7.7min
+   🎭 Frame 86: 33 nuclei | Classes: {'stable': 30, 'new_daughter': 3}
+   📊 Progress: 68/122 (55.7%) | Frame time: 12.74s | ETA: 7.6min
+   🎭 Frame 87: 17 nuclei | Classes: {'stable': 13, 'new_daughter': 4}
+   📊 Progress: 69/122 (56.6%) | Frame time: 7.65s | ETA: 7.5min
+   🎭 Frame 88: 33 nuclei | Classes: {'stable': 30, 'new_daughter': 3}
+   📊 Progress: 70/122 (57.4%) | Frame time: 12.70s | ETA: 7.4min
+   🎭 Frame 89: 19 nuclei | Classes: {'stable': 15, 'new_daughter': 4}
+   📊 Progress: 71/122 (58.2%) | Frame time: 8.26s | ETA: 7.3min
+   🎭 Frame 90: 33 nuclei | Classes: {'stable': 29, 'new_daughter': 4}
+   📊 Progress: 72/122 (59.0%) | Frame time: 12.71s | ETA: 7.2min
+   🎭 Frame 91: 13 nuclei | Classes: {'stable': 13}
+   📊 Progress: 73/122 (59.8%) | Frame time: 6.44s | ETA: 7.0min
+   🎭 Frame 92: 17 nuclei | Classes: {'stable': 8, 'new_daughter': 9}
+   📊 Progress: 74/122 (60.7%) | Frame time: 7.64s | ETA: 6.8min
+   🎭 Frame 93: 17 nuclei | Classes: {'stable': 16, 'new_daughter': 1}
+   📊 Progress: 75/122 (61.5%) | Frame time: 7.65s | ETA: 6.7min
+   🎭 Frame 94: 24 nuclei | Classes: {'new_daughter': 8, 'stable': 16}
+   📊 Progress: 76/122 (62.3%) | Frame time: 9.83s | ETA: 6.6min
+   🎭 Frame 95: 12 nuclei | Classes: {'new_daughter': 10, 'stable': 2}
+   📊 Progress: 77/122 (63.1%) | Frame time: 6.05s | ETA: 6.4min
+   🎭 Frame 96: 22 nuclei | Classes: {'stable': 22}
+   📊 Progress: 78/122 (63.9%) | Frame time: 9.20s | ETA: 6.3min
+   🎭 Frame 97: 10 nuclei | Classes: {'stable': 5, 'new_daughter': 5}
+   📊 Progress: 79/122 (64.8%) | Frame time: 5.42s | ETA: 6.1min
+   🎭 Frame 98: 19 nuclei | Classes: {'stable': 18, 'new_daughter': 1}
+   📊 Progress: 80/122 (65.6%) | Frame time: 8.29s | ETA: 5.9min
+   🎭 Frame 99: 12 nuclei | Classes: {'stable': 9, 'new_daughter': 3}
+   📊 Progress: 81/122 (66.4%) | Frame time: 6.00s | ETA: 5.8min
+   🎭 Frame 100: 13 nuclei | Classes: {'stable': 4, 'new_daughter': 9}
+   📊 Progress: 82/122 (67.2%) | Frame time: 6.49s | ETA: 5.6min
+   🎭 Frame 101: 10 nuclei | Classes: {'stable': 8, 'new_daughter': 2}
+   📊 Progress: 83/122 (68.0%) | Frame time: 5.51s | ETA: 5.5min
+   🎭 Frame 102: 11 nuclei | Classes: {'stable': 6, 'new_daughter': 5}
+   📊 Progress: 84/122 (68.9%) | Frame time: 5.97s | ETA: 5.3min
+   🎭 Frame 103: 15 nuclei | Classes: {'stable': 6, 'new_daughter': 9}
+   📊 Progress: 85/122 (69.7%) | Frame time: 7.15s | ETA: 5.2min
+   🎭 Frame 104: 12 nuclei | Classes: {'stable': 12}
+   📊 Progress: 86/122 (70.5%) | Frame time: 6.36s | ETA: 5.0min
+   🎭 Frame 105: 14 nuclei | Classes: {'stable': 7, 'new_daughter': 7}
+   📊 Progress: 87/122 (71.3%) | Frame time: 6.93s | ETA: 4.9min
+   🎭 Frame 106: 14 nuclei | Classes: {'stable': 12, 'new_daughter': 2}
+   📊 Progress: 88/122 (72.1%) | Frame time: 7.00s | ETA: 4.7min
+   🎭 Frame 107: 14 nuclei | Classes: {'new_daughter': 5, 'stable': 9}
+   📊 Progress: 89/122 (73.0%) | Frame time: 6.98s | ETA: 4.6min
+   🎭 Frame 108: 14 nuclei | Classes: {'stable': 14}
+   📊 Progress: 90/122 (73.8%) | Frame time: 7.02s | ETA: 4.4min
+   🎭 Frame 109: 17 nuclei | Classes: {'new_daughter': 12, 'stable': 5}
+   📊 Progress: 91/122 (74.6%) | Frame time: 7.89s | ETA: 4.3min
+   🎭 Frame 110: 20 nuclei | Classes: {'stable': 7, 'new_daughter': 13}
+   📊 Progress: 92/122 (75.4%) | Frame time: 8.85s | ETA: 4.1min
+   🎭 Frame 111: 16 nuclei | Classes: {'stable': 15, 'new_daughter': 1}
+   📊 Progress: 93/122 (76.2%) | Frame time: 7.68s | ETA: 4.0min
+   🎭 Frame 112: 14 nuclei | Classes: {'stable': 11, 'new_daughter': 3}
+   📊 Progress: 94/122 (77.0%) | Frame time: 7.09s | ETA: 3.9min
+   🎭 Frame 113: 40 nuclei | Classes: {'stable': 32, 'new_daughter': 8}
+   📊 Progress: 95/122 (77.9%) | Frame time: 14.70s | ETA: 3.7min
+   🎭 Frame 114: 33 nuclei | Classes: {'stable': 21, 'new_daughter': 12}
+   📊 Progress: 96/122 (78.7%) | Frame time: 12.53s | ETA: 3.6min
+   🎭 Frame 115: 22 nuclei | Classes: {'new_daughter': 13, 'stable': 9}
+   📊 Progress: 97/122 (79.5%) | Frame time: 9.08s | ETA: 3.5min
+   🎭 Frame 116: 22 nuclei | Classes: {'stable': 17, 'new_daughter': 5}
+   📊 Progress: 98/122 (80.3%) | Frame time: 9.14s | ETA: 3.4min
+   🎭 Frame 117: 22 nuclei | Classes: {'stable': 19, 'new_daughter': 3}
+   📊 Progress: 99/122 (81.1%) | Frame time: 9.12s | ETA: 3.2min
+   🎭 Frame 118: 55 nuclei | Classes: {'new_daughter': 4, 'stable': 51}
+   📊 Progress: 100/122 (82.0%) | Frame time: 19.36s | ETA: 3.1min
+   🎭 Frame 120: 58 nuclei | Classes: {'new_daughter': 39, 'stable': 19}
+   📊 Progress: 101/122 (82.8%) | Frame time: 20.36s | ETA: 3.0min
+   🎭 Frame 121: 59 nuclei | Classes: {'new_daughter': 59}
+   📊 Progress: 102/122 (83.6%) | Frame time: 20.58s | ETA: 2.9min
+   🎭 Frame 122: 45 nuclei | Classes: {'new_daughter': 45}
+   📊 Progress: 103/122 (84.4%) | Frame time: 16.25s | ETA: 2.8min
+   🎭 Frame 123: 33 nuclei | Classes: {'stable': 25, 'new_daughter': 8}
+   📊 Progress: 104/122 (85.2%) | Frame time: 12.81s | ETA: 2.7min
+   🎭 Frame 124: 6 nuclei | Classes: {'new_daughter': 5, 'stable': 1}
+   📊 Progress: 105/122 (86.1%) | Frame time: 4.12s | ETA: 2.5min
+   🎭 Frame 125: 38 nuclei | Classes: {'new_daughter': 4, 'stable': 34}
+   📊 Progress: 106/122 (86.9%) | Frame time: 14.61s | ETA: 2.4min
+   🎭 Frame 126: 64 nuclei | Classes: {'stable': 49, 'new_daughter': 15}
+   📊 Progress: 107/122 (87.7%) | Frame time: 22.63s | ETA: 2.2min
+   🎭 Frame 127: 62 nuclei | Classes: {'stable': 43, 'new_daughter': 19}
+   📊 Progress: 108/122 (88.5%) | Frame time: 21.93s | ETA: 2.1min
+   🎭 Frame 128: 65 nuclei | Classes: {'stable': 40, 'new_daughter': 25}
+   📊 Progress: 109/122 (89.3%) | Frame time: 22.54s | ETA: 2.0min
+   🎭 Frame 129: 63 nuclei | Classes: {'new_daughter': 31, 'stable': 32}
+   📊 Progress: 110/122 (90.2%) | Frame time: 21.93s | ETA: 1.9min
+   🎭 Frame 130: 40 nuclei | Classes: {'new_daughter': 38, 'stable': 2}
+   📊 Progress: 111/122 (91.0%) | Frame time: 14.79s | ETA: 1.7min
+   🎭 Frame 131: 29 nuclei | Classes: {'new_daughter': 9, 'stable': 20}
+   📊 Progress: 112/122 (91.8%) | Frame time: 11.36s | ETA: 1.6min
+   🎭 Frame 133: 44 nuclei | Classes: {'stable': 42, 'new_daughter': 2}
+   📊 Progress: 113/122 (92.6%) | Frame time: 16.19s | ETA: 1.4min
+   🎭 Frame 134: 46 nuclei | Classes: {'stable': 42, 'new_daughter': 4}
+   📊 Progress: 114/122 (93.4%) | Frame time: 16.68s | ETA: 1.3min
+   🎭 Frame 135: 34 nuclei | Classes: {'new_daughter': 34}
+   📊 Progress: 115/122 (94.3%) | Frame time: 12.96s | ETA: 1.1min
+   🎭 Frame 136: 42 nuclei | Classes: {'new_daughter': 41, 'stable': 1}
+   📊 Progress: 116/122 (95.1%) | Frame time: 15.42s | ETA: 57.7s
+   🎭 Frame 137: 40 nuclei | Classes: {'new_daughter': 40}
+   📊 Progress: 117/122 (95.9%) | Frame time: 14.78s | ETA: 48.3s
+   🎭 Frame 138: 58 nuclei | Classes: {'new_daughter': 6, 'stable': 52}
+   📊 Progress: 118/122 (96.7%) | Frame time: 20.43s | ETA: 39.0s
+   🎭 Frame 139: 16 nuclei | Classes: {'stable': 7, 'new_daughter': 9}
+   📊 Progress: 119/122 (97.5%) | Frame time: 7.42s | ETA: 29.2s
+   🎭 Frame 140: 42 nuclei | Classes: {'stable': 42}
+   📊 Progress: 120/122 (98.4%) | Frame time: 15.50s | ETA: 19.6s
+   🎭 Frame 141: 63 nuclei | Classes: {'stable': 53, 'new_daughter': 10}
+   📊 Progress: 121/122 (99.2%) | Frame time: 21.92s | ETA: 9.9s
+   🎭 Frame 142: 44 nuclei | Classes: {'stable': 37, 'new_daughter': 7}
+   📊 Progress: 122/122 (100.0%) | Frame time: 16.02s | ETA: 0.0s
+✅ Enhanced rendering complete!
+   Total time: 20.2 minutes
+   Frame sets generated: 3
+   📹 combined: 122 frames
+   📹 raw_only: 122 frames
+   📹 dual_channel: 0 frames
+
+🎞️ Step 3: Generating multiple video formats...
+   🎬 Creating combined video (122 frames)...
+   Creating MP4: 1971x1108 @ 3 FPS
+   Processed 50/122 frames...
+   Processed 100/122 frames...
+   ffmpeg not available, using OpenCV output
+   🎬 Creating raw_only video (122 frames)...
+   Creating MP4: 1971x1108 @ 3 FPS
+   Processed 50/122 frames...
+   Processed 100/122 frames...
+   ffmpeg not available, using OpenCV output
+
+📋 Step 4: Generating comprehensive summary...
+📋 Enhanced summary saved: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_182755/enhanced_video_summary.json
+📊 Enhanced Processing Statistics:
+   🎬 Videos generated: 3
+   🔬 Total nuclei analyzed: 2901
+   📊 Average nuclei per frame: 23.8
+   🎭 Class distribution: {'new_daughter': 1169, 'stable': 1732}
+   📹 combined: 122 frames, 40.7s duration
+   📹 raw_only: 122 frames, 40.7s duration
+   📹 dual_channel: 0 frames, 0.0s duration
+
+✅ Enhanced video generation complete!
+   Total time: 28.4 minutes
+   Videos generated: 2
+   📹 combined: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_182755/stack11_video_combined.mp4
+   📹 raw_only: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_182755/stack11_video_raw_only.mp4
+✅ Video generation completed successfully!
+   Duration: 28.4 minutes
+   📹 Video saved: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_182755/stack11_video_combined.mp4
+==================================================
+Video Generation Job Completed: Fri Jul 25 18:56:21 EDT 2025
+Exit code: 0
+✅ SUCCESS: Enhanced video generation completed successfully!
+
+🎉 ENHANCEMENTS APPLIED:
+   • Slower FPS (3) for better nucleus observation
+   • Smart label positioning to avoid overlaps
+   • Congestion detection with visual indicators
+   • Enhanced text size and contrast
+   • Higher resolution output (2560x1440)
+   • Detailed progress logging
+
+📁 Output Files:
+No MP4 files found
+
+📊 File Sizes:
+41K	/mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_4ncnn_20250725_142535/cache
+512	/mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_4ncnn_20250725_142535/config.json
+512	/mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_4ncnn_20250725_142535/frames
+
+🚀 NEXT STEPS:
+   1. Download the video file for review
+   2. Check congested regions marked with yellow circles
+   3. Verify nucleus IDs help distinguish overlapping cells
+   4. Observe slower pacing allows better analysis
+==================================================
