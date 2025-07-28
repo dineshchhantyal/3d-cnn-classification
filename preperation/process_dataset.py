@@ -51,6 +51,22 @@ def main():
     )
 
     parser.add_argument(
+        "--dataset_dir",
+        type=str,
+        required=False,
+        default=None,
+        help="Base directory for the dataset (if not using predefined datasets)",
+    )
+
+    parser.add_argument(
+        "--lineage_file",
+        type=str,
+        required=False,
+        default=None,
+        help="Path to the lineage file (if not using default)",
+    )
+
+    parser.add_argument(
         "--timeframe",
         type=int,
         default=1,
@@ -81,7 +97,7 @@ def main():
 
     # Get dataset configuration
     dataset_name = args.dataset
-    base_dir = DATASETS[dataset_name]
+    base_dir = args.dataset_dir or DATASETS.get(dataset_name)
 
     if args.verbose:
         print(f"🚀 Processing dataset: {dataset_name}")
@@ -99,7 +115,8 @@ def main():
         sys.exit(1)
 
     # Verify LineageGraph.json exists
-    lineage_file = Path(base_dir) / "LineageGraph.json"
+    lineage_file = args.lineage_file or Path(base_dir) / "LineageGraph.json"
+
     # lineage_file = Path(
     #     "/mnt/ceph/users/lbrown/Labels3DMouse/Abhishek/RebeccaData/230101_Gata6Nanog_stack_19/stack_19_channel_1_obj_left/st19_CombinedGraph_1_110_graph.json"
     # )

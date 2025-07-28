@@ -22,15 +22,13 @@ This project is a solution for extracting, cleaning, and classifying the states 
 1. **Extraction:**
     - For each nucleus event, crops are taken from three timepoints: t-1, t, and t+1
     - The segmentation mask at t is used to localize the nucleus
-2. **Cleaning:**
-    - Noise is removed, holes are filled, and borders are cleared
-3. **Saving:**
-    - Each nucleus gets its own folder with raw crops, binary masks, and metadata
-4. **Input for 4ncnn:**
+2. **Saving:**
+    - Each nucleus gets its own folder with raw crops, and a binary mask for t
+3. **Input for 4ncnn:**
     - Each sample is a 4-channel 3D tensor: [t-1], [t], [t+1], [mask at t]
-5. **Augmentation:**
-    - Random flips, small rotations, changes in intensity/contrast/brightness, and Gaussian noise (applied to raw channels)
-6. **Normalization:**
+4. **Augmentation:**
+    - Random flips, small rotations, changes in intensity/contrast/brightness, and Gaussian noise (applied to raw channels) (more at `model/[model name]/cnn_model.py`)
+5. **Normalization:**
     - All data is scaled to the [0, 1] range
 
 ---
@@ -42,15 +40,15 @@ This project is a solution for extracting, cleaning, and classifying the states 
     pip install -r requirements.txt
     ```
 2. **Set training parameters:**
-    - Edit `model/4ncnn/config.py` as needed
+    - Edit `model/ncnn4/config.py` as needed
 3. **Start training:**
     ```bash
-    python model/4ncnn/cnn_model.py
+    python model/ncnn4/cnn_model.py
     ```
-    - Training logs and results will be saved in `model/4ncnn/training_outputs/`
+    - Training logs and results will be saved in `model/ncnn4/training_outputs/`
 4. **Benchmark all models:**
     ```bash
-    bash model/4ncnn/benchmark_all_models.sh
+    bash model/ncnn4/benchmark_all_models.sh
     ```
 
 ---
@@ -60,10 +58,10 @@ This project is a solution for extracting, cleaning, and classifying the states 
 1. **Metrics:**
     - Accuracy, F1-score, confusion matrix, and classification report are generated automatically
 2. **Visualization:**
-    - Use the Jupyter notebooks in `model/notebooks/` to see max projections, overlays, and more
+    - Use the Jupyter notebooks in `model/notebooks/` to see max projections, overlays, and more (might require additional setup)
     - Example:
     ```bash
-    jupyter notebook model/notebooks/visulaization.ipynb
+    jupyter notebook model/notebooks/visualization.ipynb
     ```
 
 ---
@@ -77,5 +75,5 @@ This project is a solution for extracting, cleaning, and classifying the states 
 
 ## References
 
-1. Amat, F. et al. BLASTO-SPIM: Interactive 3D lineage visualization for cell tracking and analysis. [https://blastospim.flatironinstitute.org/html/](https://blastospim.flatironinstitute.org/html/)
-2. Wolff, C. et al. Nuclear instance segmentation and tracking for lineage analysis in large-scale 3D microscopy data. _Development_, 151(21), dev202817. [https://journals.biologists.com/dev/article/151/21/dev202817/362603/Nuclear-instance-segmentation-and-tracking-for](https://journals.biologists.com/dev/article/151/21/dev202817/362603/Nuclear-instance-segmentation-and-tracking-for)
+1. Robust 3D Nuclear Instance Segmentation of the Early Mouse Embryo
+   . [https://blastospim.flatironinstitute.org/html/](https://blastospim.flatironinstitute.org/html/)

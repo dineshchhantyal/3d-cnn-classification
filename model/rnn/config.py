@@ -6,20 +6,20 @@ import torch
 # --- Shared Hyperparameters ---
 HPARAMS = {
     # --- MODIFIED: Input dimensions reduced to 32x32x32 ---
-    "input_depth": 64,
-    "input_height": 64,
-    "input_width": 64,
+    "input_depth": 32,
+    "input_height": 32,
+    "input_width": 32,
     "num_classes": 3,
     "classes_names": ["mitotic", "new_daughter", "stable"],
     # --- Training Parameters ---
-    "learning_rate": 1e-4,
+    "learning_rate": 1e-5,
     "batch_size": 16,
     "num_epochs": 300,
     "num_input_channels": 3,  # [t-1, t, t+1, segmentation_mask]
     # --- Regularization & Early Stopping ---
     "dropout_rate": 0.5,
     "weight_decay": 1e-5,  # L2 regularization for the Adam optimizer
-    "early_stopping_patience": 25,  # Epochs to wait for improvement before stopping
+    "early_stopping_patience": 35,  # Epochs to wait for improvement before stopping
     # --- Data Handling ---
     "max_samples_per_class": {
         "mitotic": 221,

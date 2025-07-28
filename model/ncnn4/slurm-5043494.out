@@ -1,0 +1,17 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) modules/2.3-20240529   2) openblas/single-0.3.26
+🚀 Starting Run. All outputs will be saved to: training_outputs/20250728-182554
+⚙️ Using device: cuda
+Hyperparameters: {'input_depth': 32, 'input_height': 32, 'input_width': 32, 'num_classes': 3, 'classes_names': ['mitotic', 'new_daughter', 'stable'], 'learning_rate': 1e-05, 'batch_size': 16, 'num_epochs': 300, 'num_input_channels': 4, 'dropout_rate': 0.1, 'weight_decay': 1e-05, 'early_stopping_patience': 35, 'max_samples_per_class': {'mitotic': 221, 'new_daughter': 221, 'stable': 221}, 'class_weights': [1.0, 1.0, 1.0]}
+
+Loading datasets...
+Dataset loaded with 660 total samples:
+  - mitotic: 218 samples
+  - new_daughter: 221 samples
+  - stable: 221 samples
+  Applied per-class limits:
+    - mitotic: 221 max samples
+    - new_daughter: 221 max samples
+    - stable: 221 max samples
