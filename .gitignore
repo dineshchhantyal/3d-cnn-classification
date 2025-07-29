@@ -1,5 +1,6 @@
 # Python
 __pycache__/
+*/__pycache__/
 *.py[cod]
 *$py.class
 *.so
@@ -22,6 +23,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+.github
+**/output/**
+
 # PyTorch Models
 *.pth
 *.pt
@@ -30,14 +34,18 @@ checkpoints/
 saved_models/
 model_weights/
 
+# model checkpoints
+**/analysis_results/**
+**/training_outputs/**
 # Data directories (large files)
 data/
 datasets/
 raw_data/
+raw-data/
 processed_data/
 nuclei_state_dataset/
 mitotic/
-stable/
+stable
 death/
 new_daughter/
 

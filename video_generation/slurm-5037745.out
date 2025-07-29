@@ -1,0 +1,367 @@
+/var/spool/slurmd/job5037745/slurm_script: line 5: SBATCH: command not found
+==================================================
+ENHANCED Video Generation Job Started: Fri Jul 25 18:49:26 EDT 2025
+Job ID: 5037745
+Node: worker7049
+Enhancements: Smart labeling, congestion detection, better visuals
+==================================================
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) modules/2.3-20240529   2) openblas/single-0.3.26
+Data Configuration:
+  Output: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack19_ncnn4_20250725_184927
+
+✅ All paths verified
+System Information:
+  SLURM_JOB_ID: 5037745
+  SLURM_JOB_NUM_NODES: 1
+  SLURM_GPUS_PER_NODE: 
+  SLURM_CPUS_PER_GPU: 
+  Node: worker7049
+  Memory allocated:  MB
+
+Resource Information:
+  CPU cores available: 96
+  Memory available: 1.5Ti
+  Disk space: 439G available
+
+GPU Information:
+NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver. Make sure that the latest NVIDIA driver is installed and running.
+
+GPU not available
+
+Python Environment:
+Python 3.10.13
+PyTorch: 2.7.1+cu126
+CUDA available: False
+
+🚀 Starting video generation...
+==================================================
+2025-07-25 18:49:48,707 [INFO] 🔍 SlidingWindowProcessor init:
+2025-07-25 18:49:48,707 [INFO]    config.raw_data_path: /mnt/home/dchhantyal/3d-cnn-classification/raw-data/230101_Gata6Nanog_stack_19/stack_19_channel_1_obj_left/registered_images
+2025-07-25 18:49:48,707 [INFO]    config.label_data_path: /mnt/home/dchhantyal/3d-cnn-classification/raw-data/230101_Gata6Nanog_stack_19/stack_19_channel_1_obj_left/registered_label_images
+2025-07-25 18:49:48,707 [INFO]    self.raw_path: /mnt/home/dchhantyal/3d-cnn-classification/raw-data/230101_Gata6Nanog_stack_19/stack_19_channel_1_obj_left/registered_images
+2025-07-25 18:49:48,707 [INFO]    self.label_path: /mnt/home/dchhantyal/3d-cnn-classification/raw-data/230101_Gata6Nanog_stack_19/stack_19_channel_1_obj_left/registered_label_images
+2025-07-25 18:49:48,718 [INFO] 📊 Dataset discovered:
+2025-07-25 18:49:48,718 [INFO]    Raw data: /mnt/home/dchhantyal/3d-cnn-classification/raw-data/230101_Gata6Nanog_stack_19/stack_19_channel_1_obj_left/registered_images
+2025-07-25 18:49:48,718 [INFO]    Label data: /mnt/home/dchhantyal/3d-cnn-classification/raw-data/230101_Gata6Nanog_stack_19/stack_19_channel_1_obj_left/registered_label_images
+2025-07-25 18:49:48,718 [INFO]    Total frames: 110
+2025-07-25 18:49:48,718 [INFO]    Frame range: 0 to 109
+2025-07-25 18:49:48,718 [INFO]    Processable frames: 108
+2025-07-25 18:49:48,718 [INFO]    Processing range: 1 to 108
+2025-07-25 18:49:48,721 [INFO] 🔍 _load_frame: Looking for frame 0
+2025-07-25 18:49:50,027 [INFO] 🔍 _load_frame: Looking for frame 1
+2025-07-25 18:49:51,175 [INFO] 🔍 _load_frame: Looking for frame 2
+2025-07-25 18:50:00,522 [INFO] 📊 Frame   1/108 | Nuclei: 16 | Time: 11.8s | ETA: 21.0min
+2025-07-25 18:50:00,522 [INFO] 🔍 _load_frame: Looking for frame 3
+2025-07-25 18:50:09,889 [INFO] 📊 Frame   2/108 | Nuclei: 17 | Time: 9.4s | ETA: 18.7min
+2025-07-25 18:50:09,890 [INFO] 🔍 _load_frame: Looking for frame 4
+2025-07-25 18:50:19,196 [INFO] 📊 Frame   3/108 | Nuclei: 17 | Time: 9.3s | ETA: 17.8min
+2025-07-25 18:50:19,196 [INFO] 🔍 _load_frame: Looking for frame 5
+2025-07-25 18:50:30,639 [INFO] 📊 Frame   4/108 | Nuclei: 19 | Time: 11.4s | ETA: 18.2min
+2025-07-25 18:50:30,639 [INFO] 🔍 _load_frame: Looking for frame 6
+2025-07-25 18:50:40,050 [INFO] 📊 Frame   5/108 | Nuclei: 19 | Time: 9.4s | ETA: 17.6min
+2025-07-25 18:50:40,050 [INFO] 🔍 _load_frame: Looking for frame 7
+2025-07-25 18:50:49,923 [INFO] 📊 Frame   6/108 | Nuclei: 20 | Time: 9.9s | ETA: 17.3min
+2025-07-25 18:50:49,923 [INFO] 🔍 _load_frame: Looking for frame 8
+2025-07-25 18:50:59,384 [INFO] 📊 Frame   7/108 | Nuclei: 20 | Time: 9.5s | ETA: 17.0min
+2025-07-25 18:50:59,384 [INFO] 🔍 _load_frame: Looking for frame 9
+2025-07-25 18:51:08,855 [INFO] 📊 Frame   8/108 | Nuclei: 22 | Time: 9.5s | ETA: 16.7min
+2025-07-25 18:51:08,855 [INFO] 🔍 _load_frame: Looking for frame 10
+2025-07-25 18:51:18,556 [INFO] 📊 Frame   9/108 | Nuclei: 22 | Time: 9.7s | ETA: 16.5min
+2025-07-25 18:51:18,557 [INFO] 🔍 _load_frame: Looking for frame 11
+2025-07-25 18:51:27,995 [INFO] 📊 Frame  10/108 | Nuclei: 23 | Time: 9.4s | ETA: 16.2min
+2025-07-25 18:51:27,995 [INFO] 🔍 _load_frame: Looking for frame 12
+2025-07-25 18:51:37,331 [INFO] 📊 Frame  11/108 | Nuclei: 23 | Time: 9.3s | ETA: 16.0min
+2025-07-25 18:51:37,331 [INFO] 🔍 _load_frame: Looking for frame 13
+2025-07-25 18:51:46,781 [INFO] 📊 Frame  12/108 | Nuclei: 25 | Time: 9.4s | ETA: 15.7min
+2025-07-25 18:51:46,781 [INFO] 🔍 _load_frame: Looking for frame 14
+2025-07-25 18:51:56,304 [INFO] 📊 Frame  13/108 | Nuclei: 26 | Time: 9.5s | ETA: 15.5min
+2025-07-25 18:51:56,304 [INFO] 🔍 _load_frame: Looking for frame 15
+2025-07-25 18:52:05,912 [INFO] 📊 Frame  14/108 | Nuclei: 28 | Time: 9.6s | ETA: 15.4min
+2025-07-25 18:52:05,912 [INFO] 🔍 _load_frame: Looking for frame 16
+2025-07-25 18:52:15,661 [INFO] 📊 Frame  15/108 | Nuclei: 28 | Time: 9.7s | ETA: 15.2min
+2025-07-25 18:52:15,662 [INFO] 🔍 _load_frame: Looking for frame 17
+2025-07-25 18:52:25,807 [INFO] 📊 Frame  16/108 | Nuclei: 28 | Time: 10.1s | ETA: 15.1min
+2025-07-25 18:52:25,807 [INFO] 🔍 _load_frame: Looking for frame 18
+2025-07-25 18:52:35,477 [INFO] 📊 Frame  17/108 | Nuclei: 28 | Time: 9.7s | ETA: 14.9min
+2025-07-25 18:52:35,477 [INFO] 🔍 _load_frame: Looking for frame 19
+2025-07-25 18:52:45,677 [INFO] 📊 Frame  18/108 | Nuclei: 29 | Time: 10.2s | ETA: 14.7min
+2025-07-25 18:52:45,677 [INFO] 🔍 _load_frame: Looking for frame 20
+2025-07-25 18:52:55,702 [INFO] 📊 Frame  19/108 | Nuclei: 30 | Time: 10.0s | ETA: 14.6min
+2025-07-25 18:52:55,702 [INFO] 🔍 _load_frame: Looking for frame 21
+2025-07-25 18:53:06,061 [INFO] 📊 Frame  20/108 | Nuclei: 30 | Time: 10.4s | ETA: 14.5min
+2025-07-25 18:53:06,061 [INFO] 🔍 _load_frame: Looking for frame 22
+2025-07-25 18:53:15,999 [INFO] 📊 Frame  21/108 | Nuclei: 31 | Time: 9.9s | ETA: 14.3min
+2025-07-25 18:53:15,999 [INFO] 🔍 _load_frame: Looking for frame 23
+2025-07-25 18:53:25,984 [INFO] 📊 Frame  22/108 | Nuclei: 31 | Time: 10.0s | ETA: 14.2min
+2025-07-25 18:53:25,984 [INFO] 🔍 _load_frame: Looking for frame 24
+2025-07-25 18:53:35,758 [INFO] 📊 Frame  23/108 | Nuclei: 31 | Time: 9.8s | ETA: 14.0min
+2025-07-25 18:53:35,758 [INFO] 🔍 _load_frame: Looking for frame 25
+2025-07-25 18:53:45,866 [INFO] 📊 Frame  24/108 | Nuclei: 31 | Time: 10.1s | ETA: 13.8min
+2025-07-25 18:53:45,866 [INFO] 🔍 _load_frame: Looking for frame 26
+2025-07-25 18:53:55,674 [INFO] 📊 Frame  25/108 | Nuclei: 31 | Time: 9.8s | ETA: 13.7min
+2025-07-25 18:53:55,674 [INFO] 🔍 _load_frame: Looking for frame 27
+2025-07-25 18:54:05,731 [INFO] 📊 Frame  26/108 | Nuclei: 32 | Time: 10.1s | ETA: 13.5min
+2025-07-25 18:54:05,731 [INFO] 🔍 _load_frame: Looking for frame 28
+2025-07-25 18:54:15,702 [INFO] 📊 Frame  27/108 | Nuclei: 32 | Time: 10.0s | ETA: 13.3min
+2025-07-25 18:54:15,702 [INFO] 🔍 _load_frame: Looking for frame 29
+2025-07-25 18:54:25,384 [INFO] 📊 Frame  28/108 | Nuclei: 32 | Time: 9.7s | ETA: 13.2min
+2025-07-25 18:54:25,384 [INFO] 🔍 _load_frame: Looking for frame 30
+2025-07-25 18:54:35,071 [INFO] 📊 Frame  29/108 | Nuclei: 32 | Time: 9.7s | ETA: 13.0min
+2025-07-25 18:54:35,071 [INFO] 🔍 _load_frame: Looking for frame 31
+2025-07-25 18:54:44,983 [INFO] 📊 Frame  30/108 | Nuclei: 32 | Time: 9.9s | ETA: 12.8min
+2025-07-25 18:54:44,983 [INFO] 🔍 _load_frame: Looking for frame 32
+2025-07-25 18:54:54,871 [INFO] 📊 Frame  31/108 | Nuclei: 32 | Time: 9.9s | ETA: 12.7min
+2025-07-25 18:54:54,871 [INFO] 🔍 _load_frame: Looking for frame 33
+2025-07-25 18:55:04,731 [INFO] 📊 Frame  32/108 | Nuclei: 32 | Time: 9.9s | ETA: 12.5min
+2025-07-25 18:55:04,732 [INFO] 🔍 _load_frame: Looking for frame 34
+2025-07-25 18:55:14,411 [INFO] 📊 Frame  33/108 | Nuclei: 32 | Time: 9.7s | ETA: 12.3min
+2025-07-25 18:55:14,411 [INFO] 🔍 _load_frame: Looking for frame 35
+2025-07-25 18:55:24,483 [INFO] 📊 Frame  34/108 | Nuclei: 32 | Time: 10.1s | ETA: 12.2min
+2025-07-25 18:55:24,483 [INFO] 🔍 _load_frame: Looking for frame 36
+2025-07-25 18:55:35,884 [INFO] 📊 Frame  35/108 | Nuclei: 32 | Time: 11.4s | ETA: 12.1min
+2025-07-25 18:55:35,884 [INFO] 🔍 _load_frame: Looking for frame 37
+2025-07-25 18:55:45,613 [INFO] 📊 Frame  36/108 | Nuclei: 32 | Time: 9.7s | ETA: 11.9min
+2025-07-25 18:55:45,613 [INFO] 🔍 _load_frame: Looking for frame 38
+2025-07-25 18:55:55,549 [INFO] 📊 Frame  37/108 | Nuclei: 32 | Time: 9.9s | ETA: 11.7min
+2025-07-25 18:55:55,550 [INFO] 🔍 _load_frame: Looking for frame 39
+2025-07-25 18:56:05,672 [INFO] 📊 Frame  38/108 | Nuclei: 32 | Time: 10.1s | ETA: 11.6min
+2025-07-25 18:56:05,672 [INFO] 🔍 _load_frame: Looking for frame 40
+2025-07-25 18:56:15,454 [INFO] 📊 Frame  39/108 | Nuclei: 32 | Time: 9.8s | ETA: 11.4min
+2025-07-25 18:56:15,454 [INFO] 🔍 _load_frame: Looking for frame 41
+2025-07-25 18:56:25,371 [INFO] 📊 Frame  40/108 | Nuclei: 33 | Time: 9.9s | ETA: 11.2min
+2025-07-25 18:56:25,371 [INFO] 🔍 _load_frame: Looking for frame 42
+2025-07-25 18:56:36,078 [INFO] 📊 Frame  41/108 | Nuclei: 34 | Time: 10.7s | ETA: 11.1min
+2025-07-25 18:56:36,078 [INFO] 🔍 _load_frame: Looking for frame 43
+2025-07-25 18:56:46,700 [INFO] 📊 Frame  42/108 | Nuclei: 36 | Time: 10.6s | ETA: 10.9min
+2025-07-25 18:56:46,701 [INFO] 🔍 _load_frame: Looking for frame 44
+2025-07-25 18:56:56,762 [INFO] 📊 Frame  43/108 | Nuclei: 36 | Time: 10.1s | ETA: 10.8min
+2025-07-25 18:56:56,762 [INFO] 🔍 _load_frame: Looking for frame 45
+2025-07-25 18:57:07,430 [INFO] 📊 Frame  44/108 | Nuclei: 37 | Time: 10.7s | ETA: 10.6min
+2025-07-25 18:57:07,431 [INFO] 🔍 _load_frame: Looking for frame 46
+2025-07-25 18:57:17,978 [INFO] 📊 Frame  45/108 | Nuclei: 39 | Time: 10.5s | ETA: 10.5min
+2025-07-25 18:57:17,978 [INFO] 🔍 _load_frame: Looking for frame 47
+2025-07-25 18:57:28,610 [INFO] 📊 Frame  46/108 | Nuclei: 40 | Time: 10.6s | ETA: 10.3min
+2025-07-25 18:57:28,610 [INFO] 🔍 _load_frame: Looking for frame 48
+2025-07-25 18:57:40,089 [INFO] 📊 Frame  47/108 | Nuclei: 40 | Time: 11.5s | ETA: 10.2min
+2025-07-25 18:57:40,089 [INFO] 🔍 _load_frame: Looking for frame 49
+2025-07-25 18:57:50,342 [INFO] 📊 Frame  48/108 | Nuclei: 40 | Time: 10.3s | ETA: 10.0min
+2025-07-25 18:57:50,342 [INFO] 🔍 _load_frame: Looking for frame 50
+2025-07-25 18:58:01,004 [INFO] 📊 Frame  49/108 | Nuclei: 42 | Time: 10.7s | ETA: 9.9min
+2025-07-25 18:58:01,004 [INFO] 🔍 _load_frame: Looking for frame 51
+2025-07-25 18:58:11,205 [INFO] 📊 Frame  50/108 | Nuclei: 40 | Time: 10.2s | ETA: 9.7min
+2025-07-25 18:58:11,205 [INFO] 🔍 _load_frame: Looking for frame 52
+2025-07-25 18:58:21,634 [INFO] 📊 Frame  51/108 | Nuclei: 44 | Time: 10.4s | ETA: 9.6min
+2025-07-25 18:58:21,634 [INFO] 🔍 _load_frame: Looking for frame 53
+2025-07-25 18:58:32,158 [INFO] 📊 Frame  52/108 | Nuclei: 44 | Time: 10.5s | ETA: 9.4min
+2025-07-25 18:58:32,158 [INFO] 🔍 _load_frame: Looking for frame 54
+2025-07-25 18:58:42,742 [INFO] 📊 Frame  53/108 | Nuclei: 48 | Time: 10.6s | ETA: 9.2min
+2025-07-25 18:58:42,742 [INFO] 🔍 _load_frame: Looking for frame 55
+2025-07-25 18:58:53,590 [INFO] 📊 Frame  54/108 | Nuclei: 48 | Time: 10.8s | ETA: 9.1min
+2025-07-25 18:58:53,591 [INFO] 🔍 _load_frame: Looking for frame 56
+2025-07-25 18:59:05,067 [INFO] 📊 Frame  55/108 | Nuclei: 49 | Time: 11.5s | ETA: 8.9min
+2025-07-25 18:59:05,067 [INFO] 🔍 _load_frame: Looking for frame 57
+2025-07-25 18:59:15,506 [INFO] 📊 Frame  56/108 | Nuclei: 51 | Time: 10.4s | ETA: 8.8min
+2025-07-25 18:59:15,506 [INFO] 🔍 _load_frame: Looking for frame 58
+2025-07-25 18:59:26,281 [INFO] 📊 Frame  57/108 | Nuclei: 49 | Time: 10.8s | ETA: 8.6min
+2025-07-25 18:59:26,281 [INFO] 🔍 _load_frame: Looking for frame 59
+2025-07-25 18:59:36,767 [INFO] 📊 Frame  58/108 | Nuclei: 51 | Time: 10.5s | ETA: 8.4min
+2025-07-25 18:59:36,767 [INFO] 🔍 _load_frame: Looking for frame 60
+2025-07-25 18:59:47,483 [INFO] 📊 Frame  59/108 | Nuclei: 52 | Time: 10.7s | ETA: 8.3min
+2025-07-25 18:59:47,483 [INFO] 🔍 _load_frame: Looking for frame 61
+2025-07-25 18:59:58,118 [INFO] 📊 Frame  60/108 | Nuclei: 52 | Time: 10.6s | ETA: 8.1min
+2025-07-25 18:59:58,118 [INFO] 🔍 _load_frame: Looking for frame 62
+2025-07-25 19:00:10,359 [INFO] 📊 Frame  61/108 | Nuclei: 52 | Time: 12.2s | ETA: 8.0min
+2025-07-25 19:00:10,359 [INFO] 🔍 _load_frame: Looking for frame 63
+2025-07-25 19:00:21,043 [INFO] 📊 Frame  62/108 | Nuclei: 54 | Time: 10.7s | ETA: 7.8min
+2025-07-25 19:00:21,043 [INFO] 🔍 _load_frame: Looking for frame 64
+2025-07-25 19:00:34,100 [INFO] 📊 Frame  63/108 | Nuclei: 55 | Time: 13.1s | ETA: 7.7min
+2025-07-25 19:00:34,100 [INFO] 🔍 _load_frame: Looking for frame 65
+2025-07-25 19:00:45,273 [INFO] 📊 Frame  64/108 | Nuclei: 53 | Time: 11.2s | ETA: 7.5min
+2025-07-25 19:00:45,273 [INFO] 🔍 _load_frame: Looking for frame 66
+2025-07-25 19:00:56,531 [INFO] 📊 Frame  65/108 | Nuclei: 56 | Time: 11.3s | ETA: 7.4min
+2025-07-25 19:00:56,531 [INFO] 🔍 _load_frame: Looking for frame 67
+2025-07-25 19:01:07,512 [INFO] 📊 Frame  66/108 | Nuclei: 56 | Time: 11.0s | ETA: 7.2min
+2025-07-25 19:01:07,512 [INFO] 🔍 _load_frame: Looking for frame 68
+2025-07-25 19:01:18,240 [INFO] 📊 Frame  67/108 | Nuclei: 56 | Time: 10.7s | ETA: 7.0min
+2025-07-25 19:01:18,240 [INFO] 🔍 _load_frame: Looking for frame 69
+2025-07-25 19:01:29,248 [INFO] 📊 Frame  68/108 | Nuclei: 56 | Time: 11.0s | ETA: 6.9min
+2025-07-25 19:01:29,249 [INFO] 🔍 _load_frame: Looking for frame 70
+2025-07-25 19:01:40,259 [INFO] 📊 Frame  69/108 | Nuclei: 56 | Time: 11.0s | ETA: 6.7min
+2025-07-25 19:01:40,259 [INFO] 🔍 _load_frame: Looking for frame 71
+2025-07-25 19:01:51,291 [INFO] 📊 Frame  70/108 | Nuclei: 56 | Time: 11.0s | ETA: 6.5min
+2025-07-25 19:01:51,291 [INFO] 🔍 _load_frame: Looking for frame 72
+2025-07-25 19:02:02,451 [INFO] 📊 Frame  71/108 | Nuclei: 56 | Time: 11.2s | ETA: 6.4min
+2025-07-25 19:02:02,451 [INFO] 🔍 _load_frame: Looking for frame 73
+2025-07-25 19:02:13,481 [INFO] 📊 Frame  72/108 | Nuclei: 57 | Time: 11.0s | ETA: 6.2min
+2025-07-25 19:02:13,481 [INFO] 🔍 _load_frame: Looking for frame 74
+2025-07-25 19:02:24,889 [INFO] 📊 Frame  73/108 | Nuclei: 57 | Time: 11.4s | ETA: 6.0min
+2025-07-25 19:02:24,889 [INFO] 🔍 _load_frame: Looking for frame 75
+2025-07-25 19:02:36,022 [INFO] 📊 Frame  74/108 | Nuclei: 57 | Time: 11.1s | ETA: 5.9min
+2025-07-25 19:02:36,022 [INFO] 🔍 _load_frame: Looking for frame 76
+2025-07-25 19:02:47,173 [INFO] 📊 Frame  75/108 | Nuclei: 57 | Time: 11.2s | ETA: 5.7min
+2025-07-25 19:02:47,173 [INFO] 🔍 _load_frame: Looking for frame 77
+2025-07-25 19:02:58,204 [INFO] 📊 Frame  76/108 | Nuclei: 58 | Time: 11.0s | ETA: 5.5min
+2025-07-25 19:02:58,205 [INFO] 🔍 _load_frame: Looking for frame 78
+2025-07-25 19:03:09,811 [INFO] 📊 Frame  77/108 | Nuclei: 58 | Time: 11.6s | ETA: 5.4min
+2025-07-25 19:03:09,811 [INFO] 🔍 _load_frame: Looking for frame 79
+2025-07-25 19:03:20,783 [INFO] 📊 Frame  78/108 | Nuclei: 58 | Time: 11.0s | ETA: 5.2min
+2025-07-25 19:03:20,783 [INFO] 🔍 _load_frame: Looking for frame 80
+2025-07-25 19:03:31,774 [INFO] 📊 Frame  79/108 | Nuclei: 58 | Time: 11.0s | ETA: 5.0min
+2025-07-25 19:03:31,774 [INFO] 🔍 _load_frame: Looking for frame 81
+2025-07-25 19:03:42,439 [INFO] 📊 Frame  80/108 | Nuclei: 56 | Time: 10.7s | ETA: 4.9min
+2025-07-25 19:03:42,439 [INFO] 🔍 _load_frame: Looking for frame 82
+2025-07-25 19:03:54,001 [INFO] 📊 Frame  81/108 | Nuclei: 59 | Time: 11.6s | ETA: 4.7min
+2025-07-25 19:03:54,001 [INFO] 🔍 _load_frame: Looking for frame 83
+2025-07-25 19:04:05,097 [INFO] 📊 Frame  82/108 | Nuclei: 59 | Time: 11.1s | ETA: 4.5min
+2025-07-25 19:04:05,097 [INFO] 🔍 _load_frame: Looking for frame 84
+2025-07-25 19:04:15,987 [INFO] 📊 Frame  83/108 | Nuclei: 60 | Time: 10.9s | ETA: 4.4min
+2025-07-25 19:04:15,987 [INFO] 🔍 _load_frame: Looking for frame 85
+2025-07-25 19:04:27,199 [INFO] 📊 Frame  84/108 | Nuclei: 61 | Time: 11.2s | ETA: 4.2min
+2025-07-25 19:04:27,199 [INFO] 🔍 _load_frame: Looking for frame 86
+2025-07-25 19:04:38,116 [INFO] 📊 Frame  85/108 | Nuclei: 61 | Time: 10.9s | ETA: 4.0min
+2025-07-25 19:04:38,117 [INFO] 🔍 _load_frame: Looking for frame 87
+2025-07-25 19:04:49,239 [INFO] 📊 Frame  86/108 | Nuclei: 63 | Time: 11.1s | ETA: 3.8min
+2025-07-25 19:04:49,239 [INFO] 🔍 _load_frame: Looking for frame 88
+2025-07-25 19:05:00,525 [INFO] 📊 Frame  87/108 | Nuclei: 59 | Time: 11.3s | ETA: 3.7min
+2025-07-25 19:05:00,525 [INFO] 🔍 _load_frame: Looking for frame 89
+2025-07-25 19:05:11,941 [INFO] 📊 Frame  88/108 | Nuclei: 62 | Time: 11.4s | ETA: 3.5min
+2025-07-25 19:05:11,942 [INFO] 🔍 _load_frame: Looking for frame 90
+2025-07-25 19:05:23,350 [INFO] 📊 Frame  89/108 | Nuclei: 62 | Time: 11.4s | ETA: 3.3min
+2025-07-25 19:05:23,350 [INFO] 🔍 _load_frame: Looking for frame 91
+2025-07-25 19:05:34,806 [INFO] 📊 Frame  90/108 | Nuclei: 64 | Time: 11.5s | ETA: 3.2min
+2025-07-25 19:05:34,806 [INFO] 🔍 _load_frame: Looking for frame 92
+2025-07-25 19:05:45,816 [INFO] 📊 Frame  91/108 | Nuclei: 61 | Time: 11.0s | ETA: 3.0min
+2025-07-25 19:05:45,816 [INFO] 🔍 _load_frame: Looking for frame 93
+2025-07-25 19:05:57,495 [INFO] 📊 Frame  92/108 | Nuclei: 66 | Time: 11.7s | ETA: 2.8min
+2025-07-25 19:05:57,495 [INFO] 🔍 _load_frame: Looking for frame 94
+2025-07-25 19:06:09,067 [INFO] 📊 Frame  93/108 | Nuclei: 63 | Time: 11.6s | ETA: 2.6min
+2025-07-25 19:06:09,067 [INFO] 🔍 _load_frame: Looking for frame 95
+2025-07-25 19:06:20,753 [INFO] 📊 Frame  94/108 | Nuclei: 67 | Time: 11.7s | ETA: 2.5min
+2025-07-25 19:06:20,753 [INFO] 🔍 _load_frame: Looking for frame 96
+2025-07-25 19:06:32,192 [INFO] 📊 Frame  95/108 | Nuclei: 69 | Time: 11.4s | ETA: 2.3min
+2025-07-25 19:06:32,192 [INFO] 🔍 _load_frame: Looking for frame 97
+2025-07-25 19:06:43,336 [INFO] 📊 Frame  96/108 | Nuclei: 66 | Time: 11.1s | ETA: 2.1min
+2025-07-25 19:06:43,336 [INFO] 🔍 _load_frame: Looking for frame 98
+2025-07-25 19:06:55,105 [INFO] 📊 Frame  97/108 | Nuclei: 66 | Time: 11.8s | ETA: 1.9min
+2025-07-25 19:06:55,105 [INFO] 🔍 _load_frame: Looking for frame 99
+2025-07-25 19:07:06,404 [INFO] 📊 Frame  98/108 | Nuclei: 65 | Time: 11.3s | ETA: 1.8min
+2025-07-25 19:07:06,404 [INFO] 🔍 _load_frame: Looking for frame 100
+2025-07-25 19:07:17,647 [INFO] 📊 Frame  99/108 | Nuclei: 66 | Time: 11.2s | ETA: 1.6min
+2025-07-25 19:07:17,647 [INFO] 🔍 _load_frame: Looking for frame 101
+2025-07-25 19:07:28,904 [INFO] 📊 Frame 100/108 | Nuclei: 67 | Time: 11.3s | ETA: 1.4min
+2025-07-25 19:07:28,904 [INFO] 🔍 _load_frame: Looking for frame 102
+2025-07-25 19:07:40,483 [INFO] 📊 Frame 101/108 | Nuclei: 67 | Time: 11.6s | ETA: 1.2min
+2025-07-25 19:07:40,483 [INFO] 🔍 _load_frame: Looking for frame 103
+2025-07-25 19:07:51,668 [INFO] 📊 Frame 102/108 | Nuclei: 63 | Time: 11.2s | ETA: 1.1min
+2025-07-25 19:07:51,668 [INFO] 🔍 _load_frame: Looking for frame 104
+2025-07-25 19:08:03,113 [INFO] 📊 Frame 103/108 | Nuclei: 67 | Time: 11.4s | ETA: 0.9min
+2025-07-25 19:08:03,114 [INFO] 🔍 _load_frame: Looking for frame 105
+2025-07-25 19:08:14,249 [INFO] 📊 Frame 104/108 | Nuclei: 68 | Time: 11.1s | ETA: 0.7min
+2025-07-25 19:08:14,249 [INFO] 🔍 _load_frame: Looking for frame 106
+2025-07-25 19:08:25,387 [INFO] 📊 Frame 105/108 | Nuclei: 66 | Time: 11.1s | ETA: 0.5min
+2025-07-25 19:08:25,387 [INFO] 🔍 _load_frame: Looking for frame 107
+2025-07-25 19:08:36,408 [INFO] 📊 Frame 106/108 | Nuclei: 64 | Time: 11.0s | ETA: 0.4min
+2025-07-25 19:08:36,409 [INFO] 🔍 _load_frame: Looking for frame 108
+2025-07-25 19:08:47,696 [INFO] 📊 Frame 107/108 | Nuclei: 61 | Time: 11.3s | ETA: 0.2min
+2025-07-25 19:08:47,696 [INFO] 🔍 _load_frame: Looking for frame 109
+2025-07-25 19:08:59,292 [INFO] 📊 Frame 108/108 | Nuclei: 72 | Time: 11.6s | ETA: 0.0min
+2025-07-25 19:08:59,294 [INFO] ✅ Dataset processing complete!
+2025-07-25 19:08:59,294 [INFO]    Total time: 19.2 minutes
+2025-07-25 19:08:59,294 [INFO]    Average time per frame: 10.7s
+2025-07-25 19:08:59,294 [INFO]    Predictions saved to: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_184948/cache/predictions.jsonl
+Traceback (most recent call last):
+  File "/mnt/home/dchhantyal/3d-cnn-classification/video_generation/run_stack3_4ncnn.py", line 202, in main
+    video_path = generator.generate_video()
+  File "/mnt/home/dchhantyal/3d-cnn-classification/video_generation/video_generator.py", line 82, in generate_video
+    all_frame_sets = self._render_enhanced_frames(
+TypeError: VideoGenerator._render_enhanced_frames() got an unexpected keyword argument 'mode'
+⚠️ GPU not available, using CPU mode
+🎬 Stack3 4ncnn Video Generation
+==================================================
+⚙️ Creating configuration...
+🔍 DEBUG: Configuration paths:
+   Raw data path: /mnt/home/dchhantyal/3d-cnn-classification/raw-data/230101_Gata6Nanog_stack_19/stack_19_channel_1_obj_left/registered_images
+   Label data path: /mnt/home/dchhantyal/3d-cnn-classification/raw-data/230101_Gata6Nanog_stack_19/stack_19_channel_1_obj_left/registered_label_images
+   Model path: /mnt/home/dchhantyal/3d-cnn-classification/model/ncnn4/training_outputs/latest-4ncnn/best_model.pth
+   Output dir: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_184948
+============================================================
+📋 Enhanced Configuration Summary:
+   🤖 Model: 4ncnn
+   📁 Output: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_184948
+   🎬 Video: stack11_video.mp4
+   📺 Resolution: 2560x1440
+   ⏱️ FPS: 3 (slower for better observation)
+   🔢 Batch size: 32
+   🖥️ GPU: True
+   ⚡ Parallel: True
+
+🎨 Enhanced Visualization Features:
+   🆔 Show nucleus IDs: True
+   🎯 Smart label positioning: True
+   📏 Leader lines: True
+   📊 Congestion detection: True
+   🔤 Font size multiplier: 1.5
+   ✨ High contrast mode: True
+
+🎬 Multi-Video Generation (TEMPORARILY DISABLED):
+   🎭 Per-class videos: False
+   📊 Probability visualization: False
+   📺 Dual channel display: False
+   🔬 Raw data enhancement: False
+   💡 Confidence brightness: True
+
+⏯️ Video Timing Features:
+   ⏸️ Pause on events: True
+   ⏱️ Event pause duration: 3.0s
+   📝 Verbose logging: True
+   📊 Processing stats: True
+   ⏰ ETA estimates: True
+
+💾 Configuration saved: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_184948/config.json
+🚀 Starting video generation (standard pipeline)...
+🚀 Initializing Video Generator...
+✅ 4ncnn model loaded successfully
+   Classes: ['mitotic', 'new_daughter', 'stable']
+   Input shape: (32, 32, 32)
+🚀 Model loaded and optimized for cpu
+✅ ModelInferenceEngine initialized:
+   Model type: ncnn4
+   Device: cpu
+   Model path: /mnt/home/dchhantyal/3d-cnn-classification/model/ncnn4/training_outputs/latest-4ncnn/best_model.pth
+   Model Type: ncnn4
+   Model Path: /mnt/home/dchhantyal/3d-cnn-classification/model/ncnn4/training_outputs/latest-4ncnn/best_model.pth
+   Device: cpu
+   Batch Size: 32
+   Classes: ['mitotic', 'new_daughter', 'stable']
+✅ Model engine loaded
+🔍 Discovered frames: 110 files, range 0-109
+✅ Data processor initialized
+🎨 FrameRenderer initialized:
+   Output size: 2560x1440
+   Frames directory: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_184948/frames
+   Style: matplotlib
+✅ Frame renderer initialized
+📁 Output directory: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_184948
+🎬 Video will be saved as: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_184948/stack11_video.mp4
+📊 No existing predictions found. Running full pipeline...
+🎬 Starting ENHANCED video generation pipeline...
+
+📊 Step 1: Processing dataset with model predictions...
+🚀 Starting dataset processing...
+   Processing 108 frames
+   Batch size: 32
+   Output file: /mnt/home/dchhantyal/3d-cnn-classification/video_generation/output/stack11_ncnn4_20250725_184948/cache/predictions.jsonl
+
+🎨 Step 2: Enhanced frame rendering...
+❌ Enhanced video generation failed: VideoGenerator._render_enhanced_frames() got an unexpected keyword argument 'mode'
+❌ Video generation failed: VideoGenerator._render_enhanced_frames() got an unexpected keyword argument 'mode'
+srun: error: worker7049: task 0: Exited with exit code 1
+==================================================
+Video Generation Job Completed: Fri Jul 25 19:08:59 EDT 2025
+Exit code: 1
+❌ FAILED: Video generation failed with exit code 1
+Check error logs above for details
+==================================================

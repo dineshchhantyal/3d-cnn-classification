@@ -1,0 +1,19 @@
+dataset	frame	nucleus_id	present	filename
+221016_FUCCI_Nanog_stack_3	203	325	False	/mnt/ceph/users/lbrown/Labels3DMouse/Abhishek/RebeccaData/221016_FUCCI_Nanog_stack_3/registered_label_images/label_reg8_203.tif
+221016_FUCCI_Nanog_stack_3	205	333	False	/mnt/ceph/users/lbrown/Labels3DMouse/Abhishek/RebeccaData/221016_FUCCI_Nanog_stack_3/registered_label_images/label_reg8_205.tif
+221016_FUCCI_Nanog_stack_3	201	321	False	/mnt/ceph/users/lbrown/Labels3DMouse/Abhishek/RebeccaData/221016_FUCCI_Nanog_stack_3/registered_label_images/label_reg8_201.tif
+221016_FUCCI_Nanog_stack_3	191	296	False	/mnt/ceph/users/lbrown/Labels3DMouse/Abhishek/RebeccaData/221016_FUCCI_Nanog_stack_3/registered_label_images/label_reg8_191.tif
+221016_FUCCI_Nanog_stack_3	180	286	False	/mnt/ceph/users/lbrown/Labels3DMouse/Abhishek/RebeccaData/221016_FUCCI_Nanog_stack_3/registered_label_images/label_reg8_180.tif
+221016_FUCCI_Nanog_stack_3	169	279	False	/mnt/ceph/users/lbrown/Labels3DMouse/Abhishek/RebeccaData/221016_FUCCI_Nanog_stack_3/registered_label_images/label_reg8_169.tif
+220321_stack11	164	173	False	/mnt/ceph/users/lbrown/MouseData/Eszter1/registered_label_images/label_reg8_164.tif
+220321_stack11	167	38	False	/mnt/ceph/users/lbrown/MouseData/Eszter1/registered_label_images/label_reg8_167.tif
+220321_stack11	169	49	False	/mnt/ceph/users/lbrown/MouseData/Eszter1/registered_label_images/label_reg8_169.tif
+220321_stack11	171	49	False	/mnt/ceph/users/lbrown/MouseData/Eszter1/registered_label_images/label_reg8_171.tif
+220321_stack11	172	71	False	/mnt/ceph/users/lbrown/MouseData/Eszter1/registered_label_images/label_reg8_172.tif
+220321_stack11	174	39	False	/mnt/ceph/users/lbrown/MouseData/Eszter1/registered_label_images/label_reg8_174.tif
+220321_stack11	177	17	False	/mnt/ceph/users/lbrown/MouseData/Eszter1/registered_label_images/label_reg8_177.tif
+220321_stack11	181	56	False	/mnt/ceph/users/lbrown/MouseData/Eszter1/registered_label_images/label_reg8_181.tif
+220321_stack11	181	70	False	/mnt/ceph/users/lbrown/MouseData/Eszter1/registered_label_images/label_reg8_181.tif
+220321_stack11	185	75	False	/mnt/ceph/users/lbrown/MouseData/Eszter1/registered_label_images/label_reg8_185.tif
+220321_stack11	187	42	False	/mnt/ceph/users/lbrown/MouseData/Eszter1/registered_label_images/label_reg8_187.tif
+

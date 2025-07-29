@@ -1,0 +1,14 @@
+numpy
+scipy
+torch
+torchvision
+scikit-learn
+matplotlib
+seaborn
+tifffile
+opencv-python
+Pillow
+jupyter
+pyyaml
+psutil
+imageio

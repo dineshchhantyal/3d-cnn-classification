@@ -1,0 +1,8 @@
+Type, Slurm Id, Accuracy, 
+No Augumentation, 5042333,  0.89
+Flipping, 5042398, 0.87
+Small Angle Rotation, 5042525, 0.85
+Intensity augmentation, 5042668, 0.89
+Gaussian Noise, 5043036, 0.86
+Brightness, 5043357, 0.86
+All Positive > 0.86, 5043494
