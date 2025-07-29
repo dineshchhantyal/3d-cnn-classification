@@ -114,7 +114,7 @@ def run_inference(
     # Save model analysis if requested
     if save_analysis and analysis_output_dir and sample_name:
         try:
-            from visualization_utils import (
+            from utils.visualization_utils import (
                 create_output_structure,
                 save_model_activations,
                 save_prediction_analysis,

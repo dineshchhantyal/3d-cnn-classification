@@ -213,7 +213,7 @@ def preprocess_sample(
         # --- Step 6: Save Analysis (if requested) ---
     if save_analysis and analysis_output_dir:
         try:
-            from visualization_utils import (
+            from utils.visualization_utils import (
                 create_output_structure,
                 save_volume_statistics,
                 save_volume_slices,

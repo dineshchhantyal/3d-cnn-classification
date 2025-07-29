@@ -1,201 +1,93 @@
 # predict.py
-# Refactored to use shared modules - eliminates code duplication
-# Batch processing for multiple samples with single model loading
+# Description: This script performs inference using a trained 4D CNN model on nucleus state data.
+# It supports multiple prediction modes:
+#   1. Batch processing of pre-cropped sample folders.
+#   2. Prediction on a single pre-cropped sample from .tif files.
+#   3. Prediction on specified nuclei from full-timestamp .tif volumes.
 
 import torch
 import os
 import argparse
 from datetime import datetime
-import json
+from typing import List, Dict, Any, Optional
+from tifffile import imread
+import traceback
+import numpy as np
 
 # --- Import Shared Modules ---
+# These modules are assumed to be in the same directory or in the Python path.
 from config import HPARAMS, CLASS_NAMES, DEVICE
-from data_utils import preprocess_sample
-from model_utils import load_model, run_inference
+from utils.data_utils import preprocess_sample, transform_and_pad_volume
+from utils.model_utils import load_model, run_inference
+from utils.prediction_utils import (
+    get_true_label_from_path,
+    get_volumes_by_nuclei_ids_from_full_volumes,
+)
 
 
-def get_true_label_from_path(folder_path):
+from utils.prediction_reports_utils import (
+    print_batch_summary,
+    generate_analysis_reports,
+    generate_benchmark_summary,
+    save_benchmark_summary,
+)
+
+
+def get_volumes_by_nuclei_ids(
+    volume_paths: List[str], nuclei_ids: Optional[List[int]] = None
+) -> Dict[int, Dict[str, Any]]:
     """
-    Extract the true class label from the directory path.
+    Get the cropped volumes for specific nuclei IDs from full timestamp volumes.
 
     Args:
-        folder_path (str): Path to the sample folder
+        volume_paths (List[str]): List of paths to .tif files for t-1, t, t+1 and mask.
+        If `nuclei_ids` is provided, only those IDs will be processed.
+        If `nuclei_ids` is None, all nuclei found in the segmentation will be predicted.
+        nuclei_ids (Optional[List[int]]): List of nuclei IDs to predict. If None, predicts all.
 
     Returns:
-        str: True class label, or None if cannot be determined
+        Dict[int, Dict[str, Any]]: Dictionary where keys are nuclei IDs and values are dicts
+                                    with keys 't-1', 't', 't+1', mask and their corresponding volumes.
     """
-    # Split path and look for class directory names
-    path_parts = folder_path.replace("\\", "/").split("/")
+    # This function is expected to return a dictionary where keys are nuclei IDs
+    # and values are dictionaries of {'t-1': vol, 't': vol, 't+1': vol, 'mask': vol (if available)}
 
-    # Mapping from directory names to model class names
-    class_mapping = {
-        "death": None,  # Death not in 3-class model
-        "mitotic": "mitotic",
-        "new_daughter": "new_daughter",
-        "stable": "stable",
-        "stable2": "stable",  # stable2 maps to stable
-    }
+    if not volume_paths or len(volume_paths) < 4:
+        raise ValueError("At least 4 volume paths (t-1, t, t+1, mask) are required.")
 
-    # Look for class directory in path (typically second-to-last or third-to-last)
-    for part in reversed(path_parts):
-        if part in class_mapping:
-            return class_mapping[part]
+    volume_previous = imread(volume_paths[0])
+    volume_current = imread(volume_paths[1])
+    volume_next = imread(volume_paths[2])
+    volume_mask = imread(volume_paths[3])
 
-    # If no known class found, return None
-    return None
+    print(
+        f"Loaded volumes: {volume_previous.shape}, {volume_current.shape}, {volume_next.shape}, {volume_mask.shape}"
+    )
+
+    if not nuclei_ids:
+        # If no nuclei IDs provided, use all unique IDs from the mask
+        print("No nuclei IDs provided, using all the nuclei IDs from the mask")
+        nuclei_ids = np.unique(volume_mask.flatten()).tolist()
+
+    print("Nuclei IDs to process:", nuclei_ids)
+
+    all_nuclei_volumes = get_volumes_by_nuclei_ids_from_full_volumes(
+        [volume_previous, volume_current, volume_next, volume_mask], nuclei_ids
+    )
+
+    return all_nuclei_volumes
 
 
-def create_benchmark_summary(results, metadata):
+def parse_arguments() -> argparse.Namespace:
     """
-    Create benchmark summary data structure.
-
-    Args:
-        results (list): List of prediction results
-        metadata (dict): Run metadata (model_path, timing, etc.)
+    Parses and validates command-line arguments for the prediction script.
 
     Returns:
-        dict: Complete summary data structure
+        argparse.Namespace: An object containing the parsed command-line arguments.
     """
-    # Filter successful results
-    successful_results = [r for r in results if "error" not in r]
-    error_results = [r for r in results if "error" in r]
-
-    # Calculate overall statistics
-    total_processed = len(successful_results)
-    samples_with_known_labels = len(
-        [r for r in successful_results if r.get("true_class") is not None]
-    )
-    samples_with_unknown_labels = total_processed - samples_with_known_labels
-    correct_predictions = len(
-        [r for r in successful_results if r.get("correct") is True]
-    )
-    incorrect_predictions = len(
-        [r for r in successful_results if r.get("correct") is False]
-    )
-
-    overall_accuracy = (
-        (correct_predictions / (correct_predictions + incorrect_predictions) * 100)
-        if (correct_predictions + incorrect_predictions) > 0
-        else 0
-    )
-
-    # Calculate per-class statistics
-    class_stats = {}
-    for result in successful_results:
-        if result.get("true_class"):
-            true_class = result["true_class"]
-            if true_class not in class_stats:
-                class_stats[true_class] = {
-                    "total_samples": 0,
-                    "correct_predictions": 0,
-                    "confidences": [],
-                }
-            class_stats[true_class]["total_samples"] += 1
-            confidence = result.get("confidence")
-            if confidence is not None:
-                class_stats[true_class]["confidences"].append(confidence)
-            if result.get("correct") is True:
-                class_stats[true_class]["correct_predictions"] += 1
-
-    # Calculate class-level metrics
-    per_class_performance = {}
-    for class_name, stats in class_stats.items():
-        confidences = stats["confidences"]
-        per_class_performance[class_name] = {
-            "total_samples": stats["total_samples"],
-            "correct_predictions": stats["correct_predictions"],
-            "accuracy": (
-                (stats["correct_predictions"] / stats["total_samples"] * 100)
-                if stats["total_samples"] > 0
-                else 0
-            ),
-            "avg_confidence": sum(confidences) / len(confidences) if confidences else 0,
-            "confidence_range": (
-                [min(confidences), max(confidences)] if confidences else [0, 0]
-            ),
-        }
-
-    # Confidence analysis
-    all_confidences = [
-        r.get("confidence", 0)
-        for r in successful_results
-        if r.get("confidence") is not None
-    ]
-    overall_avg_confidence = (
-        sum(all_confidences) / len(all_confidences) if all_confidences else 0
-    )
-    high_confidence_samples = len([c for c in all_confidences if c > 0.8])
-    medium_confidence_samples = len([c for c in all_confidences if 0.6 <= c <= 0.8])
-    low_confidence_samples = len([c for c in all_confidences if c < 0.6])
-
-    # Create summary structure
-    summary = {
-        "metadata": metadata,
-        "overall_statistics": {
-            "total_processed": total_processed,
-            "total_errors": len(error_results),
-            "samples_with_known_labels": samples_with_known_labels,
-            "samples_with_unknown_labels": samples_with_unknown_labels,
-            "overall_accuracy": round(overall_accuracy, 1),
-            "correct_predictions": correct_predictions,
-            "incorrect_predictions": incorrect_predictions,
-        },
-        "per_class_performance": per_class_performance,
-        "confidence_analysis": {
-            "overall_avg_confidence": round(overall_avg_confidence, 3),
-            "high_confidence_samples": high_confidence_samples,
-            "medium_confidence_samples": medium_confidence_samples,
-            "low_confidence_samples": low_confidence_samples,
-        },
-        "detailed_results": [
-            {
-                "sample_name": r["sample"],
-                "true_class": r.get("true_class"),
-                "predicted_class": r.get("predicted_class"),
-                "confidence": r.get("confidence"),
-                "correct": r.get("correct"),
-                "processing_time": r.get("processing_time"),
-                "error": r.get("error"),
-            }
-            for r in results
-        ],
-    }
-
-    return summary
-
-
-def save_benchmark_summary(summary_data, output_dir):
-    """
-    Save benchmark summary as JSON and HTML files.
-
-    Args:
-        summary_data (dict): Summary data from create_benchmark_summary
-        output_dir (str): Directory to save files
-
-    Returns:
-        tuple: (json_path, html_path) or (None, None) if failed
-    """
-    try:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-        # Save JSON summary
-        json_filename = f"benchmark_summary_{timestamp}.json"
-        json_path = os.path.join(output_dir, json_filename)
-
-        with open(json_path, "w") as f:
-            json.dump(summary_data, f, indent=2, default=str)
-
-        return json_path, None
-
-    except Exception as e:
-        print(f"⚠️ Failed to save benchmark summary: {e}")
-        return None, None
-
-
-# --- Main Execution ---
-if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Run 3D CNN prediction on nucleus state data."
+        description="Run 3D CNN prediction on nucleus state data.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--model_path",
@@ -204,19 +96,34 @@ if __name__ == "__main__":
         help="Path to the trained model (.pth file).",
     )
 
+    # --- Input Data Arguments ---
     input_group = parser.add_mutually_exclusive_group(required=True)
     input_group.add_argument(
         "--folder_path",
         nargs="+",
-        help="One or more paths to sample folders with t-1, t, t+1 subdirs.",
+        help="One or more paths to pre-cropped sample folders.",
     )
     input_group.add_argument(
         "--volumes",
         nargs="+",
-        help="3-4 space-separated paths: t-1, t, t+1 .tif files, and optionally label file.",
+        help="3-4 paths to .tif files: t-1, t, t+1, and optional segmentation label file.",
     )
 
-    # Analysis arguments
+    # --- Full Timestamp Processing Arguments ---
+    parser.add_argument(
+        "--full_timestamp",
+        action="store_true",
+        default=False,
+        help="Treat --volumes as full timestamp images, not pre-cropped. Requires --volumes.",
+    )
+    parser.add_argument(
+        "--nuclei_ids",
+        type=str,
+        default=None,
+        help="Comma-separated list of nuclei IDs to predict from full timestamp volumes. Predicts all if not set.",
+    )
+
+    # --- Analysis & Output Arguments ---
     parser.add_argument(
         "--save_analysis",
         action="store_true",
@@ -226,350 +133,324 @@ if __name__ == "__main__":
         "--output_dir",
         type=str,
         default="./analysis_output",
-        help="Directory to save analysis outputs (default: ./analysis_output).",
-    )
-    parser.add_argument(
-        "--analysis_level",
-        choices=["basic", "detailed", "full"],
-        default="detailed",
-        help="Level of analysis detail to save (default: detailed).",
+        help="Directory to save analysis outputs.",
     )
 
     args = parser.parse_args()
 
+    # --- Argument Validation ---
+    if args.full_timestamp and not args.volumes:
+        parser.error("--full_timestamp requires --volumes to be set.")
+    if args.volumes and not (3 <= len(args.volumes) <= 4):
+        parser.error(
+            "--volumes requires 3 or 4 paths (t-1, t, t+1, and optional label)."
+        )
+
+    return args
+
+
+def get_sample_name(
+    folder_path: Optional[str] = None,
+    sample_name_override: Optional[str] = None,
+) -> str:
+    """
+    Get a standardized sample name based on folder path or an override.
+
+    Args:
+        folder_path (Optional[str]): Path to the sample folder.
+        sample_name_override (Optional[str]): A name to use for the sample, overriding default naming.
+
+    Returns:
+        str: A standardized sample name.
+    """
+    if sample_name_override:
+        return sample_name_override
+    elif folder_path:
+        return os.path.basename(folder_path)
+    else:
+        return f"sample_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+
+def process_single_sample_by_output_folder(
+    model: torch.nn.Module,
+    args: argparse.Namespace,
+    folder_path: Optional[str] = None,
+    volume_paths: Optional[List[str]] = None,
+    sample_name_override: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Preprocesses and runs inference on a single sample.
+
+    Args:
+        model: The loaded PyTorch model.
+        args: Command-line arguments.
+        folder_path: Path to the sample folder.
+        volume_paths: List of paths to volume files.
+        sample_name_override: A name to use for the sample, overriding default naming.
+
+    Returns:
+        A dictionary containing the prediction results for the sample.
+    """
+    sample_name = get_sample_name(folder_path, sample_name_override)
+
+    true_class = get_true_label_from_path(folder_path) if folder_path else None
+    analysis_dir = (
+        os.path.join(args.output_dir, sample_name) if args.save_analysis else None
+    )
+
+    input_tensor = preprocess_sample(
+        folder_path=folder_path,
+        volume_paths=volume_paths,
+        for_training=False,
+        save_analysis=args.save_analysis,
+        analysis_output_dir=analysis_dir,
+    )
+    print(f"   Input tensor shape: {input_tensor.shape}")
+
+    pred_index, pred_class, pred_confidence = run_inference(
+        model,
+        input_tensor[:, : HPARAMS["num_input_channels"]],
+        save_analysis=args.save_analysis,
+        analysis_output_dir=analysis_dir,
+        sample_name=sample_name,
+    )
+
+    is_correct = (true_class == pred_class) if true_class is not None else None
+
+    return {
+        "sample": sample_name,
+        "true_class": true_class,
+        "predicted_class": pred_class,
+        "index": pred_index,
+        "confidence": pred_confidence,
+        "correct": is_correct,
+    }
+
+
+def process_single_sample_by_np_volumes(
+    volumes: Dict[str, Any],
+    model: torch.nn.Module,
+    args: argparse.Namespace,
+) -> Dict[str, Any]:
+    """
+    Processes a single sample using numpy arrays for the volume data. First it will find the min and max volume intensity and call transform_and_pad_volume to get the final vector. (Note: Label volumne will not be be normalized.)
+
+    Args:
+        volumes (Dict[str, Any]): Dictionary containing volume data.
+        args (argparse.Namespace): Command-line arguments.
+
+    Returns:
+        Dict[str, Any]: Dictionary containing the prediction results.
+    """
+
+    sample_name = get_sample_name()
+
+    analysis_dir = (
+        os.path.join(args.output_dir, sample_name) if args.save_analysis else None
+    )
+
+    v_min, v_max = float("inf"), float("-inf")
+
+    for key, vol in volumes.items():
+        if key != "mask":
+            v_min = min(v_min, vol.min())
+            v_max = max(v_max, vol.max())
+    print(f"   Volume intensity range: {v_min} to {v_max}")
+
+    # Normalize and pad volumes
+    for key, vol in volumes.items():
+        volumes[key] = transform_and_pad_volume(
+            vol,
+            target_shape=[
+                HPARAMS["input_depth"],
+                HPARAMS["input_height"],
+                HPARAMS["input_width"],
+            ],
+            v_min=v_min,
+            v_max=v_max,
+            is_label=(key == "mask"),
+        )
+        print(f"   {key} volume shape after transform: {volumes[key].shape}")
+
+    # Convert volume data to tensors
+
+    input_tensors = [
+        torch.tensor(np.ascontiguousarray(value), dtype=torch.float32).unsqueeze(0)
+        for key, value in volumes.items()
+    ]
+    input_tensor = torch.stack(input_tensors, dim=1)
+
+    # Run inference
+    pred_index, pred_class, pred_confidence = run_inference(
+        model,
+        input_tensor[:, : HPARAMS["num_input_channels"]],
+        save_analysis=args.save_analysis,
+        analysis_output_dir=analysis_dir,
+        sample_name=sample_name,
+    )
+
+    return {
+        "sample": sample_name,
+        "true_class": None,
+        "predicted_class": pred_class,
+        "index": pred_index,
+        "confidence": pred_confidence,
+        "correct": None,
+    }
+
+
+def handle_batch_folder_prediction(
+    model: torch.nn.Module, args: argparse.Namespace
+) -> List[Dict[str, Any]]:
+    """Handles prediction for a batch of sample folders."""
+    print(f"\n🚀 Processing {len(args.folder_path)} sample(s) from folders...")
+    print("=" * 50)
+    results = []
+    for i, folder in enumerate(args.folder_path):
+        sample_start_time = datetime.now()
+        sample_name = os.path.basename(folder)
+        print(f"\n📁 Sample {i+1}/{len(args.folder_path)}: {sample_name}")
+        try:
+            result = process_single_sample_by_output_folder(
+                model, args, folder_path=folder
+            )
+            result["processing_time"] = (
+                datetime.now() - sample_start_time
+            ).total_seconds()
+            results.append(result)
+            # Display immediate feedback
+            true_label = str(result.get("true_class", "UNKNOWN") or "UNKNOWN").upper()
+            pred_label = str(
+                result.get("predicted_class", "UNKNOWN") or "UNKNOWN"
+            ).upper()
+            confidence = result.get("confidence", 0)
+            icon = (
+                "✅"
+                if result.get("correct")
+                else "❌" if result.get("correct") is False else "❓"
+            )
+            print(
+                f"   True: {true_label} → Predicted: {pred_label} ({confidence:.2%}) {icon}"
+            )
+        except Exception as e:
+            print(f"   ❌ Error processing {sample_name}: {e}")
+            results.append({"sample": sample_name, "error": str(e)})
+    return results
+
+
+def handle_full_timestamp_prediction(
+    model: torch.nn.Module, args: argparse.Namespace
+) -> List[Dict[str, Any]]:
+    """Handles prediction on nuclei extracted from full timestamp volumes."""
+    print("\n🔬 Processing nuclei from full timestamp volumes...")
+    if args.nuclei_ids:
+        try:
+            nuclei_ids_list = [
+                int(x.strip()) for x in args.nuclei_ids.split(",") if x.strip()
+            ]
+            if not nuclei_ids_list:
+                raise ValueError("No valid nuclei IDs provided.")
+            print(f"Targeting nuclei IDs: {nuclei_ids_list}")
+        except ValueError as e:
+            raise ValueError(
+                f"Invalid nuclei_ids format: {args.nuclei_ids}. Expected comma-separated integers."
+            ) from e
+    else:
+        nuclei_ids_list = None
+        print("Targeting all nuclei found in the segmentation.")
+    print("=" * 50)
+
+    # This function is expected to return a dictionary where keys are nuclei IDs
+    # and values are dictionaries of {'t-1': vol, 't': vol, 't+1': vol}
+    nuclei_volumes = get_volumes_by_nuclei_ids(
+        volume_paths=args.volumes, nuclei_ids=nuclei_ids_list
+    )
+
+    if not nuclei_volumes:
+        print("Could not extract any nuclei volumes. Please check inputs.")
+        return []
+    print(f"Found {len(nuclei_volumes)} nuclei to process.")
+    print(nuclei_volumes.keys())
+    results = []
+    total_nuclei = len(nuclei_volumes)
+    for i, (nucleus_id, vol_dict) in enumerate(nuclei_volumes.items()):
+        sample_start_time = datetime.now()
+        sample_name = f"nucleus_{nucleus_id}"
+        print(f"\n🔬 Predicting for Nucleus {i+1}/{total_nuclei}: {sample_name}")
+        try:
+            result = process_single_sample_by_np_volumes(
+                volumes=vol_dict,
+                model=model,
+                args=args,
+            )
+            result["processing_time"] = (
+                datetime.now() - sample_start_time
+            ).total_seconds()
+            results.append(result)
+            # Display immediate feedback
+            pred_label = result.get("predicted_class", "UNKNOWN").upper()
+            confidence = result.get("confidence", 0)
+            print(f"   Predicted: {pred_label} ({confidence:.2%})")
+        except Exception as e:
+            print(f"   ❌ Error processing {sample_name}: {e}")
+            results.append({"sample": sample_name, "error": str(e)})
+    return results
+
+
+def handle_single_volume_prediction(
+    model: torch.nn.Module, args: argparse.Namespace
+) -> List[Dict[str, Any]]:
+    """Handles prediction for a single pre-cropped volume."""
+    print("\n🔬 Processing single pre-cropped sample from volume paths...")
+    result = process_single_sample_by_output_folder(
+        model, args, volume_paths=args.volumes
+    )
+    print("\n--- Prediction Result ---")
+    print(f"Predicted Class Index: {result['index']}")
+    print(f"Predicted Class Name:  {result['predicted_class'].upper()}")
+    print(f"Confidence:            {result['confidence']:.2%}")
+    print("-------------------------\n")
+    return [result]
+
+
+def main():
+    """Main function to orchestrate the prediction process."""
     try:
-        # Validate input arguments
-        if args.volumes:
-            if len(args.volumes) < 3:
-                raise ValueError("--volumes requires at least 3 paths (t-1, t, t+1)")
-            elif len(args.volumes) > 4:
-                raise ValueError(
-                    "--volumes accepts maximum 4 paths (t-1, t, t+1, label)"
-                )
-
-            # Process single sample with volume paths
-            folder_paths = None
-            volume_paths = args.volumes
-        else:
-            # Process one or more folder paths
-            folder_paths = args.folder_path
-            volume_paths = None
-
-        # Load model once
-        print("Loading model...")
+        args = parse_arguments()
         start_time = datetime.now()
+
+        print("Loading model...")
         model = load_model(args.model_path)
-        model.eval()  # Set model to evaluation mode
+        model.eval()
         print(
             f"Model loaded in {(datetime.now() - start_time).total_seconds():.2f} seconds"
         )
 
-        # Setup analysis output directory if needed
         if args.save_analysis:
             os.makedirs(args.output_dir, exist_ok=True)
             print(f"📁 Analysis outputs will be saved to: {args.output_dir}")
 
-        if folder_paths:
-            # Batch processing for multiple folders
-            total_samples = len(folder_paths)
-            print(f"\n🚀 Processing {total_samples} sample(s)...")
-            print("=" * 50)
+        results = []
+        if args.full_timestamp:
+            results = handle_full_timestamp_prediction(model, args)
+        elif args.folder_path:
+            results = handle_batch_folder_prediction(model, args)
+        elif args.volumes:
+            results = handle_single_volume_prediction(model, args)
 
-            results = []
-            for i, folder_path in enumerate(folder_paths):
-                sample_start_time = datetime.now()
-                sample_name = os.path.basename(folder_path)
-                print(f"\n📁 Sample {i+1}/{total_samples}: {sample_name}")
-
-                try:
-                    # Extract true label from directory path
-                    true_class = get_true_label_from_path(folder_path)
-
-                    # Preprocess single sample using shared function
-                    input_tensor = preprocess_sample(
-                        folder_path=folder_path,
-                        for_training=False,
-                        save_analysis=args.save_analysis,
-                        analysis_output_dir=(
-                            args.output_dir if args.save_analysis else None
-                        ),
-                    )
-                    print(f"   Input tensor shape: {input_tensor.shape}")
-
-                    # Run prediction using shared function
-                    pred_index, pred_class, pred_confidence = run_inference(
-                        model,
-                        input_tensor[:, : HPARAMS["num_input_channels"]],
-                        save_analysis=args.save_analysis,
-                        analysis_output_dir=(
-                            args.output_dir if args.save_analysis else None
-                        ),
-                        sample_name=sample_name,
-                    )
-
-                    # Determine if prediction is correct
-                    is_correct = (
-                        (true_class == pred_class) if true_class is not None else None
-                    )
-                    correctness_icon = (
-                        "✅"
-                        if is_correct is True
-                        else "❌" if is_correct is False else "❓"
-                    )
-
-                    # Calculate processing time
-                    processing_time = (
-                        datetime.now() - sample_start_time
-                    ).total_seconds()
-
-                    # Store result
-                    result = {
-                        "sample": sample_name,
-                        "true_class": true_class,
-                        "predicted_class": pred_class,
-                        "index": pred_index,
-                        "confidence": pred_confidence,
-                        "correct": is_correct,
-                        "processing_time": processing_time,
-                    }
-                    results.append(result)
-
-                    # Display result with true vs predicted
-                    if true_class is not None:
-                        print(
-                            f"   True: {true_class.upper()} → Predicted: {(pred_class or 'UNKNOWN').upper()} ({pred_confidence:.2%}) {correctness_icon}"
-                        )
-                    else:
-                        print(
-                            f"   True: UNKNOWN → Predicted: {(pred_class or 'UNKNOWN').upper()} ({pred_confidence:.2%}) ❓"
-                        )
-
-                except Exception as e:
-                    processing_time = (
-                        datetime.now() - sample_start_time
-                    ).total_seconds()
-                    print(f"   ❌ Error processing {sample_name}: {e}")
-                    results.append(
-                        {
-                            "sample": sample_name,
-                            "error": str(e),
-                            "processing_time": processing_time,
-                        }
-                    )
-
-            # Summary with optional analysis report generation
-            print(f"\n{'='*50}")
-            print("🎉 BATCH PROCESSING COMPLETE")
-            print(f"{'='*50}")
-
-            # Calculate accuracy statistics
-            total_samples = len([r for r in results if "error" not in r])
-            correct_predictions = len(
-                [r for r in results if "error" not in r and r.get("correct") is True]
-            )
-            incorrect_predictions = len(
-                [r for r in results if "error" not in r and r.get("correct") is False]
-            )
-            unknown_labels = len(
-                [r for r in results if "error" not in r and r.get("correct") is None]
-            )
-
-            # Display detailed results
-            for i, result in enumerate(results):
-                if "error" not in result:
-                    true_class = result.get("true_class") or "UNKNOWN"
-                    pred_class = result.get("predicted_class") or "UNKNOWN"
-                    confidence = result.get("confidence", 0)
-                    correctness = result.get("correct")
-
-                    if correctness is True:
-                        icon = "✅"
-                    elif correctness is False:
-                        icon = "❌"
-                    else:
-                        icon = "❓"
-
-                    print(
-                        f"{i+1:2d}. {result['sample'][:35]:35} | True: {true_class.upper():12} → Pred: {pred_class.upper():12} ({confidence:.1%}) {icon}"
-                    )
-                else:
-                    print(
-                        f"{i+1:2d}. {result['sample'][:35]:35} | ERROR: {result['error']}"
-                    )
-
-            # Display accuracy summary
-            if total_samples > 0:
-                print(f"\n{'='*50}")
-                print("📊 ACCURACY SUMMARY")
-                print(f"{'='*50}")
-                print(f"Total samples processed: {total_samples}")
-                if correct_predictions + incorrect_predictions > 0:
-                    accuracy = (
-                        correct_predictions
-                        / (correct_predictions + incorrect_predictions)
-                        * 100
-                    )
-                    print(f"Correct predictions:     {correct_predictions}")
-                    print(f"Incorrect predictions:   {incorrect_predictions}")
-                    print(f"Overall accuracy:        {accuracy:.1f}%")
-                if unknown_labels > 0:
-                    print(f"Unknown true labels:     {unknown_labels}")
-
-                # Per-class accuracy breakdown
-                class_stats = {}
-                for result in results:
-                    if "error" not in result and result.get("true_class"):
-                        true_class = result["true_class"]
-                        if true_class and true_class not in class_stats:
-                            class_stats[true_class] = {"correct": 0, "total": 0}
-                        if true_class:
-                            class_stats[true_class]["total"] += 1
-                            if result.get("correct") is True:
-                                class_stats[true_class]["correct"] += 1
-
-                if class_stats:
-                    print(f"\n📈 PER-CLASS ACCURACY:")
-                    for class_name in sorted(class_stats.keys()):
-                        if class_name:  # Additional safety check
-                            stats = class_stats[class_name]
-                            class_accuracy = (
-                                stats["correct"] / stats["total"] * 100
-                                if stats["total"] > 0
-                                else 0
-                            )
-                            print(
-                                f"  {class_name.upper():12}: {stats['correct']:2d}/{stats['total']:2d} ({class_accuracy:.1f}%)"
-                            )
-
-            # Generate summary reports if analysis was saved
-            if args.save_analysis:
-                print(f"\n📋 Generating summary reports...")
-                try:
-                    from visualization_utils import generate_summary_report
-
-                    for result in results:
-                        if "error" not in result:
-                            sample_name = result["sample"]
-                            dirs = {
-                                "sample": os.path.join(args.output_dir, sample_name)
-                            }
-
-                            if os.path.exists(dirs["sample"]):
-                                report_path = generate_summary_report(
-                                    dirs,
-                                    sample_name,
-                                    result["predicted_class"],
-                                    result["confidence"],
-                                    os.path.join(
-                                        dirs["sample"],
-                                        "preprocessing",
-                                        "volume_statistics.json",
-                                    ),
-                                )
-                                print(f"   📄 Report for {sample_name}: {report_path}")
-
-                    print(f"✅ All analysis reports generated successfully!")
-                    print(
-                        f"🌐 Open the HTML reports in your browser for detailed analysis."
-                    )
-
-                except Exception as e:
-                    print(f"⚠️ Warning: Could not generate summary reports: {e}")
-
-            # Generate comprehensive benchmark summary
-            if len(results) > 1:  # Only for batch processing
-                try:
-                    print(f"\n📊 Generating benchmark summary...")
-
-                    # Create metadata
-                    end_time = datetime.now()
-                    total_processing_time = (end_time - start_time).total_seconds()
-
-                    metadata = {
-                        "timestamp": start_time.isoformat(),
-                        "model_path": args.model_path,
-                        "model_timestamp": (
-                            os.path.basename(os.path.dirname(args.model_path))
-                            if "training_outputs" in args.model_path
-                            else "unknown"
-                        ),
-                        "total_samples": len(results),
-                        "total_processing_time": total_processing_time,
-                        "analysis_level": args.analysis_level,
-                        "output_dir": args.output_dir,
-                    }
-
-                    # Generate summary
-                    summary_data = create_benchmark_summary(results, metadata)
-                    json_path, html_path = save_benchmark_summary(
-                        summary_data, args.output_dir
-                    )
-
-                    if json_path and html_path:
-                        print(f"   📄 JSON summary: {os.path.basename(json_path)}")
-                        print(f"   🌐 HTML report: {os.path.basename(html_path)}")
-                        print(f"✅ Benchmark summary generated successfully!")
-
-                except Exception as e:
-                    print(f"⚠️ Warning: Could not generate benchmark summary: {e}")
-
+        if results:
+            print_batch_summary(results)
+            generate_analysis_reports(results, args)
+            generate_benchmark_summary(results, start_time, args)
         else:
-            # Single sample processing with volume paths
-            print("Preprocessing input data...")
-
-            # Determine sample name for single sample
-            if args.volumes:
-                sample_name = (
-                    f"single_sample_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-                )
-
-            input_tensor = preprocess_sample(
-                volume_paths=volume_paths,
-                for_training=False,
-                save_analysis=args.save_analysis,
-                analysis_output_dir=args.output_dir if args.save_analysis else None,
-            )
-            print(f"Input tensor created with shape: {input_tensor.shape}")
-
-            pred_index, pred_class, pred_confidence = run_inference(
-                model,
-                input_tensor,
-                save_analysis=args.save_analysis,
-                analysis_output_dir=args.output_dir if args.save_analysis else None,
-                sample_name=sample_name if args.save_analysis else None,
-            )
-
-            print("\n--- Prediction Result ---")
-            print(f"Predicted Class Index: {pred_index}")
-            print(f"Predicted Class Name:  {pred_class.upper()}")
-            print(f"Confidence:            {pred_confidence:.2%}")
-            print("-------------------------\n")
-
-            # Generate summary report for single sample
-            if args.save_analysis:
-                try:
-                    from visualization_utils import generate_summary_report
-
-                    dirs = {"sample": os.path.join(args.output_dir, sample_name)}
-                    if os.path.exists(dirs["sample"]):
-                        report_path = generate_summary_report(
-                            dirs,
-                            sample_name,
-                            pred_class,
-                            pred_confidence,
-                            os.path.join(
-                                dirs["sample"],
-                                "preprocessing",
-                                "volume_statistics.json",
-                            ),
-                        )
-                        print(f"📄 Analysis report generated: {report_path}")
-                        print(
-                            f"🌐 Open the HTML report in your browser for detailed analysis."
-                        )
-
-                except Exception as e:
-                    print(f"⚠️ Warning: Could not generate summary report: {e}")
+            print("\nNo predictions were made.")
 
     except Exception as e:
-        print(f"\n❌ An error occurred: {e}")
+        print(f"\n❌ An unexpected error occurred in the main process: {e}")
+        import traceback
+
+        traceback.print_exc()
+
+
+if __name__ == "__main__":
+    main()

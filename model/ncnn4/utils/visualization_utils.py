@@ -1,4 +1,4 @@
-# visualization_utils.py
+# utils.visualization_utils.py
 # Utilities for saving preprocessing analysis and model interpretability
 
 import numpy as np
