@@ -29,7 +29,6 @@ from utils.prediction_reports_utils import (
     print_batch_summary,
     generate_analysis_reports,
     generate_benchmark_summary,
-    save_benchmark_summary,
 )
 
 
@@ -320,8 +319,9 @@ def handle_batch_folder_prediction(
             results.append(result)
             # Display immediate feedback
             true_label = str(result.get("true_class", "UNKNOWN") or "UNKNOWN").upper()
+            pred_class_value = result.get("predicted_class", "UNKNOWN")
             pred_label = str(
-                result.get("predicted_class", "UNKNOWN") or "UNKNOWN"
+                pred_class_value if pred_class_value is not None else "UNKNOWN"
             ).upper()
             confidence = result.get("confidence", 0)
             icon = (
@@ -388,7 +388,7 @@ def handle_full_timestamp_prediction(
             ).total_seconds()
             results.append(result)
             # Display immediate feedback
-            pred_label = result.get("predicted_class", "UNKNOWN").upper()
+            pred_label = str(result.get("predicted_class", "UNKNOWN")).upper()
             confidence = result.get("confidence", 0)
             print(f"   Predicted: {pred_label} ({confidence:.2%})")
         except Exception as e:
@@ -407,7 +407,10 @@ def handle_single_volume_prediction(
     )
     print("\n--- Prediction Result ---")
     print(f"Predicted Class Index: {result['index']}")
-    print(f"Predicted Class Name:  {result['predicted_class'].upper()}")
+    pred_class_name = result["predicted_class"]
+    print(
+        f"Predicted Class Name:  {(str(pred_class_name).upper() if pred_class_name is not None else 'UNKNOWN')}"
+    )
     print(f"Confidence:            {result['confidence']:.2%}")
     print("-------------------------\n")
     return [result]

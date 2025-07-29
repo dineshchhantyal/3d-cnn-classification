@@ -18,8 +18,8 @@ def print_batch_summary(results: List[Dict[str, Any]]):
         if "error" in result:
             print(f"{i+1:2d}. {result['sample'][:35]:35} | ERROR: {result['error']}")
             continue
-        true_class = result.get("true_class", "UNKNOWN").upper()
-        pred_class = result.get("predicted_class", "UNKNOWN").upper()
+        true_class = (result.get("true_class") or "UNKNOWN").upper()
+        pred_class = (result.get("predicted_class") or "UNKNOWN").upper()
         confidence = result.get("confidence", 0)
         correctness = result.get("correct")
         icon = "✅" if correctness is True else "❌" if correctness is False else "❓"
@@ -95,7 +95,7 @@ def generate_benchmark_summary(
     results: List[Dict[str, Any]], start_time: datetime, args: argparse.Namespace
 ):
     """Generates a comprehensive JSON and HTML benchmark summary for a batch run."""
-    if not results or len(results) <= 1:
+    if not results or len(results) <= 1 or not args.save_analysis:
         return
     print(f"\n📊 Generating benchmark summary...")
     try:
