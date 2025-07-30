@@ -42,7 +42,7 @@ python process_dataset.py \
 
 -   `--dataset` : Dataset name (must match one in the script/config)
 -   `--timeframe` : Number of frames before/after the event to extract
--   `--output_dir` : Output directory for extracted nuclei
+-   `--output_dir` : Output directory for extracted nuclei (Pick a common directory for all datasets if running multiple datasets for training)
 -   `--max_samples` : (Optional) Maximum samples per classification
 -   `--cube_max_size` : (Optional) Maximum size of the cube for extraction
 -   `--verbose` : (Optional) Enable verbose output

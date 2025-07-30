@@ -36,25 +36,26 @@ HPARAMS = {
     # IMPORTANT: The number of items in `num_classes`, `classes_names`, and
     #            `class_weights` must be the same.
     # --------------------------------------------------------------------------
-    "num_classes": 4,  # The total number of categories the model predicts.
+    "num_classes": 3,  # The total number of categories the model predicts.
     # e.g., 4 for (mitotic, new_daughter, stable, death).
     "classes_names": [  # The names for each category. The order matters!
         "mitotic",  # Class 0
         "new_daughter",  # Class 1
         "stable",  # Class 2
-        "death",  # Class 3
     ],
     "class_weights": [  # Use to balance uneven datasets.
         1.0,
         1.0,
         1.0,
-        1.0,  # A higher value gives a class more importance during
+        # A higher value gives a class more importance during
     ],  # training. E.g., if 'death' is rare, you might set
     # its weight higher, like 5.0.
     # --------------------------------------------------------------------------
     # (3) Training & Optimization
     # Description: These settings control how the model learns from the data.
     # --------------------------------------------------------------------------
+    "data_root_dir": "/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3",  # The main folder where the training data is stored.
+    # Change this if your data is in a different location.
     "learning_rate": 1e-5,  # How big of a step the model takes during learning.
     # Smaller values (e.g., 1e-6) are safer but slower.
     # Larger values (e.g., 1e-4) can learn faster but

@@ -25,8 +25,10 @@ from config import HPARAMS, CLASS_NAMES, DEVICE
 from utils.data_utils import preprocess_sample
 from utils.model_utils import Simple3DCNN
 
-DATA_ROOT_DIR = (
-    "/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3"
+
+DATA_ROOT_DIR = HPARAMS.get(
+    "data_root_dir",
+    "/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3",
 )
 # Define a directory to save all outputs
 OUTPUT_DIR = HPARAMS.get("output_dir", "training_outputs")

@@ -45,3 +45,47 @@ Epoch [008/300] | Duration: 741.06s | Train Loss: 0.9647 | Train Acc: 0.6656 | V
 🎉 New best model found! F1-Score: 0.4210. Saved to training_outputs/20250730-150716/best_model.pth
 Epoch [009/300] | Duration: 630.58s | Train Loss: 0.9396 | Train Acc: 0.6901 | Val Loss: 0.9466 | Val Acc: 0.6899 | Val F1: 0.4379
 🎉 New best model found! F1-Score: 0.4379. Saved to training_outputs/20250730-150716/best_model.pth
+Epoch [010/300] | Duration: 623.19s | Train Loss: 0.9115 | Train Acc: 0.7269 | Val Loss: 0.8714 | Val Acc: 0.7840 | Val F1: 0.5036
+🎉 New best model found! F1-Score: 0.5036. Saved to training_outputs/20250730-150716/best_model.pth
+Epoch [011/300] | Duration: 662.47s | Train Loss: 0.8841 | Train Acc: 0.7480 | Val Loss: 0.8731 | Val Acc: 0.7711 | Val F1: 0.5001
+Epoch [012/300] | Duration: 670.46s | Train Loss: 0.8576 | Train Acc: 0.7739 | Val Loss: 0.8156 | Val Acc: 0.8188 | Val F1: 0.5411
+🎉 New best model found! F1-Score: 0.5411. Saved to training_outputs/20250730-150716/best_model.pth
+Epoch [013/300] | Duration: 597.41s | Train Loss: 0.8267 | Train Acc: 0.8007 | Val Loss: 0.8233 | Val Acc: 0.8098 | Val F1: 0.5307
+Epoch [014/300] | Duration: 544.83s | Train Loss: 0.7992 | Train Acc: 0.8120 | Val Loss: 0.8022 | Val Acc: 0.8221 | Val F1: 0.5357
+Epoch [015/300] | Duration: 569.72s | Train Loss: 0.7669 | Train Acc: 0.8376 | Val Loss: 0.7509 | Val Acc: 0.8543 | Val F1: 0.5858
+🎉 New best model found! F1-Score: 0.5858. Saved to training_outputs/20250730-150716/best_model.pth
+Epoch [016/300] | Duration: 589.80s | Train Loss: 0.7350 | Train Acc: 0.8599 | Val Loss: 0.6908 | Val Acc: 0.8943 | Val F1: 0.6127
+🎉 New best model found! F1-Score: 0.6127. Saved to training_outputs/20250730-150716/best_model.pth
+Epoch [017/300] | Duration: 411.33s | Train Loss: 0.7040 | Train Acc: 0.8799 | Val Loss: 0.6934 | Val Acc: 0.8839 | Val F1: 0.6069
+Epoch [018/300] | Duration: 146.46s | Train Loss: 0.6735 | Train Acc: 0.8886 | Val Loss: 0.6880 | Val Acc: 0.8762 | Val F1: 0.5899
+Epoch [019/300] | Duration: 146.47s | Train Loss: 0.6409 | Train Acc: 0.9010 | Val Loss: 0.6289 | Val Acc: 0.9194 | Val F1: 0.6477
+🎉 New best model found! F1-Score: 0.6477. Saved to training_outputs/20250730-150716/best_model.pth
+Epoch [020/300] | Duration: 145.22s | Train Loss: 0.6104 | Train Acc: 0.9131 | Val Loss: 0.5976 | Val Acc: 0.9207 | Val F1: 0.6580
+🎉 New best model found! F1-Score: 0.6580. Saved to training_outputs/20250730-150716/best_model.pth
+Epoch [021/300] | Duration: 143.98s | Train Loss: 0.5814 | Train Acc: 0.9224 | Val Loss: 0.5804 | Val Acc: 0.9188 | Val F1: 0.6729
+🎉 New best model found! F1-Score: 0.6729. Saved to training_outputs/20250730-150716/best_model.pth
+Epoch [022/300] | Duration: 144.68s | Train Loss: 0.5518 | Train Acc: 0.9320 | Val Loss: 0.5192 | Val Acc: 0.9458 | Val F1: 0.7246
+🎉 New best model found! F1-Score: 0.7246. Saved to training_outputs/20250730-150716/best_model.pth
+Epoch [023/300] | Duration: 144.04s | Train Loss: 0.5215 | Train Acc: 0.9379 | Val Loss: 0.4784 | Val Acc: 0.9523 | Val F1: 0.7333
+🎉 New best model found! F1-Score: 0.7333. Saved to training_outputs/20250730-150716/best_model.pth
+Epoch [024/300] | Duration: 143.84s | Train Loss: 0.4918 | Train Acc: 0.9428 | Val Loss: 0.4271 | Val Acc: 0.9600 | Val F1: 0.7467
+🎉 New best model found! F1-Score: 0.7467. Saved to training_outputs/20250730-150716/best_model.pth
+Epoch [025/300] | Duration: 143.30s | Train Loss: 0.4639 | Train Acc: 0.9473 | Val Loss: 0.4078 | Val Acc: 0.9613 | Val F1: 0.7408
+Epoch [026/300] | Duration: 143.02s | Train Loss: 0.4396 | Train Acc: 0.9495 | Val Loss: 0.4103 | Val Acc: 0.9620 | Val F1: 0.7371
+Epoch [027/300] | Duration: 143.15s | Train Loss: 0.4151 | Train Acc: 0.9528 | Val Loss: 0.3902 | Val Acc: 0.9626 | Val F1: 0.7631
+🎉 New best model found! F1-Score: 0.7631. Saved to training_outputs/20250730-150716/best_model.pth
+Epoch [028/300] | Duration: 142.61s | Train Loss: 0.3932 | Train Acc: 0.9545 | Val Loss: 0.3826 | Val Acc: 0.9632 | Val F1: 0.7672
+🎉 New best model found! F1-Score: 0.7672. Saved to training_outputs/20250730-150716/best_model.pth
+Epoch [029/300] | Duration: 141.94s | Train Loss: 0.3691 | Train Acc: 0.9597 | Val Loss: 0.3410 | Val Acc: 0.9658 | Val F1: 0.7810
+🎉 New best model found! F1-Score: 0.7810. Saved to training_outputs/20250730-150716/best_model.pth
+Epoch [030/300] | Duration: 142.96s | Train Loss: 0.3465 | Train Acc: 0.9597 | Val Loss: 0.3420 | Val Acc: 0.9639 | Val F1: 0.7676
+Epoch [031/300] | Duration: 143.19s | Train Loss: 0.3276 | Train Acc: 0.9592 | Val Loss: 0.3319 | Val Acc: 0.9639 | Val F1: 0.7594
+Epoch [032/300] | Duration: 143.36s | Train Loss: 0.3097 | Train Acc: 0.9611 | Val Loss: 0.2880 | Val Acc: 0.9665 | Val F1: 0.7692
+Epoch [033/300] | Duration: 143.27s | Train Loss: 0.2957 | Train Acc: 0.9616 | Val Loss: 0.2546 | Val Acc: 0.9684 | Val F1: 0.7728
+Epoch [034/300] | Duration: 143.04s | Train Loss: 0.2764 | Train Acc: 0.9611 | Val Loss: 0.2559 | Val Acc: 0.9691 | Val F1: 0.7829
+🎉 New best model found! F1-Score: 0.7829. Saved to training_outputs/20250730-150716/best_model.pth
+slurmstepd: error: *** STEP 5047925.0 ON workergpu040 CANCELLED AT 2025-07-30T18:06:21 ***
+[2025-07-30 18:06:21,978] torch.distributed.elastic.agent.server.api: [WARNING] Received Signals.SIGTERM death signal, shutting down workers
+[2025-07-30 18:06:21,978] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 669240 closing signal SIGTERM
+slurmstepd: error: *** JOB 5047925 ON workergpu040 CANCELLED AT 2025-07-30T18:06:21 ***
+srun: Job step aborted: Waiting up to 62 seconds for job step to finish.
