@@ -28,7 +28,7 @@ from lineage_tree import read_json_file
 
 # Available datasets configuration
 DATASETS = {
-    # "230212_stack6": "/mnt/ceph/users/lbrown/MouseData/Rebecca/230212_stack6/",
+    "230212_stack6": "/mnt/ceph/users/lbrown/MouseData/Rebecca/230212_stack6/",
     # "220321_stack11": "/mnt/ceph/users/lbrown/MouseData/Eszter1",
     "221016_FUCCI_Nanog_stack_3": "/mnt/ceph/users/lbrown/Labels3DMouse/Abhishek/RebeccaData/221016_FUCCI_Nanog_stack_3/",
     # "David4EPI": "/mnt/ceph/users/lbrown/MouseData/David4EPI/",

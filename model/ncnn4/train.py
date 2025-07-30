@@ -4,6 +4,7 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader, Subset
 import numpy as np
 import time
+import argparse
 import os
 from scipy.ndimage import rotate
 import random
@@ -28,7 +29,7 @@ DATA_ROOT_DIR = (
     "/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3"
 )
 # Define a directory to save all outputs
-OUTPUT_DIR = "training_outputs"
+OUTPUT_DIR = HPARAMS.get("output_dir", "training_outputs")
 
 
 # --- Data Augmentation for Temporal Data ---
@@ -456,4 +457,30 @@ def main():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Train 3D CNN model")
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default=HPARAMS.get("output_dir", "training_outputs"),
+        help="Directory to save outputs",
+    )
+    parser.add_argument(
+        "--num_epochs",
+        type=int,
+        default=HPARAMS.get("num_epochs", 100),
+        help="Number of training epochs",
+    )
+    parser.add_argument(
+        "--dataset_dir",
+        type=str,
+        default=DATA_ROOT_DIR,
+        help="Base directory for the dataset (if not using predefined datasets)",
+    )
+    # Add more arguments as needed
+
+    args = parser.parse_args()
+    OUTPUT_DIR = args.output_dir or OUTPUT_DIR
+    DATASET_DIR = args.dataset_dir or DATA_ROOT_DIR
+    HPARAMS["num_epochs"] = args.num_epochs or HPARAMS.get("num_epochs", 100)
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
     main()

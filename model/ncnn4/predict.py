@@ -29,12 +29,23 @@ from utils.prediction_reports_utils import (
     print_batch_summary,
     generate_analysis_reports,
     generate_benchmark_summary,
-    save_benchmark_summary,
 )
 
 
+def custom_print(*args, **kwargs):
+    """
+    Custom print function to handle verbose output.
+    """
+
+    verbose = kwargs.pop("verbose", False)
+    if verbose:
+        print(*args, **kwargs)
+
+
 def get_volumes_by_nuclei_ids(
-    volume_paths: List[str], nuclei_ids: Optional[List[int]] = None
+    volume_paths: List[str],
+    nuclei_ids: Optional[List[int]] = None,
+    args: Optional[argparse.Namespace] = None,
 ) -> Dict[int, Dict[str, Any]]:
     """
     Get the cropped volumes for specific nuclei IDs from full timestamp volumes.
@@ -60,16 +71,20 @@ def get_volumes_by_nuclei_ids(
     volume_next = imread(volume_paths[2])
     volume_mask = imread(volume_paths[3])
 
-    print(
-        f"Loaded volumes: {volume_previous.shape}, {volume_current.shape}, {volume_next.shape}, {volume_mask.shape}"
+    custom_print(
+        f"Loaded volumes: {volume_previous.shape}, {volume_current.shape}, {volume_next.shape}, {volume_mask.shape}",
+        verbose=args.verbose,
     )
 
     if not nuclei_ids:
         # If no nuclei IDs provided, use all unique IDs from the mask
-        print("No nuclei IDs provided, using all the nuclei IDs from the mask")
+        custom_print(
+            "No nuclei IDs provided, using all the nuclei IDs from the mask",
+            verbose=args.verbose,
+        )
         nuclei_ids = np.unique(volume_mask.flatten()).tolist()
 
-    print("Nuclei IDs to process:", nuclei_ids)
+    custom_print("Nuclei IDs to process:", nuclei_ids, verbose=args.verbose)
 
     all_nuclei_volumes = get_volumes_by_nuclei_ids_from_full_volumes(
         [volume_previous, volume_current, volume_next, volume_mask], nuclei_ids
@@ -134,6 +149,12 @@ def parse_arguments() -> argparse.Namespace:
         type=str,
         default="./analysis_output",
         help="Directory to save analysis outputs.",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Enable verbose output for debugging and detailed processing information.",
     )
 
     args = parser.parse_args()
@@ -255,7 +276,7 @@ def process_single_sample_by_np_volumes(
         if key != "mask":
             v_min = min(v_min, vol.min())
             v_max = max(v_max, vol.max())
-    print(f"   Volume intensity range: {v_min} to {v_max}")
+    custom_print(f"   Volume intensity range: {v_min} to {v_max}", verbose=args.verbose)
 
     # Normalize and pad volumes
     for key, vol in volumes.items():
@@ -270,7 +291,10 @@ def process_single_sample_by_np_volumes(
             v_max=v_max,
             is_label=(key == "mask"),
         )
-        print(f"   {key} volume shape after transform: {volumes[key].shape}")
+        custom_print(
+            f"   {key} volume shape after transform: {volumes[key].shape}",
+            verbose=args.verbose,
+        )
 
     # Convert volume data to tensors
 
@@ -320,8 +344,9 @@ def handle_batch_folder_prediction(
             results.append(result)
             # Display immediate feedback
             true_label = str(result.get("true_class", "UNKNOWN") or "UNKNOWN").upper()
+            pred_class_value = result.get("predicted_class", "UNKNOWN")
             pred_label = str(
-                result.get("predicted_class", "UNKNOWN") or "UNKNOWN"
+                pred_class_value if pred_class_value is not None else "UNKNOWN"
             ).upper()
             confidence = result.get("confidence", 0)
             icon = (
@@ -342,41 +367,60 @@ def handle_full_timestamp_prediction(
     model: torch.nn.Module, args: argparse.Namespace
 ) -> List[Dict[str, Any]]:
     """Handles prediction on nuclei extracted from full timestamp volumes."""
-    print("\n🔬 Processing nuclei from full timestamp volumes...")
+    args.save_analysis = getattr(args, "save_analysis", False)
+    args.verbose = getattr(args, "verbose", False)
+    custom_print(
+        "\n🔬 Processing nuclei from full timestamp volumes...", verbose=args.verbose
+    )
+
     if args.nuclei_ids:
         try:
-            nuclei_ids_list = [
-                int(x.strip()) for x in args.nuclei_ids.split(",") if x.strip()
-            ]
+            nuclei_ids_list = (
+                [int(x.strip()) for x in args.nuclei_ids.split(",") if x.strip()]
+                if type(args.nuclei_ids) is str
+                else args.nuclei_ids
+            )
             if not nuclei_ids_list:
                 raise ValueError("No valid nuclei IDs provided.")
-            print(f"Targeting nuclei IDs: {nuclei_ids_list}")
+
+            custom_print(
+                f"Targeting nuclei IDs: {nuclei_ids_list}",
+                verbose=args.verbose,
+            )
         except ValueError as e:
             raise ValueError(
                 f"Invalid nuclei_ids format: {args.nuclei_ids}. Expected comma-separated integers."
             ) from e
     else:
         nuclei_ids_list = None
-        print("Targeting all nuclei found in the segmentation.")
-    print("=" * 50)
+        custom_print("Targeting all nuclei found in the segmentation.")
+    custom_print("=" * 50, verbose=args.verbose)
 
     # This function is expected to return a dictionary where keys are nuclei IDs
     # and values are dictionaries of {'t-1': vol, 't': vol, 't+1': vol}
     nuclei_volumes = get_volumes_by_nuclei_ids(
-        volume_paths=args.volumes, nuclei_ids=nuclei_ids_list
+        volume_paths=args.volumes, nuclei_ids=nuclei_ids_list, args=args
     )
 
     if not nuclei_volumes:
-        print("Could not extract any nuclei volumes. Please check inputs.")
+        custom_print(
+            "Could not extract any nuclei volumes. Please check inputs.",
+            verbose=args.verbose,
+        )
         return []
-    print(f"Found {len(nuclei_volumes)} nuclei to process.")
-    print(nuclei_volumes.keys())
+    custom_print(
+        f"Found {len(nuclei_volumes)} nuclei to process.", verbose=args.verbose
+    )
+    custom_print(nuclei_volumes.keys(), verbose=args.verbose)
     results = []
     total_nuclei = len(nuclei_volumes)
     for i, (nucleus_id, vol_dict) in enumerate(nuclei_volumes.items()):
         sample_start_time = datetime.now()
         sample_name = f"nucleus_{nucleus_id}"
-        print(f"\n🔬 Predicting for Nucleus {i+1}/{total_nuclei}: {sample_name}")
+        custom_print(
+            f"\n🔬 Predicting for Nucleus {i+1}/{total_nuclei}: {sample_name}",
+            verbose=args.verbose,
+        )
         try:
             result = process_single_sample_by_np_volumes(
                 volumes=vol_dict,
@@ -388,11 +432,15 @@ def handle_full_timestamp_prediction(
             ).total_seconds()
             results.append(result)
             # Display immediate feedback
-            pred_label = result.get("predicted_class", "UNKNOWN").upper()
+            pred_label = str(result.get("predicted_class", "UNKNOWN")).upper()
             confidence = result.get("confidence", 0)
-            print(f"   Predicted: {pred_label} ({confidence:.2%})")
+            custom_print(
+                f"   Predicted: {pred_label} ({confidence:.2%})", verbose=args.verbose
+            )
         except Exception as e:
-            print(f"   ❌ Error processing {sample_name}: {e}")
+            custom_print(
+                f"   ❌ Error processing {sample_name}: {e}", verbose=args.verbose
+            )
             results.append({"sample": sample_name, "error": str(e)})
     return results
 
@@ -401,15 +449,24 @@ def handle_single_volume_prediction(
     model: torch.nn.Module, args: argparse.Namespace
 ) -> List[Dict[str, Any]]:
     """Handles prediction for a single pre-cropped volume."""
-    print("\n🔬 Processing single pre-cropped sample from volume paths...")
+    custom_print(
+        "\n🔬 Processing single pre-cropped sample from volume paths...",
+        verbose=args.verbose,
+    )
     result = process_single_sample_by_output_folder(
         model, args, volume_paths=args.volumes
     )
-    print("\n--- Prediction Result ---")
-    print(f"Predicted Class Index: {result['index']}")
-    print(f"Predicted Class Name:  {result['predicted_class'].upper()}")
-    print(f"Confidence:            {result['confidence']:.2%}")
-    print("-------------------------\n")
+    custom_print("\n--- Prediction Result ---", verbose=args.verbose)
+    custom_print(f"Predicted Class Index: {result['index']}", verbose=args.verbose)
+    pred_class_name = result["predicted_class"]
+    custom_print(
+        f"Predicted Class Name:  {(str(pred_class_name).upper() if pred_class_name is not None else 'UNKNOWN')}",
+        verbose=args.verbose,
+    )
+    custom_print(
+        f"Confidence:            {result['confidence']:.2%}", verbose=args.verbose
+    )
+    custom_print("-------------------------\n", verbose=args.verbose)
     return [result]
 
 
@@ -419,16 +476,17 @@ def main():
         args = parse_arguments()
         start_time = datetime.now()
 
-        print("Loading model...")
-        model = load_model(args.model_path)
+        custom_print("Loading model...", verbose=args.verbose)
+        model = load_model(args.model_path, verbose=args.verbose)
         model.eval()
-        print(
-            f"Model loaded in {(datetime.now() - start_time).total_seconds():.2f} seconds"
+        custom_print(
+            f"Model loaded in {(datetime.now() - start_time).total_seconds():.2f} seconds",
+            verbose=args.verbose,
         )
 
         if args.save_analysis:
             os.makedirs(args.output_dir, exist_ok=True)
-            print(f"📁 Analysis outputs will be saved to: {args.output_dir}")
+            custom_print(f"📁 Analysis outputs will be saved to: {args.output_dir}")
 
         results = []
         if args.full_timestamp:
@@ -443,10 +501,13 @@ def main():
             generate_analysis_reports(results, args)
             generate_benchmark_summary(results, start_time, args)
         else:
-            print("\nNo predictions were made.")
+            custom_print("\nNo predictions were made.", verbose=args.verbose)
 
     except Exception as e:
-        print(f"\n❌ An unexpected error occurred in the main process: {e}")
+        custom_print(
+            f"\n❌ An unexpected error occurred in the main process: {e}",
+            verbose=args.verbose,
+        )
         import traceback
 
         traceback.print_exc()

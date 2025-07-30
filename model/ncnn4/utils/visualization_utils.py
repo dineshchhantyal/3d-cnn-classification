@@ -433,7 +433,7 @@ def generate_summary_report(
             
             <div class="prediction">
                 <h2>🎯 Prediction Results</h2>
-                <p><strong>Predicted Class:</strong> <span style="color: #e74c3c; font-size: 1.2em;">{pred_class.upper()}</span></p>
+                <p><strong>Predicted Class:</strong> <span style="color: #e74c3c; font-size: 1.2em;">{pred_class.upper() if pred_class is not None else "N/A"}</span></p>
                 <p><strong>Confidence:</strong> <span style="color: #27ae60; font-size: 1.2em;">{confidence:.1%}</span></p>
             </div>
             
