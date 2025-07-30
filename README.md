@@ -10,10 +10,8 @@ This project is a solution for extracting, cleaning, and classifying the states 
 
 -   `preperation/` — Scripts for extracting and cleaning data, and generating metadata
 -   `data/` — Prepared datasets, organized by cell state and event
--   `model/4ncnn/` — The latest 4-channel CNN model: code, training, evaluation, benchmarking
--   `model/rnn/` — RNN/ConvLSTM models for sequence modeling
+-   `model/ncnn4/` — The latest 4-channel CNN model: code, training, evaluation, benchmarking
 -   `video_generation/` — Video and visualization tools (**work in progress**)
--   `analysis_plots/` — Figures, workflow diagrams, and results
 
 ---
 
@@ -49,6 +47,18 @@ This project is a solution for extracting, cleaning, and classifying the states 
     - For custom extraction or cleaning, modify scripts in `preperation/` and re-run them as needed.
 
 More details on the extraction process can be found in the `preperation/README.md`.
+
+### Example:
+
+```python
+    # Example of how to run the extraction script
+    python process_dataset.py --dataset 230212_stack6 --timeframe 1 --output_dir /path/to/output
+```
+
+```python
+    # Example of how to run the extraction script with custom dataset directory and lineage file
+    python process_dataset.py --dataset_dir /path/to/dataset --lineage_file /path/to/LineageGraph.json --timeframe 1 --output_dir /path/to/output --max_samples 1000
+```
 
 ---
 

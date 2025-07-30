@@ -276,3 +276,21 @@ Epoch [208/300] | Duration: 13.70s | Train Loss: 0.4334 | Train Acc: 0.8485 | Va
 Epoch [209/300] | Duration: 13.88s | Train Loss: 0.4450 | Train Acc: 0.8258 | Val Loss: 0.3992 | Val Acc: 0.8636 | Val F1: 0.8626
 Epoch [210/300] | Duration: 13.41s | Train Loss: 0.4180 | Train Acc: 0.8504 | Val Loss: 0.3876 | Val Acc: 0.8712 | Val F1: 0.8703
 Epoch [211/300] | Duration: 13.74s | Train Loss: 0.4092 | Train Acc: 0.8504 | Val Loss: 0.3893 | Val Acc: 0.8788 | Val F1: 0.8779
+Epoch [212/300] | Duration: 13.72s | Train Loss: 0.4184 | Train Acc: 0.8485 | Val Loss: 0.3915 | Val Acc: 0.8788 | Val F1: 0.8779
+Epoch [213/300] | Duration: 13.72s | Train Loss: 0.4155 | Train Acc: 0.8542 | Val Loss: 0.3936 | Val Acc: 0.8788 | Val F1: 0.8782
+Epoch [214/300] | Duration: 13.65s | Train Loss: 0.4104 | Train Acc: 0.8617 | Val Loss: 0.3849 | Val Acc: 0.8712 | Val F1: 0.8707
+Epoch [215/300] | Duration: 13.31s | Train Loss: 0.4425 | Train Acc: 0.8390 | Val Loss: 0.4014 | Val Acc: 0.8788 | Val F1: 0.8779
+Epoch [216/300] | Duration: 13.85s | Train Loss: 0.4254 | Train Acc: 0.8523 | Val Loss: 0.3877 | Val Acc: 0.8864 | Val F1: 0.8860
+Epoch [217/300] | Duration: 13.98s | Train Loss: 0.4364 | Train Acc: 0.8485 | Val Loss: 0.3814 | Val Acc: 0.8864 | Val F1: 0.8860
+
+🛑 Early stopping triggered after 35 epochs with no improvement.
+
+✅ Training finished.
+
+💾 Saving final artifacts...
+Loaded best model from training_outputs/20250730-110947/best_model.pth for final evaluation.
+📈 Saved training metrics plot to training_outputs/20250730-110947/training_metrics.png
+📊 Saved final confusion matrix to training_outputs/20250730-110947/final_confusion_matrix.png
+📝 Saved final classification report to training_outputs/20250730-110947/final_classification_report.txt
+
+✨ Run complete.
