@@ -48,6 +48,8 @@ This project is a solution for extracting, cleaning, and classifying the states 
     - All data is normalized to the [0, 1] range before training or inference.
     - For custom extraction or cleaning, modify scripts in `preperation/` and re-run them as needed.
 
+More details on the extraction process can be found in the `preperation/README.md`.
+
 ---
 
 ## How to Train the 4ncnn Model
@@ -65,6 +67,8 @@ This project is a solution for extracting, cleaning, and classifying the states 
     ```bash
     bash model/ncnn4/benchmark_all_models.sh
     ```
+
+More details on training and benchmarking can be found in the `model/README.md`.
 
 ---
 
