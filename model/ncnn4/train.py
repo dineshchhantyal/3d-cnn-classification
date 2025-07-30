@@ -148,12 +148,14 @@ class NucleusDataset(Dataset):
                     class_samples.append((sample_path, self.class_to_idx[class_name]))
 
             # Apply per-class sample limiting with random selection
-            if self.max_samples_per_class is not None:
+            if hasattr(self, "max_samples_per_class") and self.max_samples_per_class:
                 if isinstance(self.max_samples_per_class, dict):
                     # Use class-specific limits
                     max_samples = self.max_samples_per_class.get(
                         class_name, len(class_samples)
                     )
+                    if max_samples is None:
+                        max_samples = len(class_samples)
                 else:
                     # Use same limit for all classes (backward compatibility)
                     max_samples = self.max_samples_per_class
@@ -300,12 +302,34 @@ def save_final_plots(history, val_labels, val_preds, class_names, output_dir):
     print(f"📊 Saved final confusion matrix to {cm_path}")
 
 
-# --- Main Execution ---
-def main():
-    """Main function to orchestrate the training and validation process."""
+def pre_check_environment():
+    """Check if the environment is set up correctly."""
     if not os.path.isdir(DATA_ROOT_DIR):
         print(f"!!! ERROR: Data directory not found at '{DATA_ROOT_DIR}'")
         print("!!! PLEASE UPDATE the 'DATA_ROOT_DIR' variable in the script. !!!")
+        return False
+    if HPARAMS["num_classes"] != len(HPARAMS["classes_names"]):
+        print(
+            f"!!! ERROR: Number of classes ({HPARAMS['num_classes']}) does not match "
+            f"the number of class names ({len(HPARAMS['classes_names'])})."
+        )
+        print("!!! PLEASE UPDATE the 'HPARAMS' in the config file. !!!")
+        return False
+    if HPARAMS["num_classes"] != len(HPARAMS["class_weights"]):
+        print(
+            f"!!! ERROR: Number of classes ({HPARAMS['num_classes']}) does not match "
+            f"the number of class weights ({len(HPARAMS['class_weights'])})."
+        )
+        print("!!! PLEASE UPDATE the 'HPARAMS' in the config file. !!!")
+        return False
+    return True
+
+
+# --- Main Execution ---
+def main():
+    """Main function to orchestrate the training and validation process."""
+    if not pre_check_environment():
+        print("Exiting due to environment setup issues.")
         return
 
     run_timestamp = time.strftime("%Y%m%d-%H%M%S")
