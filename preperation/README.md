@@ -19,7 +19,7 @@ raw-data/230212_stack6/
 
 ### LineageGraph.json Data Format
 
-The `LineageGraph.json` file contains comprehensive cell tracking and classification information:
+The `LineageGraph.json` file contains cell tracking and classification information:
 
 ## Command-Line Usage
 
@@ -147,24 +147,21 @@ For each time frame (t-1, t, t+1) when available, a timestamp subdirectory is cr
 
 t-1/ # Previous frame subdirectory (if available)
 ├── raw_cropped.tif # Cropped raw fluorescence image
-├── label_cropped.tif # Cropped segmentation labels
 └── metadata.json # Frame-specific metadata and extraction parameters
 
 t/ # Event frame subdirectory
 ├── raw_cropped.tif # Cropped raw fluorescence image
 ├── label_cropped.tif # Cropped segmentation labels
 ├── binary_label_cropped.tif # Binary mask of target nucleus
-├── raw_image_cropped.tif # Raw image cropped using label (only target nucleus visible)
 └── metadata.json # Frame-specific metadata and extraction parameters
 
 t+1/ # Next frame subdirectory (if available)
 ├── raw_cropped.tif # Cropped raw fluorescence image
-├── label_cropped.tif # Cropped segmentation labels
 └── metadata.json # Frame-specific metadata and extraction parameters
 
 ```
 
-#### Metadata Structure
+#### Metadata Structure (Some of the fields might be innacurate, please update them accordingly)
 
 The pipeline generates metadata at two levels:
 

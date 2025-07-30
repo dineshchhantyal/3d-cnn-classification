@@ -27,6 +27,7 @@ HPARAMS = {
         "stable": 221,
     },
     "class_weights": [1.0, 1.0, 1.0],  # [mitotic, new_daughter, stable, death]
+    "output_dir": "training_outputs",  # Default output directory for training results
 }
 
 # --- Shared Constants ---

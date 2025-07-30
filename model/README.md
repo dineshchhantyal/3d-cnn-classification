@@ -35,15 +35,17 @@
     **Run training on HPC (SLURM):**
 
     ```bash
-    sbatch sbatch.sh
+    sbatch slurm_train.sh
     ```
 
-    - This will submit the training job to the cluster using the configuration in `sbatch.sh`.
+    - This will submit the training job to the cluster using the configuration in `slurm_train.sh`.
     - Always activate your Python environment before running training or prediction jobs.
 
     ```bash
     source ~/venvs/jupyter-gpu/bin/activate
     ```
+
+    The default output directory for training results is `training_outputs/`. You can change this in `config.py`.
 
 ## Model Prediction
 
@@ -116,7 +118,7 @@ srun python predict.py --model_path /mnt/home/dchhantyal/3d-cnn-classification/m
 # Predict on 4 cropped volumes
 
 ```bash
-srun python predict.py --model_path /mnt/home/dchhantyal/3d-cnn-classification/model/ncnn4/training_outputs/no-aug/best_model.pth --volumes /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3/mitotic/230212_stack6_frame_027_nucleus_014_count_16/t-1/raw_cropped.tif /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3/mitotic/230212_stack6_frame_027_nucleus_014_count_16/t/raw_cropped.tif /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3/mitotic/230212_stack6_frame_027_nucleus_014_count_16/t+1/raw_cropped.tif /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3/mitotic/230212_stack6_frame_027_nucleus_014_count_16/t/binary_label_cropped.tif
+srun python predict.py --model_path /mnt/home/dchhantyal/3d-cnn-classification/model/ncnn4/training_outputs/no-aug/best_model.pth --volumes /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3/mitotic/230212_stack6_frame_027_nucleus_014_count_16/t-1/raw_cropped.tif /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3/mitotic/230212_stack6_frame_027_nucleus_014_count_16/t/raw_cropped.tif /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3/mitotic/230212_stack6_frame_027_nucleus_014_count_16/t+1/raw_cropped.tif /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3/mitotic/230212_stack6_frame_027_nucleus_014_count_16/t/binary_label_cropped.tif -v
 ```
 
 # Predict on full timestamp .tif volumes
