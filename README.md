@@ -48,6 +48,18 @@ This project is a solution for extracting, cleaning, and classifying the states 
 
 More details on the extraction process can be found in the `preperation/README.md`.
 
+### Example:
+
+```python
+    # Example of how to run the extraction script
+    python process_dataset.py --dataset 230212_stack6 --timeframe 1 --output_dir /path/to/output
+```
+
+```python
+    # Example of how to run the extraction script with custom dataset directory and lineage file
+    python process_dataset.py --dataset_dir /path/to/dataset --lineage_file /path/to/LineageGraph.json --timeframe 1 --output_dir /path/to/output --max_samples 1000
+```
+
 ---
 
 ## How to Train the 4ncnn Model

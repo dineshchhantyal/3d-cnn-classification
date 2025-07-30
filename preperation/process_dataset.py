@@ -8,6 +8,7 @@ Usage:
 
 Example:
     python process_dataset.py --dataset 230212_stack6 --timeframe 1 --output_dir /path/to/output
+    python process_dataset.py --dataset_dir /path/to/dataset --lineage_file /path/to/LineageGraph.json --timeframe 1 --output_dir /path/to/output --max_samples 1000
 """
 
 import sys
