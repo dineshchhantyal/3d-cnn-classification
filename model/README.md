@@ -138,12 +138,83 @@ All arguments are optional and have sensible defaults from your config. You can 
         python predict.py --model_path training_outputs/best_model.pth --volumes <t-1.tif> <t.tif> <t+1.tif> <mask.tif>
         ```
     - Optional arguments:
+
         - `--save_analysis` : Save preprocessing and model analysis visualizations
         - `--output_dir <dir>` : Directory to save analysis outputs
 
+    - For prediction using numpy arrays or npz files (advanced):
+
+        You can also run inference programmatically using numpy arrays or `.npz` files. See the notebook `inference_example.ipynb` for more details and code samples.
+
+    ## Example: Programmatic inference with numpy arrays
+
+    ```python
+    import numpy as np
+    from predict import load_model, process_single_sample_by_np_volumes
+
+    # Load your numpy arrays (replace with your own loading logic)
+    vol_dict = {
+        't-1': np.load('t_minus_1.npy'),
+        't': np.load('t.npy'),
+        't+1': np.load('t_plus_1.npy'),
+        'mask': np.load('mask.npy'),
+    }
+    model = load_model('training_outputs/best_model.pth')
+    model.eval()
+    import argparse
+    args = argparse.Namespace(output_dir='./analysis_output', save_analysis=False, verbose=True)
+    result = process_single_sample_by_np_volumes(vol_dict, model, args)
+    print(result)
+    ```
+
+    ## Example: Programmatic inference with npz files
+
+    ```python
+    import numpy as np
+    from predict import load_model, process_single_sample_by_np_volumes
+
+    # Load from npz file
+    data = np.load('volumes.npz')
+    vol_dict = {
+        't-1': data['t_minus_1'],
+        't': data['t'],
+        't+1': data['t_plus_1'],
+        'mask': data['mask'],
+    }
+    model = load_model('training_outputs/best_model.pth')
+    model.eval()
+    import argparse
+    args = argparse.Namespace(output_dir='./analysis_output', save_analysis=False, verbose=True)
+    result = process_single_sample_by_np_volumes(vol_dict, model, args)
+    print(result)
+    ```
+
+    For more advanced examples, batch prediction, and nuclei selection, see the notebook `inference_example.ipynb` in this folder.
+
+    ## Example: Tif files
+
+    ```python
+    import numpy as np
+    from predict import load_model, handle_full_timestamp_prediction
+
+    # Load from npz file
+    volume_paths = [
+        't-1.tif',
+        't.tif',
+        't+1.tif',
+        'mask.tif'
+    ]
+    model = load_model('training_outputs/best_model.pth')
+    model.eval()
+    import argparse
+    args = argparse.Namespace(output_dir='./analysis_output', save_analysis=False, verbose=True)
+    result = handle_full_timestamp_prediction(model, args)
+    print(result)
+    ```
+
     **Run prediction benchmarks on HPC (SLURM):**
 
-    ```bash
+````bash
     bash benchmark_all_models.sh <sample_folder1> <sample_folder2> ...
     ```
 
@@ -169,7 +240,7 @@ All arguments are optional and have sensible defaults from your config. You can 
 
 ```bash
 source ~/venvs/jupyter-gpu/bin/activate
-```
+````
 
 ### Training
 

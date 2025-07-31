@@ -1,0 +1,44 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) modules/2.3-20240529   2) openblas/single-0.3.26
+Configuration loaded. Using device: cuda
+CUDA Device Name: NVIDIA A100-SXM4-80GB
+🚀 Starting Run. All outputs will be saved to: training_outputs/20250731-103103
+⚙️ Using device: cuda
+Hyperparameters: {'input_depth': 32, 'input_height': 32, 'input_width': 32, 'num_input_channels': 4, 'num_classes': 3, 'classes_names': ['mitotic', 'new_daughter', 'stable'], 'class_weights': [1.0, 1.0, 1.0], 'data_root_dir': '/mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3', 'learning_rate': 1e-05, 'batch_size': 16, 'num_epochs': 300, 'dropout_rate': 0.1, 'weight_decay': 1e-05, 'early_stopping_patience': 35, 'max_samples_per_class': {'mitotic': None, 'new_daughter': None, 'stable': None, 'death': None}, 'output_dir': 'training_outputs'}
+
+Loading datasets...
+Dataset loaded with 7753 total samples:
+  - mitotic: 218 samples
+  - new_daughter: 434 samples
+  - stable: 7101 samples
+  Applied per-class limits:
+    - mitotic: None max samples
+    - new_daughter: None max samples
+    - stable: None max samples
+    - death: None max samples
+Dataset loaded with 7753 total samples:
+  - mitotic: 218 samples
+  - new_daughter: 434 samples
+  - stable: 7101 samples
+  Applied per-class limits:
+    - mitotic: None max samples
+    - new_daughter: None max samples
+    - stable: None max samples
+    - death: None max samples
+
+Training on 6202 samples, validating on 1551 samples.
+Model has 71,379 trainable parameters.
+
+--- Starting Training ---
+Epoch [001/300] | Duration: 737.56s | Train Loss: 1.0792 | Train Acc: 0.4008 | Val Loss: 1.0672 | Val Acc: 0.4565 | Val F1: 0.3027
+🎉 New best model found! F1-Score: 0.3027. Saved to training_outputs/20250731-103103/best_model.pth
+Epoch [002/300] | Duration: 719.34s | Train Loss: 1.0430 | Train Acc: 0.5410 | Val Loss: 1.0536 | Val Acc: 0.5287 | Val F1: 0.3363
+🎉 New best model found! F1-Score: 0.3363. Saved to training_outputs/20250731-103103/best_model.pth
+Epoch [003/300] | Duration: 701.39s | Train Loss: 1.0206 | Train Acc: 0.5734 | Val Loss: 1.0619 | Val Acc: 0.5068 | Val F1: 0.3263
+srun: Job step aborted: Waiting up to 62 seconds for job step to finish.
+slurmstepd: error: *** STEP 5050824.0 ON workergpu032 CANCELLED AT 2025-07-31T11:09:50 ***
+[2025-07-31 11:09:50,835] torch.distributed.elastic.agent.server.api: [WARNING] Received Signals.SIGTERM death signal, shutting down workers
+[2025-07-31 11:09:50,836] torch.distributed.elastic.multiprocessing.api: [WARNING] Sending process 1232732 closing signal SIGTERM
+slurmstepd: error: *** JOB 5050824 ON workergpu032 CANCELLED AT 2025-07-31T11:09:50 ***
