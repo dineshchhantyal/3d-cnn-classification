@@ -23,10 +23,17 @@ This project is a solution for extracting, cleaning, and classifying the states 
     cd 3d-cnn-classification
     ```
 2. **Create a virtual environment:**
+
     ```bash
-    python3 -m venv ~/venvs/jupyter-gpu
-    source ~/venvs/jupyter-gpu/bin/activate
+    python3 -m venv ~/venvs/cellstate3d-env
     ```
+
+    - The preferred Python version is 3.10 or later.
+
+    ```bash
+      source ~/venvs/cellstate3d-env/bin/activate
+    ```
+
 3. **Install dependencies:**
     ```bash
     pip install -r requirements.txt

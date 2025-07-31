@@ -12,7 +12,7 @@ module purge
 module load python
 module load cuda cudnn nccl
 
-source ~/venvs/jupyter-gpu/bin/activate
+source ~/venvs/cellstate3d-env/bin/activate
 
 master_node=$SLURMD_NODENAME
 

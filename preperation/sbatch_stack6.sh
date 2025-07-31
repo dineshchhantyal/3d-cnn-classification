@@ -14,7 +14,7 @@ module purge
 module load python
 
 # Activate your Python environment
-source ~/venvs/jupyter-gpu/bin/activate
+source ~/venvs/cellstate3d-env/bin/activate
 
 # ====== USER CONFIGURABLE SECTION ======
 # Pick one of: 230212_stack6, 220321_stack11, 221016_FUCCI_Nanog_stack_3, David4EPI, 230101_Gata6Nanog_stack_19

@@ -24,7 +24,7 @@ for path in "${SAMPLE_PATHS[@]}"; do
 done
 echo "=================================================="
 
-source ~/venvs/jupyter-gpu/bin/activate
+source ~/venvs/cellstate3d-env/bin/activate
 
 for model_dir in training_outputs/*/; do
   if [ ! -d "$model_dir" ]; then continue; fi

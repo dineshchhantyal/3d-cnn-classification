@@ -27,7 +27,7 @@ module load python
 module load cuda cudnn nccl
 
 # Activate virtual environment
-source ~/venvs/jupyter-gpu/bin/activate
+source ~/venvs/cellstate3d-env/bin/activate
 
 # Set up environment with optimized threading
 export PYTHONPATH="/mnt/home/dchhantyal/3d-cnn-classification:$PYTHONPATH"

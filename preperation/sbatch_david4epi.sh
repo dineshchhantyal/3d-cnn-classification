@@ -14,7 +14,7 @@ module purge
 module load python
 
 # Activate your Python environment (adjust path as needed)
-source ~/venvs/jupyter-gpu/bin/activate
+source ~/venvs/cellstate3d-env/bin/activate
 
 # Set up variables
 DATASET="David4EPI"

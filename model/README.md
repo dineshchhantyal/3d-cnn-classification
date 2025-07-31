@@ -47,7 +47,7 @@
     - Always activate your Python environment before running training or prediction jobs.
 
     ```bash
-    source ~/venvs/jupyter-gpu/bin/activate
+    source ~/venvs/cellstate3d-env/bin/activate
     ```
 
     The default output directory for training results is `training_outputs/`. You can change this in `config.py`.
@@ -239,7 +239,7 @@ All arguments are optional and have sensible defaults from your config. You can 
 ### Environment Activation
 
 ```bash
-source ~/venvs/jupyter-gpu/bin/activate
+source ~/venvs/cellstate3d-env/bin/activate
 ````
 
 ### Training
