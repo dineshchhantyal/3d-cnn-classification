@@ -47,6 +47,46 @@
 
     The default output directory for training results is `training_outputs/`. You can change this in `config.py`.
 
+### Training Script Arguments
+
+You can customize training by passing arguments to `train.py`:
+
+| Argument      | Type | Default Value                                | Description                                                       |
+| ------------- | ---- | -------------------------------------------- | ----------------------------------------------------------------- |
+| --output_dir  | str  | HPARAMS["output_dir"] or "training_outputs"  | Directory to save all training outputs and artifacts.             |
+| --num_epochs  | int  | HPARAMS["num_epochs"] or 100                 | Number of training epochs.                                        |
+| --dataset_dir | str  | DATA_ROOT_DIR (from HPARAMS or default path) | Base directory for the dataset (if not using predefined datasets) |
+
+#### Example usage:
+
+```bash
+python train.py --output_dir ./results --num_epochs 50 --dataset_dir /path/to/dataset
+```
+
+All arguments are optional and have sensible defaults from your config. You can override any default by specifying the argument on the command line.
+
+### Training Workflow
+
+1. **Environment Check**: The script checks if your data directory and config are set up correctly before starting.
+2. **Data Loading**: Loads and prints the class distribution for your dataset. Supports per-class sample limits.
+3. **Augmentation**: Applies conservative 3D augmentations for robust training.
+4. **Training Loop**: Trains the model, validates, and saves the best checkpoint based on F1-score. Early stopping is supported.
+5. **Artifacts**: Saves training metrics, confusion matrix, and a detailed classification report in the output directory.
+
+### Output Files
+
+-   `best_model.pth`: Best model checkpoint (highest validation F1-score)
+-   `training_metrics.png`: Training/validation loss and accuracy plots
+-   `final_confusion_matrix.png`: Confusion matrix for validation set
+-   `final_classification_report.txt`: Detailed classification report and environment info
+
+### Troubleshooting
+
+-   If you see errors about missing data or config, check the paths in `config.py` and your command-line arguments.
+-   For class mismatch errors, update `num_classes`, `classes_names`, and `class_weights` in `config.py`.
+
+---
+
 ## Model Prediction
 
 1. **Prepare input data**
