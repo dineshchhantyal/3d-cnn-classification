@@ -22,7 +22,12 @@
 
 2. **Configure training parameters**
 
-    - Edit `config.py` to set hyperparameters (epochs, batch size, learning rate, etc.).
+    - Edit `config.py` to set hyperparameters such as epochs, batch size, learning rate, and data paths.
+    - A default configuration template is available in `config.py.example`. To use it, copy it to `config.py` and modify as needed:
+
+    ```bash
+    cp config.py.example config.py
+    ```
 
 3. **Start training**
 
@@ -69,7 +74,7 @@ All arguments are optional and have sensible defaults from your config. You can 
 
 1. **Environment Check**: The script checks if your data directory and config are set up correctly before starting.
 2. **Data Loading**: Loads and prints the class distribution for your dataset. Supports per-class sample limits.
-3. **Augmentation**: Applies conservative 3D augmentations for robust training.
+3. **Augmentation**: Applies random 3D augmentations.
 4. **Training Loop**: Trains the model, validates, and saves the best checkpoint based on F1-score. Early stopping is supported.
 5. **Artifacts**: Saves training metrics, confusion matrix, and a detailed classification report in the output directory.
 
@@ -96,9 +101,34 @@ All arguments are optional and have sensible defaults from your config. You can 
 2. **Run prediction**
 
     - For batch prediction on pre-cropped sample folders:
+
+        ### Batch Prediction on Sample Folders
+
+        To run predictions on multiple pre-cropped sample folders, use:
+
         ```bash
         python predict.py --model_path training_outputs/best_model.pth --folder_path <sample_folder1> <sample_folder2> ...
         ```
+
+        > **Note:**  
+        > Each sample folder must follow this structure:
+        >
+        > ```
+        > <sample_folder>/
+        > ├── t-1/
+        > │   └── raw_cropped.tif
+        > ├── t/
+        > │   ├── raw_cropped.tif
+        > │   └── binary_label_cropped.tif
+        > └── t+1/
+        >     └── raw_cropped.tif
+        > ```
+        >
+        > - `t-1`, `t`, and `t+1` subfolders must contain their respective `raw_cropped.tif` files.
+        > - The `t` subfolder must also include `binary_label_cropped.tif`.
+
+        Make sure your folders match this structure for successful prediction.
+
     - For prediction on full timestamp .tif volumes:
         ```bash
         python predict.py --model_path training_outputs/best_model.pth --volumes <t-1.tif> <t.tif> <t+1.tif> <mask.tif> --full_timestamp [--nuclei_ids 1,2,3]
