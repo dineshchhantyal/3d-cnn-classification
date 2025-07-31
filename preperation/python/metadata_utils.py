@@ -1,6 +1,5 @@
 from datetime import datetime
 from pathlib import Path
-import numpy as np
 from matplotlib import pyplot as plt
 from volume_utils import generate_frame_label
 import tifffile

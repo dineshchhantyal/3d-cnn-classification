@@ -1,5 +1,6 @@
 from pathlib import Path
 import tifffile
+import numpy as np
 
 
 def get_volume_by_timestamp(base_dir, event_frame):

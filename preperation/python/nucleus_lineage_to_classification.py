@@ -11,13 +11,10 @@ to all frames in the time series.
 
 """
 
-from collections import defaultdict, deque
+from collections import defaultdict
 from pathlib import Path
 import numpy as np
-import tifffile
-import json
 import os
-from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 from functools import partial
@@ -30,10 +27,7 @@ from volume_utils import (
     safe_bounds,
 )
 from lineage_tree import classify_node
-from matplotlib import pyplot as plt
 from metadata_utils import (
-    create_main_metadata,
-    create_frame_metadata,
     print_classification_distribution,
     save_single_nucleus_immediate,
 )
