@@ -22,7 +22,12 @@
 
 2. **Configure training parameters**
 
-    - Edit `config.py` to set hyperparameters (epochs, batch size, learning rate, etc.).
+    - Edit `config.py` to set hyperparameters such as epochs, batch size, learning rate, and data paths.
+    - A default configuration template is available in `config.py.example`. To use it, copy it to `config.py` and modify as needed:
+
+    ```bash
+    cp config.py.example config.py
+    ```
 
 3. **Start training**
 
@@ -47,6 +52,46 @@
 
     The default output directory for training results is `training_outputs/`. You can change this in `config.py`.
 
+### Training Script Arguments
+
+You can customize training by passing arguments to `train.py`:
+
+| Argument      | Type | Default Value                                | Description                                                       |
+| ------------- | ---- | -------------------------------------------- | ----------------------------------------------------------------- |
+| --output_dir  | str  | HPARAMS["output_dir"] or "training_outputs"  | Directory to save all training outputs and artifacts.             |
+| --num_epochs  | int  | HPARAMS["num_epochs"] or 100                 | Number of training epochs.                                        |
+| --dataset_dir | str  | DATA_ROOT_DIR (from HPARAMS or default path) | Base directory for the dataset (if not using predefined datasets) |
+
+#### Example usage:
+
+```bash
+python train.py --output_dir ./results --num_epochs 50 --dataset_dir /path/to/dataset
+```
+
+All arguments are optional and have sensible defaults from your config. You can override any default by specifying the argument on the command line.
+
+### Training Workflow
+
+1. **Environment Check**: The script checks if your data directory and config are set up correctly before starting.
+2. **Data Loading**: Loads and prints the class distribution for your dataset. Supports per-class sample limits.
+3. **Augmentation**: Applies random 3D augmentations.
+4. **Training Loop**: Trains the model, validates, and saves the best checkpoint based on F1-score. Early stopping is supported.
+5. **Artifacts**: Saves training metrics, confusion matrix, and a detailed classification report in the output directory.
+
+### Output Files
+
+-   `best_model.pth`: Best model checkpoint (highest validation F1-score)
+-   `training_metrics.png`: Training/validation loss and accuracy plots
+-   `final_confusion_matrix.png`: Confusion matrix for validation set
+-   `final_classification_report.txt`: Detailed classification report and environment info
+
+### Troubleshooting
+
+-   If you see errors about missing data or config, check the paths in `config.py` and your command-line arguments.
+-   For class mismatch errors, update `num_classes`, `classes_names`, and `class_weights` in `config.py`.
+
+---
+
 ## Model Prediction
 
 1. **Prepare input data**
@@ -56,9 +101,34 @@
 2. **Run prediction**
 
     - For batch prediction on pre-cropped sample folders:
+
+        ### Batch Prediction on Sample Folders
+
+        To run predictions on multiple pre-cropped sample folders, use:
+
         ```bash
         python predict.py --model_path training_outputs/best_model.pth --folder_path <sample_folder1> <sample_folder2> ...
         ```
+
+        > **Note:**  
+        > Each sample folder must follow this structure:
+        >
+        > ```
+        > <sample_folder>/
+        > ├── t-1/
+        > │   └── raw_cropped.tif
+        > ├── t/
+        > │   ├── raw_cropped.tif
+        > │   └── binary_label_cropped.tif
+        > └── t+1/
+        >     └── raw_cropped.tif
+        > ```
+        >
+        > - `t-1`, `t`, and `t+1` subfolders must contain their respective `raw_cropped.tif` files.
+        > - The `t` subfolder must also include `binary_label_cropped.tif`.
+
+        Make sure your folders match this structure for successful prediction.
+
     - For prediction on full timestamp .tif volumes:
         ```bash
         python predict.py --model_path training_outputs/best_model.pth --volumes <t-1.tif> <t.tif> <t+1.tif> <mask.tif> --full_timestamp [--nuclei_ids 1,2,3]
@@ -68,12 +138,83 @@
         python predict.py --model_path training_outputs/best_model.pth --volumes <t-1.tif> <t.tif> <t+1.tif> <mask.tif>
         ```
     - Optional arguments:
+
         - `--save_analysis` : Save preprocessing and model analysis visualizations
         - `--output_dir <dir>` : Directory to save analysis outputs
 
+    - For prediction using numpy arrays or npz files (advanced):
+
+        You can also run inference programmatically using numpy arrays or `.npz` files. See the notebook `inference_example.ipynb` for more details and code samples.
+
+    ## Example: Programmatic inference with numpy arrays
+
+    ```python
+    import numpy as np
+    from predict import load_model, process_single_sample_by_np_volumes
+
+    # Load your numpy arrays (replace with your own loading logic)
+    vol_dict = {
+        't-1': np.load('t_minus_1.npy'),
+        't': np.load('t.npy'),
+        't+1': np.load('t_plus_1.npy'),
+        'mask': np.load('mask.npy'),
+    }
+    model = load_model('training_outputs/best_model.pth')
+    model.eval()
+    import argparse
+    args = argparse.Namespace(output_dir='./analysis_output', save_analysis=False, verbose=True)
+    result = process_single_sample_by_np_volumes(vol_dict, model, args)
+    print(result)
+    ```
+
+    ## Example: Programmatic inference with npz files
+
+    ```python
+    import numpy as np
+    from predict import load_model, process_single_sample_by_np_volumes
+
+    # Load from npz file
+    data = np.load('volumes.npz')
+    vol_dict = {
+        't-1': data['t_minus_1'],
+        't': data['t'],
+        't+1': data['t_plus_1'],
+        'mask': data['mask'],
+    }
+    model = load_model('training_outputs/best_model.pth')
+    model.eval()
+    import argparse
+    args = argparse.Namespace(output_dir='./analysis_output', save_analysis=False, verbose=True)
+    result = process_single_sample_by_np_volumes(vol_dict, model, args)
+    print(result)
+    ```
+
+    For more advanced examples, batch prediction, and nuclei selection, see the notebook `inference_example.ipynb` in this folder.
+
+    ## Example: Tif files
+
+    ```python
+    import numpy as np
+    from predict import load_model, handle_full_timestamp_prediction
+
+    # Load from npz file
+    volume_paths = [
+        't-1.tif',
+        't.tif',
+        't+1.tif',
+        'mask.tif'
+    ]
+    model = load_model('training_outputs/best_model.pth')
+    model.eval()
+    import argparse
+    args = argparse.Namespace(output_dir='./analysis_output', save_analysis=False, verbose=True)
+    result = handle_full_timestamp_prediction(model, args)
+    print(result)
+    ```
+
     **Run prediction benchmarks on HPC (SLURM):**
 
-    ```bash
+````bash
     bash benchmark_all_models.sh <sample_folder1> <sample_folder2> ...
     ```
 
@@ -99,12 +240,12 @@
 
 ```bash
 source ~/venvs/jupyter-gpu/bin/activate
-```
+````
 
 ### Training
 
 ```bash
-sbatch sbatch.sh
+sbatch slurm_train.sh
 ```
 
 ### Prediction
@@ -118,7 +259,7 @@ srun python predict.py --model_path /mnt/home/dchhantyal/3d-cnn-classification/m
 # Predict on 4 cropped volumes
 
 ```bash
-srun python predict.py --model_path /mnt/home/dchhantyal/3d-cnn-classification/model/ncnn4/training_outputs/no-aug/best_model.pth --volumes /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3/mitotic/230212_stack6_frame_027_nucleus_014_count_16/t-1/raw_cropped.tif /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3/mitotic/230212_stack6_frame_027_nucleus_014_count_16/t/raw_cropped.tif /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3/mitotic/230212_stack6_frame_027_nucleus_014_count_16/t+1/raw_cropped.tif /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3/mitotic/230212_stack6_frame_027_nucleus_014_count_16/t/binary_label_cropped.tif -v
+srun python ncnn4/predict.py --model_path /mnt/home/dchhantyal/3d-cnn-classification/model/ncnn4/training_outputs/no-aug/best_model.pth --volumes /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3/mitotic/230212_stack6_frame_027_nucleus_014_count_16/t-1/raw_cropped.tif /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3/mitotic/230212_stack6_frame_027_nucleus_014_count_16/t/raw_cropped.tif /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3/mitotic/230212_stack6_frame_027_nucleus_014_count_16/t+1/raw_cropped.tif /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/v3/mitotic/230212_stack6_frame_027_nucleus_014_count_16/t/binary_label_cropped.tif -v
 ```
 
 # Predict on full timestamp .tif volumes

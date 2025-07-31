@@ -12,25 +12,24 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.10,<3.11"
 dependencies = [
-    "torch==2.2.2",
-    "torchaudio==2.2.2",
-    "torchvision==0.17.2",
-    "scikit-learn==1.4.2",
-    "scikit-image==0.22.0",
-    "pytorch-lightning==2.0.0",
-    "numpy==1.26.4",
-    "pandas==2.2.2",
-    "scipy==1.13.0",
-    "matplotlib==3.8.4",
+    "numpy==2.2.6",
+    "scipy==1.15.3",
+    "torch==2.7.1",
+    "torchvision==0.22.1",
+    "scikit-learn==1.7.1",
+    "matplotlib==3.10.3",
     "seaborn==0.13.2",
-    "tifffile==2023.8.30",
+    "tifffile==2025.5.10",
+    "opencv-python==4.12.0.88",
+    "Pillow==11.3.0",
+    "psutil==7.0.0",
+    "imageio==2.37.0",
+    "pandas==2.3.1",
     "sympy==1.14.0",
     "Flask==2.3.2",
     "requests==2.31.0",
-    "jupyterlab==3.6.6",
-    "notebook==6.5.4",
-    "tqdm==4.66.1",
-    "PyYAML==6.0"
+    "tqdm==4.66.1"
+
 ]
 
 [tool.setuptools.packages.find]

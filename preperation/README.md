@@ -27,6 +27,8 @@ The extraction pipeline can be run directly from the command line using `process
 
 ### Example Command
 
+#### Existing Dataset Example Command
+
 ```bash
 # Basic usage
 python process_dataset.py \
@@ -36,6 +38,19 @@ python process_dataset.py \
   --max_samples 20 \
   --cube_max_size 64 \
   --verbose
+```
+
+#### Custom Dataset Example Command
+
+```bash
+# Custom dataset directory and lineage file
+python process_dataset.py \
+    --dataset_dir /mnt/home/dchhantyal/3d-cnn-classification/raw-data/230212_stack6 \
+    --lineage_file /mnt/home/dchhantyal/3d-cnn-classification/raw-data/230212_stack6/LineageGraph.json \
+    --timeframe 1 \
+    --output_dir /mnt/home/dchhantyal/3d-cnn-classification/data/nuclei_state_dataset/230212_stack6_extracted \
+    --cube_max_size 64 \
+    --verbose
 ```
 
 ### Argument Reference

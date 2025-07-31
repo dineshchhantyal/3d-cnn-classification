@@ -84,10 +84,10 @@ HPARAMS = {
     # Description: Settings for managing the dataset and where to save results.
     # --------------------------------------------------------------------------
     "max_samples_per_class": {  # Limit the number of samples for each class.
-        "mitotic": None,  # Set to `None` to use all available samples.
-        "new_daughter": None,  # Or set a number, e.g., 1000, to limit it.
-        "stable": None,
-        "death": None,
+        "mitotic": 224,  # Set to `None` to use all available samples.
+        "new_daughter": 224,  # Or set a number, e.g., 1000, to limit it.
+        "stable": 224,
+        "death": 224,
     },
     "output_dir": "training_outputs",  # The folder where training results, logs,
     # and saved models will be stored.

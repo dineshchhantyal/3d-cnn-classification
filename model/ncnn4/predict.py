@@ -9,7 +9,7 @@ import torch
 import os
 import argparse
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 from tifffile import imread
 import traceback
 import numpy as np
@@ -43,9 +43,10 @@ def custom_print(*args, **kwargs):
 
 
 def get_volumes_by_nuclei_ids(
-    volume_paths: List[str],
+    volume_input: Union[List[str], Dict[str, np.ndarray]],
     nuclei_ids: Optional[List[int]] = None,
     args: Optional[argparse.Namespace] = None,
+    input_type: str = "tif"  # "tif", "npz", or "numpy"
 ) -> Dict[int, Dict[str, Any]]:
     """
     Get the cropped volumes for specific nuclei IDs from full timestamp volumes.
@@ -63,13 +64,29 @@ def get_volumes_by_nuclei_ids(
     # This function is expected to return a dictionary where keys are nuclei IDs
     # and values are dictionaries of {'t-1': vol, 't': vol, 't+1': vol, 'mask': vol (if available)}
 
-    if not volume_paths or len(volume_paths) < 4:
+    if not volume_input or len(volume_input) < 4:
         raise ValueError("At least 4 volume paths (t-1, t, t+1, mask) are required.")
 
-    volume_previous = imread(volume_paths[0])
-    volume_current = imread(volume_paths[1])
-    volume_next = imread(volume_paths[2])
-    volume_mask = imread(volume_paths[3])
+    if input_type == "tif":
+        volume_previous = imread(volume_input[0])
+        volume_current = imread(volume_input[1])
+        volume_next = imread(volume_input[2])
+        volume_mask = imread(volume_input[3])
+    elif input_type == "npz":
+        # Load from .npz files
+        loaded = [np.load(p) for p in volume_input]
+        volume_previous = loaded[0]['t-1']
+        volume_current = loaded[1]['t']
+        volume_next = loaded[2]['t+1']
+        volume_mask = loaded[3]['mask']
+    elif input_type == "numpy":
+        # Directly use the provided numpy arrays
+        volume_previous = volume_input['t-1']
+        volume_current = volume_input['t']
+        volume_next = volume_input['t+1']
+        volume_mask = volume_input['mask']
+    else:
+        raise ValueError(f"Unsupported input type: {input_type}. Use 'tif', 'npz', or 'numpy'.")
 
     custom_print(
         f"Loaded volumes: {volume_previous.shape}, {volume_current.shape}, {volume_next.shape}, {volume_mask.shape}",
@@ -399,7 +416,7 @@ def handle_full_timestamp_prediction(
     # This function is expected to return a dictionary where keys are nuclei IDs
     # and values are dictionaries of {'t-1': vol, 't': vol, 't+1': vol}
     nuclei_volumes = get_volumes_by_nuclei_ids(
-        volume_paths=args.volumes, nuclei_ids=nuclei_ids_list, args=args
+        volume_input=args.volumes, nuclei_ids=nuclei_ids_list, args=args
     )
 
     if not nuclei_volumes:
@@ -456,17 +473,17 @@ def handle_single_volume_prediction(
     result = process_single_sample_by_output_folder(
         model, args, volume_paths=args.volumes
     )
-    custom_print("\n--- Prediction Result ---", verbose=args.verbose)
-    custom_print(f"Predicted Class Index: {result['index']}", verbose=args.verbose)
+    print("\n--- Prediction Result ---")
+    print(f"Predicted Class Index: {result['index']}")
     pred_class_name = result["predicted_class"]
-    custom_print(
+    print(
         f"Predicted Class Name:  {(str(pred_class_name).upper() if pred_class_name is not None else 'UNKNOWN')}",
         verbose=args.verbose,
     )
-    custom_print(
-        f"Confidence:            {result['confidence']:.2%}", verbose=args.verbose
+    print(
+        f"Confidence:            {result['confidence']:.2%}"
     )
-    custom_print("-------------------------\n", verbose=args.verbose)
+    print("-------------------------\n")
     return [result]
 
 

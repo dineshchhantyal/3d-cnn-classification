@@ -46,7 +46,7 @@ This project is a solution for extracting, cleaning, and classifying the states 
     - All data is normalized to the [0, 1] range before training or inference.
     - For custom extraction or cleaning, modify scripts in `preperation/` and re-run them as needed.
 
-More details on the extraction process can be found in the `preperation/README.md`.
+More details on the extraction process can be found in the [`preperation/README.md`](preperation/README.md).
 
 ### Example:
 
@@ -73,12 +73,8 @@ More details on the extraction process can be found in the `preperation/README.m
     python model/ncnn4/train.py
     ```
     - Training logs and results will be saved in `model/ncnn4/training_outputs/`
-4. **Benchmark all models:**
-    ```bash
-    bash model/ncnn4/benchmark_all_models.sh
-    ```
 
-More details on training and benchmarking can be found in the `model/README.md`.
+More details on training and benchmarking can be found in the [`model/README.md`](model/README.md).
 
 ---
 
@@ -88,18 +84,18 @@ More details on training and benchmarking can be found in the `model/README.md`.
 
     - After training, logs and checkpoints are saved in `training_outputs/`.
     - For prediction, use `predict.py` with the appropriate arguments to generate results and analysis. Example:
+
         ```bash
         python model/ncnn4/predict.py --model_path model/ncnn4/training_outputs/best_model.pth --folder_path <sample_folder1> <sample_folder2> ...
         ```
+
         or for full volume prediction:
+
         ```bash
         python model/ncnn4/predict.py --model_path model/ncnn4/training_outputs/best_model.pth --volumes <t-1.tif> <t.tif> <t+1.tif> <mask.tif> --full_timestamp
         ```
-    - Prediction results and analysis are saved in the directory specified by `--output_dir` (default: `./analysis_output`).
-    - For visualization and evaluation of training results, use the Jupyter notebooks in `model/notebooks/` (e.g., `visualization.ipynb` for overlays and projections, `check_random_label_data.ipynb` for label inspection).
-    - Notebooks may require additional setup (e.g., installing `matplotlib`, `seaborn`).
-    - For publication-quality figures or custom analysis, modify or create new notebooks in `model/notebooks/`.
-    - For more details and troubleshooting, see the full documentation in `model/README.md`.
+
+    - For more details and troubleshooting, see the full documentation in [`model/README.md`](model/README.md).
 
 ---
 
