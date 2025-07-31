@@ -24,7 +24,7 @@ This project is a solution for extracting, cleaning, and classifying the states 
     ```
 2. **Create a virtual environment:**
     ```bash
-    python -m venv ~/venvs/jupyter-gpu
+    python3 -m venv ~/venvs/jupyter-gpu
     source ~/venvs/jupyter-gpu/bin/activate
     ```
 3. **Install dependencies:**
