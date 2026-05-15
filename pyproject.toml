@@ -3,7 +3,7 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "3d-cnn-classification"
+name = "3d-nucleus-classifier"
 version = "0.1.0"
 description = "3D CNN nucleus state classification and lineage analysis."
 authors = [
@@ -36,4 +36,4 @@ dependencies = [
 where = ["model"]
 
 [project.urls]
-Homepage = "https://github.com/dineshchhantyal/3d-cnn-classification"
+Homepage = "https://github.com/dineshchhantyal/3d-nucleus-classifier"
